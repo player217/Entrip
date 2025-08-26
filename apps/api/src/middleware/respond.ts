@@ -27,7 +27,8 @@ export const createResponse = <T>(data: T, meta?: ApiResponse<T>['meta']): ApiRe
 // Standard response middleware with schema validation
 export const respond = <T>(
   responseSchema: ZodSchema<ApiResponse<T>>,
-  handler: (req: Request) => Promise<ApiResponse<T>>
+  handler: (req: Request) => Promise<ApiResponse<T>>,
+  generateEtag?: (result: ApiResponse<T>) => string | number
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -41,6 +42,12 @@ export const respond = <T>(
           console.warn('Response validation failed:', validationError);
           // In development, still send response but log the issue
         }
+      }
+      
+      // Generate ETag for PATCH version sync
+      if (generateEtag) {
+        const etag = `"${generateEtag(result)}"`;
+        res.set('ETag', etag);
       }
       
       res.json(result);
@@ -105,7 +112,8 @@ export const respondNoContent = (
 // Response middleware for created resources (201)
 export const respondCreated = <T>(
   responseSchema: ZodSchema<ApiResponse<T>>,
-  handler: (req: Request) => Promise<ApiResponse<T>>
+  handler: (req: Request) => Promise<ApiResponse<T>>,
+  generateEtag?: (result: ApiResponse<T>) => string | number
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -118,6 +126,12 @@ export const respondCreated = <T>(
         } catch (validationError) {
           console.warn('Response validation failed:', validationError);
         }
+      }
+      
+      // Generate ETag for POST/PATCH version sync
+      if (generateEtag) {
+        const etag = `"${generateEtag(result)}"`;
+        res.set('ETag', etag);
       }
       
       res.status(201).json(result);

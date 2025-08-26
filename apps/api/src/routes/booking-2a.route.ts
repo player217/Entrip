@@ -48,7 +48,8 @@ r.post('/',
         }
         throw error;
       }
-    }
+    },
+    (result) => result.data.version
   )
 );
 
@@ -144,7 +145,8 @@ r.patch('/:id',
         }
         throw error;
       }
-    }
+    },
+    (result) => result.data.version
   )
 );
 

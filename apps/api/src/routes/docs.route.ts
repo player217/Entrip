@@ -87,12 +87,7 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Serve Swagger UI documentation
-router.use('/docs', swaggerUi.serve, swaggerUi.setup(getOpenAPISpec(), swaggerOptions));
-
-// Redirect root to docs
-router.get('/', (req, res) => {
-  res.redirect('/api/docs/docs');
-});
+// Serve Swagger UI documentation at /api/docs (single path)
+router.use('/', swaggerUi.serve, swaggerUi.setup(getOpenAPISpec(), swaggerOptions));
 
 export default router;

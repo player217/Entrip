@@ -127,8 +127,10 @@ app.use('/api/data', require('./routes/data-health.route').default);
 app.use('/api/integration', require('./routes/integration-example').default);
 app.use('/api/health', require('./routes/health.route').default);
 
-// Phase 2A test routes (temporary)
-app.use('/api/test-respond', require('./routes/test-respond.route').default);
+// Phase 2A test routes (development only)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/test-respond', require('./routes/test-respond.route').default);
+}
 
 // 404 핸들러
 app.use((req, res) => {
