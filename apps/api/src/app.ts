@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './swagger';
 import healthRouter from './routes/health';
@@ -107,6 +109,25 @@ app.get('/metrics', metricsHandler);
 
 // Documentation routes (schema-based OpenAPI)
 app.use('/api/docs', docsRouter);
+
+// Backward compatibility alias for OpenAPI JSON
+app.get('/api/openapi.json', (_req, res) => {
+  try {
+    const specPath = path.join(process.cwd(), 'openapi', 'openapi.json');
+    const spec = fs.readFileSync(specPath, 'utf-8');
+    res.type('application/json').send(spec);
+  } catch (error) {
+    console.error('Failed to load OpenAPI spec for alias:', error);
+    res.status(500).json({
+      error: {
+        code: 'OPENAPI_LOAD_ERROR',
+        message: 'Failed to load OpenAPI specification',
+        details: null,
+        traceId: null
+      }
+    });
+  }
+});
 
 // API 라우트
 app.use('/api/v1', healthRouter);
