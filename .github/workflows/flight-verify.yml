@@ -1,0 +1,150 @@
+name: Flight API Health Check
+
+on:
+  schedule:
+    # 매일 03:00 KST (18:00 UTC)
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+jobs:
+  verify-flight-api:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: entrip
+          POSTGRES_USER: entrip
+          POSTGRES_DB: entrip
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Install dependencies and build
+      run: |
+        cd apps/api
+        npm ci
+        npm run build
+        
+    - name: Run database migrations
+      run: |
+        cd apps/api
+        DATABASE_URL="postgresql://entrip:entrip@localhost:5432/entrip" npx prisma migrate dev --name ci-test
+        
+    - name: Start API server
+      run: |
+        cd apps/api
+        DATABASE_URL="postgresql://entrip:entrip@localhost:5432/entrip" npm run start &
+        sleep 15
+        
+    - name: Check Flight API Health
+      id: health_check
+      run: |
+        # Initialize counters
+        ERRORS=0
+        WARNINGS=0
+        CRITICAL=0
+        
+        echo "=== Flight API Health Check ===" >> $GITHUB_STEP_SUMMARY
+        echo "Time: $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Check airports endpoint
+        echo "Checking /api/flight/airports..."
+        RESPONSE=$(curl -s -w "\n%{http_code}" http://localhost:4000/api/flight/airports)
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+        if [ "$HTTP_CODE" = "200" ]; then
+          echo "✅ Airports endpoint: OK" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Airports endpoint: Failed (HTTP $HTTP_CODE)" >> $GITHUB_STEP_SUMMARY
+          ERRORS=$((ERRORS + 1))
+        fi
+        
+        # Check timetable endpoint
+        echo "Checking /api/flight/timetable..."
+        RESPONSE=$(curl -s -w "\n%{http_code}" "http://localhost:4000/api/flight/timetable?dep=ICN")
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+        RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" "http://localhost:4000/api/flight/timetable?dep=ICN")
+        
+        if [ "$HTTP_CODE" = "200" ]; then
+          echo "✅ Timetable endpoint: OK (${RESPONSE_TIME}s)" >> $GITHUB_STEP_SUMMARY
+          # Check response time
+          if (( $(echo "$RESPONSE_TIME > 3.0" | bc -l) )); then
+            echo "⚠️ Warning: Slow response time (${RESPONSE_TIME}s > 3s)" >> $GITHUB_STEP_SUMMARY
+            WARNINGS=$((WARNINGS + 1))
+          fi
+        else
+          echo "❌ Timetable endpoint: Failed (HTTP $HTTP_CODE)" >> $GITHUB_STEP_SUMMARY
+          ERRORS=$((ERRORS + 1))
+        fi
+        
+        # Check rate limits
+        echo "Checking rate limits..."
+        for i in {1..5}; do
+          curl -s "http://localhost:4000/api/flight/status/KE001" > /dev/null
+        done
+        RATE_RESPONSE=$(curl -s -w "\n%{http_code}" "http://localhost:4000/api/flight/status/KE001")
+        RATE_CODE=$(echo "$RATE_RESPONSE" | tail -n1)
+        
+        if [ "$RATE_CODE" = "429" ]; then
+          echo "✅ Rate limiting: Working correctly" >> $GITHUB_STEP_SUMMARY
+        elif [ "$RATE_CODE" = "200" ]; then
+          echo "⚠️ Warning: Rate limiting may not be working" >> $GITHUB_STEP_SUMMARY
+          WARNINGS=$((WARNINGS + 1))
+        fi
+        
+        # Set outputs
+        echo "errors=$ERRORS" >> $GITHUB_OUTPUT
+        echo "warnings=$WARNINGS" >> $GITHUB_OUTPUT
+        echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+        
+        # Summary
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- Errors: $ERRORS" >> $GITHUB_STEP_SUMMARY
+        echo "- Warnings: $WARNINGS" >> $GITHUB_STEP_SUMMARY
+        echo "- Critical: $CRITICAL" >> $GITHUB_STEP_SUMMARY
+        
+    - name: Send Slack Notification
+      if: always()
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        if [ -n "$SLACK_WEBHOOK_URL" ]; then
+          STATUS_EMOJI="${{ job.status == 'success' && '✅' || '🟥' }}"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{
+              \"channel\": \"#ops-flight\",
+              \"username\": \"GitHub Actions\",
+              \"text\": \"$STATUS_EMOJI Flight API Health Check ${{ job.status }}\",
+              \"attachments\": [{
+                \"color\": \"${{ job.status == 'success' && 'good' || 'danger' }}\",
+                \"fields\": [
+                  { \"title\": \"Errors\", \"value\": \"${{ steps.health_check.outputs.errors }}\", \"short\": true },
+                  { \"title\": \"Warnings\", \"value\": \"${{ steps.health_check.outputs.warnings }}\", \"short\": true },
+                  { \"title\": \"Critical\", \"value\": \"${{ steps.health_check.outputs.critical }}\", \"short\": true }
+                ]
+              }]
+            }" \
+            $SLACK_WEBHOOK_URL
+        else
+          echo "SLACK_WEBHOOK_URL not configured, skipping notification"
+        fi
+        
+    - name: Stop API server
+      if: always()
+      run: |
+        pkill -f "node" || true

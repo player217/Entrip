@@ -1,0 +1,177 @@
+name: CI
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      
+      - name: Check work file placeholders
+        run: |
+          set -e
+          missing=$(grep -R --line-number "<PLACEHOLDER>" docs/*.md || true)
+          for file in $missing; do
+            echo "⛔ PLACEHOLDER 남음 → $file"
+          done
+          if [ -n "$missing" ]; then exit 1; fi
+          echo "✅ 작업 파일 검증 통과"
+          
+      - name: Check work file format
+        run: |
+          echo "🔍 작업 파일 형식 검증..."
+          
+          # SINGLE_FILE_V1 템플릿 파일 존재 확인
+          if [ ! -f "docs/_templates/SINGLE_FILE_V1.md" ]; then
+            echo "❌ SINGLE_FILE_V1 템플릿 파일이 없습니다: docs/_templates/SINGLE_FILE_V1.md"
+            exit 1
+          fi
+          
+          # 작업 파일들의 템플릿 버전 확인
+          work_files=$(find docs/ -name "*_WORK.md" 2>/dev/null || true)
+          
+          # SINGLE_FILE_V1 템플릿 버전 체크
+          if [ -n "$work_files" ]; then
+            for file in $work_files; do
+              if [ -f "$file" ] && ! grep -q "TEMPLATE_VERSION: SINGLE_FILE_V1" "$file"; then
+                echo "❌ $file 파일에 SINGLE_FILE_V1 템플릿 버전이 없습니다."
+                exit 1
+              fi
+            done
+          fi
+          
+          if [ -n "$work_files" ]; then
+            echo "발견된 작업 파일들:"
+            echo "$work_files"
+            
+            for file in $work_files; do
+              if [ -f "$file" ]; then
+                # 필수 섹션 체크
+                for section in "## 1. 기존 지시" "## 2. 계획" "## 3. 작업 내용" "## 4. 핵심 코드 스냅샷" "## 5. 기타" "## 6. 다음 단계"; do
+                  if ! grep -q "$section" "$file"; then
+                    echo "❌ $file 파일에 '$section' 섹션이 없습니다."
+                    exit 1
+                  fi
+                done
+              fi
+            done
+          fi
+          
+          echo "✅ 작업 파일 형식 검증 통과"
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm test:coverage
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20  # Increased for Tailwind build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      
+      - name: Build with metrics
+        run: |
+          echo "::group::Build Metrics"
+          START_TIME=$(date +%s)
+          
+          # Build all packages
+          pnpm build
+          
+          END_TIME=$(date +%s)
+          BUILD_TIME=$((END_TIME - START_TIME))
+          
+          echo "Total build time: ${BUILD_TIME}s"
+          echo "build_time=${BUILD_TIME}" >> $GITHUB_OUTPUT
+          
+          # Check Tailwind build time from logs
+          if [ -f "apps/web/.next/trace" ]; then
+            echo "Next.js build trace available"
+          fi
+          echo "::endgroup::"
+        id: build-metrics
+      
+      - name: Report metrics
+        if: always()
+        run: |
+          echo "### Build Metrics 📊" >> $GITHUB_STEP_SUMMARY
+          echo "- Total build time: ${{ steps.build-metrics.outputs.build_time }}s" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+      
+  e2e:
+    name: E2E Tests
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm playwright install --with-deps
+      - run: pnpm playwright test --reporter=list
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+      
+  smoke-test:
+    name: Smoke Test
+    needs: [build, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: ./scripts/quick-test.sh

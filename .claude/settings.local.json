@@ -111,7 +111,10 @@
       "Bash(git push:*)",
       "Bash(git config:*)",
       "Bash(git rm:*)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git branch:*)",
+      "Bash(git --version)",
+      "Bash(gh:*)"
     ],
     "deny": []
   },

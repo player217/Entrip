@@ -11,6 +11,57 @@
 
 # Entrip Project Structure Reference
 
+## 🚀 Git 푸시 가이드
+
+### 원격 저장소에 푸시할 때
+원격 저장소에 푸시할 때, 먼저 HTTP 버퍼 크기를 늘리고 조금씩 나누어 푸시할 것. 에러 시 작은 변경사항만 포함하는 새 커밋을 만들어 푸시할 것.
+
+```bash
+# Git HTTP 설정 (글로벌 적용)
+# HTTP 버퍼 크기: 500MB로 증가
+git config --global http.postBuffer 524288000
+
+# 느린 연결 허용: 1KB/s
+git config --global http.lowSpeedLimit 1000
+
+# 타임아웃: 10분
+git config --global http.lowSpeedTime 600
+
+# 작은 커밋으로 나누어 푸시
+git push origin main
+```
+
+### GitHub CLI 사용
+GitHub CLI 설치했어. gh 명령어 사용 가능해. 이걸로 GitHub 처리해줘.
+(https://cli.github.com 에서 GitHub CLI 설치하시면 원활히 GitHub 작동됩니다. 영상에서는 빠져있지만, 이 설정 추천드립니다.)
+
+```bash
+# GitHub CLI로 PR 생성, 이슈 관리 등 가능
+gh pr create
+gh issue list
+gh repo view
+```
+
+### Git 저장소 관리 규칙
+- **.git이 존재하지 않으면 Git 저장소 초기화할 것** (`git init`)
+- **파일 생성 또는 수정 시**: 파일 생성 또는 수정한 후, `git add`와 `commit` 수행할 것
+- **파일 삭제 시**: `git rm` 및 `commit` 사용할 것
+
+```bash
+# Git 저장소 확인 및 초기화
+if [ ! -d ".git" ]; then
+  git init
+fi
+
+# 파일 작업 후 커밋
+git add .
+git commit -m "설명적인 커밋 메시지"
+
+# 파일 삭제 시
+git rm <파일명>
+git commit -m "Remove <파일명>"
+```
+
 ## ⚠️ CRITICAL: File Duplicate Prevention
 
 **NEVER DELETE FILES WITHOUT COMPLETE ANALYSIS**
