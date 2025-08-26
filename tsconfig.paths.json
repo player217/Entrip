@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@entrip/shared": ["packages/shared/src/index.ts"],
+      "@entrip/shared/*": ["packages/shared/src/*"],
+      "@entrip/ui": ["packages/ui/src/index.ts"],
+      "@entrip/ui/*": ["packages/ui/src/*"],
+      "@entrip/design-tokens": ["packages/design-tokens/src/index.ts"],
+      "@entrip/api": ["packages/api/src/index.ts"],
+      "@entrip/api/*": ["packages/api/src/*"],
+      "@/*": ["apps/web/src/*"]
+    }
+  }
+}

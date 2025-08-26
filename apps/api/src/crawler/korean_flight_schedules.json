@@ -1,0 +1,1986 @@
+{
+  "PUS": {
+    "airport": "PUS",
+    "airportName": "김해국제공항",
+    "crawledAt": "2025-07-29T08:39:17.551714",
+    "totalFlights": 55,
+    "flights": [
+      {
+        "airline": "에어부산",
+        "flightNo": "BX164",
+        "destination": "NRT",
+        "departureTime": "07:35",
+        "arrivalTime": "10:05",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX112",
+        "destination": "NRT",
+        "departureTime": "14:25",
+        "arrivalTime": "16:55",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "진에어",
+        "flightNo": "LJ201",
+        "destination": "NRT",
+        "departureTime": "08:20",
+        "arrivalTime": "10:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "제주항공",
+        "flightNo": "7C1151",
+        "destination": "NRT",
+        "departureTime": "10:30",
+        "arrivalTime": "13:00",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "이스타항공",
+        "flightNo": "ZE605",
+        "destination": "NRT",
+        "departureTime": "08:50",
+        "arrivalTime": "11:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "티웨이항공",
+        "flightNo": "TW251",
+        "destination": "NRT",
+        "departureTime": "13:40",
+        "arrivalTime": "16:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX122",
+        "destination": "KIX",
+        "departureTime": "07:00",
+        "arrivalTime": "08:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX124",
+        "destination": "KIX",
+        "departureTime": "13:15",
+        "arrivalTime": "15:05",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "제주항공",
+        "flightNo": "7C1301",
+        "destination": "KIX",
+        "departureTime": "08:45",
+        "arrivalTime": "10:35",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "진에어",
+        "flightNo": "LJ241",
+        "destination": "KIX",
+        "departureTime": "11:20",
+        "arrivalTime": "13:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "티웨이항공",
+        "flightNo": "TW301",
+        "destination": "KIX",
+        "departureTime": "15:30",
+        "arrivalTime": "17:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "이스타항공",
+        "flightNo": "ZE641",
+        "destination": "KIX",
+        "departureTime": "09:40",
+        "arrivalTime": "11:30",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE2711",
+        "destination": "HND",
+        "departureTime": "09:00",
+        "arrivalTime": "11:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "일본항공",
+        "flightNo": "JL958",
+        "destination": "HND",
+        "departureTime": "13:45",
+        "arrivalTime": "16:05",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX186",
+        "destination": "NGO",
+        "departureTime": "08:30",
+        "arrivalTime": "10:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "티웨이항공",
+        "flightNo": "TW281",
+        "destination": "FUK",
+        "departureTime": "07:55",
+        "arrivalTime": "09:15",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "진에어",
+        "flightNo": "LJ261",
+        "destination": "FUK",
+        "departureTime": "14:20",
+        "arrivalTime": "15:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "중국남방항공",
+        "flightNo": "CZ3072",
+        "destination": "PEK",
+        "departureTime": "09:30",
+        "arrivalTime": "12:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX316",
+        "destination": "PVG",
+        "departureTime": "10:15",
+        "arrivalTime": "11:45",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "중국동방항공",
+        "flightNo": "MU5054",
+        "destination": "PVG",
+        "departureTime": "15:40",
+        "arrivalTime": "17:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "춘추항공",
+        "flightNo": "9C8854",
+        "destination": "PVG",
+        "departureTime": "18:20",
+        "arrivalTime": "19:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "심천항공",
+        "flightNo": "ZH9084",
+        "destination": "SZX",
+        "departureTime": "11:30",
+        "arrivalTime": "14:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "중국남방항공",
+        "flightNo": "CZ3048",
+        "destination": "CAN",
+        "departureTime": "13:50",
+        "arrivalTime": "16:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX746",
+        "destination": "BKK",
+        "departureTime": "00:50",
+        "arrivalTime": "04:45",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "티웨이항공",
+        "flightNo": "TW101",
+        "destination": "BKK",
+        "departureTime": "19:30",
+        "arrivalTime": "23:25",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "타이항공",
+        "flightNo": "TG675",
+        "destination": "BKK",
+        "departureTime": "12:10",
+        "arrivalTime": "16:05",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "베트남항공",
+        "flightNo": "VN423",
+        "destination": "SGN",
+        "departureTime": "10:40",
+        "arrivalTime": "14:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "비엣젯",
+        "flightNo": "VJ963",
+        "destination": "SGN",
+        "departureTime": "22:40",
+        "arrivalTime": "02:10+1",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX736",
+        "destination": "DAD",
+        "departureTime": "08:20",
+        "arrivalTime": "11:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "진에어",
+        "flightNo": "LJ063",
+        "destination": "DAD",
+        "departureTime": "20:15",
+        "arrivalTime": "23:45",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "필리핀항공",
+        "flightNo": "PR433",
+        "destination": "MNL",
+        "departureTime": "07:30",
+        "arrivalTime": "11:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX716",
+        "destination": "CEB",
+        "departureTime": "01:20",
+        "arrivalTime": "05:30",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에바항공",
+        "flightNo": "BR169",
+        "destination": "TPE",
+        "departureTime": "12:00",
+        "arrivalTime": "13:35",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "티웨이항공",
+        "flightNo": "TW661",
+        "destination": "TPE",
+        "departureTime": "16:20",
+        "arrivalTime": "17:55",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX392",
+        "destination": "KHH",
+        "departureTime": "09:50",
+        "arrivalTime": "11:30",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "홍콩익스프레스",
+        "flightNo": "UO825",
+        "destination": "HKG",
+        "departureTime": "11:00",
+        "arrivalTime": "13:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX346",
+        "destination": "HKG",
+        "departureTime": "14:30",
+        "arrivalTime": "17:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX796",
+        "destination": "ULN",
+        "departureTime": "08:40",
+        "arrivalTime": "13:10",
+        "days": {
+          "mon": true,
+          "tue": false,
+          "wed": false,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX176",
+        "destination": "VTE",
+        "departureTime": "19:00",
+        "arrivalTime": "22:20",
+        "days": {
+          "mon": false,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": false,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1401",
+        "destination": "CJU",
+        "departureTime": "07:00",
+        "arrivalTime": "08:00",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1403",
+        "destination": "CJU",
+        "departureTime": "08:20",
+        "arrivalTime": "09:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ8111",
+        "destination": "CJU",
+        "departureTime": "07:30",
+        "arrivalTime": "08:30",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ8113",
+        "destination": "CJU",
+        "departureTime": "09:00",
+        "arrivalTime": "10:00",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "제주항공",
+        "flightNo": "7C511",
+        "destination": "CJU",
+        "departureTime": "06:50",
+        "arrivalTime": "07:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "진에어",
+        "flightNo": "LJ561",
+        "destination": "CJU",
+        "departureTime": "10:30",
+        "arrivalTime": "11:30",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX8101",
+        "destination": "CJU",
+        "departureTime": "11:45",
+        "arrivalTime": "12:45",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "티웨이항공",
+        "flightNo": "TW801",
+        "destination": "CJU",
+        "departureTime": "13:00",
+        "arrivalTime": "14:00",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1621",
+        "destination": "GMP",
+        "departureTime": "07:40",
+        "arrivalTime": "08:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ8831",
+        "destination": "GMP",
+        "departureTime": "08:10",
+        "arrivalTime": "09:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어서울",
+        "flightNo": "RS911",
+        "destination": "ICN",
+        "departureTime": "09:20",
+        "arrivalTime": "10:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "진에어",
+        "flightNo": "LJ551",
+        "destination": "CEB",
+        "departureTime": "08:10",
+        "arrivalTime": "12:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "진에어",
+        "flightNo": "LJ553",
+        "destination": "CEB",
+        "departureTime": "20:40",
+        "arrivalTime": "00:50+1",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "제주항공",
+        "flightNo": "7C2405",
+        "destination": "CEB",
+        "departureTime": "07:30",
+        "arrivalTime": "11:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "제주항공",
+        "flightNo": "7C2407",
+        "destination": "CEB",
+        "departureTime": "19:55",
+        "arrivalTime": "00:05+1",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX712",
+        "destination": "CEB",
+        "departureTime": "21:10",
+        "arrivalTime": "01:20+1",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      }
+    ]
+  },
+  "ICN": {
+    "airport": "ICN",
+    "airportName": "인천국제공항",
+    "crawledAt": "2025-07-29T08:39:17.551735",
+    "totalFlights": 42,
+    "flights": [
+      {
+        "airline": "대한항공",
+        "flightNo": "KE001",
+        "destination": "LAX",
+        "departureTime": "10:00",
+        "arrivalTime": "05:10",
+        "days": {
+          "mon": false,
+          "tue": false,
+          "wed": false,
+          "thu": true,
+          "fri": false,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE011",
+        "destination": "LAX",
+        "departureTime": "13:00",
+        "arrivalTime": "08:10",
+        "days": {
+          "mon": false,
+          "tue": false,
+          "wed": true,
+          "thu": false,
+          "fri": false,
+          "sat": false,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ202",
+        "destination": "LAX",
+        "departureTime": "12:20",
+        "arrivalTime": "07:00",
+        "days": {
+          "mon": true,
+          "tue": false,
+          "wed": false,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "유나이티드항공",
+        "flightNo": "UA892",
+        "destination": "SFO",
+        "departureTime": "11:05",
+        "arrivalTime": "05:50",
+        "days": {
+          "mon": false,
+          "tue": false,
+          "wed": true,
+          "thu": false,
+          "fri": false,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE023",
+        "destination": "SFO",
+        "departureTime": "14:30",
+        "arrivalTime": "09:15",
+        "days": {
+          "mon": false,
+          "tue": false,
+          "wed": true,
+          "thu": true,
+          "fri": false,
+          "sat": true,
+          "sun": false
+        }
+      },
+      {
+        "airline": "델타항공",
+        "flightNo": "DL158",
+        "destination": "SEA",
+        "departureTime": "17:45",
+        "arrivalTime": "11:55",
+        "days": {
+          "mon": true,
+          "tue": false,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": false
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE081",
+        "destination": "JFK",
+        "departureTime": "09:50",
+        "arrivalTime": "10:30",
+        "days": {
+          "mon": false,
+          "tue": false,
+          "wed": true,
+          "thu": false,
+          "fri": false,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ222",
+        "destination": "JFK",
+        "departureTime": "13:40",
+        "arrivalTime": "14:20",
+        "days": {
+          "mon": true,
+          "tue": false,
+          "wed": false,
+          "thu": true,
+          "fri": true,
+          "sat": false,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE901",
+        "destination": "LHR",
+        "departureTime": "11:45",
+        "arrivalTime": "15:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": false,
+          "sat": true,
+          "sun": false
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ521",
+        "destination": "LHR",
+        "departureTime": "12:50",
+        "arrivalTime": "16:45",
+        "days": {
+          "mon": true,
+          "tue": false,
+          "wed": false,
+          "thu": true,
+          "fri": false,
+          "sat": false,
+          "sun": false
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE909",
+        "destination": "CDG",
+        "departureTime": "13:35",
+        "arrivalTime": "18:30",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": false,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어프랑스",
+        "flightNo": "AF267",
+        "destination": "CDG",
+        "departureTime": "09:00",
+        "arrivalTime": "13:55",
+        "days": {
+          "mon": false,
+          "tue": false,
+          "wed": false,
+          "thu": false,
+          "fri": true,
+          "sat": false,
+          "sun": false
+        }
+      },
+      {
+        "airline": "루프트한자",
+        "flightNo": "LH713",
+        "destination": "FRA",
+        "departureTime": "11:00",
+        "arrivalTime": "15:30",
+        "days": {
+          "mon": false,
+          "tue": true,
+          "wed": false,
+          "thu": true,
+          "fri": true,
+          "sat": false,
+          "sun": false
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ541",
+        "destination": "FRA",
+        "departureTime": "19:10",
+        "arrivalTime": "23:40",
+        "days": {
+          "mon": false,
+          "tue": true,
+          "wed": true,
+          "thu": false,
+          "fri": true,
+          "sat": true,
+          "sun": false
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE703",
+        "destination": "NRT",
+        "departureTime": "09:25",
+        "arrivalTime": "11:45",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE705",
+        "destination": "NRT",
+        "departureTime": "14:05",
+        "arrivalTime": "16:25",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ102",
+        "destination": "NRT",
+        "departureTime": "09:00",
+        "arrivalTime": "11:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "일본항공",
+        "flightNo": "JL952",
+        "destination": "NRT",
+        "departureTime": "10:00",
+        "arrivalTime": "12:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "전일본공수",
+        "flightNo": "NH862",
+        "destination": "NRT",
+        "departureTime": "17:30",
+        "arrivalTime": "19:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE721",
+        "destination": "KIX",
+        "departureTime": "08:30",
+        "arrivalTime": "10:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ112",
+        "destination": "KIX",
+        "departureTime": "08:40",
+        "arrivalTime": "10:30",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "피치항공",
+        "flightNo": "MM802",
+        "destination": "KIX",
+        "departureTime": "20:25",
+        "arrivalTime": "22:15",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "중국국제항공",
+        "flightNo": "CA124",
+        "destination": "PEK",
+        "departureTime": "08:00",
+        "arrivalTime": "09:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE851",
+        "destination": "PEK",
+        "departureTime": "09:30",
+        "arrivalTime": "10:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ331",
+        "destination": "PEK",
+        "departureTime": "10:10",
+        "arrivalTime": "11:30",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "중국동방항공",
+        "flightNo": "MU272",
+        "destination": "PVG",
+        "departureTime": "08:55",
+        "arrivalTime": "10:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE893",
+        "destination": "PVG",
+        "departureTime": "13:00",
+        "arrivalTime": "14:15",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "중국남방항공",
+        "flightNo": "CZ370",
+        "destination": "CAN",
+        "departureTime": "14:25",
+        "arrivalTime": "17:30",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE651",
+        "destination": "BKK",
+        "departureTime": "18:05",
+        "arrivalTime": "21:45",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ741",
+        "destination": "BKK",
+        "departureTime": "19:30",
+        "arrivalTime": "23:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "타이항공",
+        "flightNo": "TG657",
+        "destination": "BKK",
+        "departureTime": "10:20",
+        "arrivalTime": "14:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "싱가포르항공",
+        "flightNo": "SQ601",
+        "destination": "SIN",
+        "departureTime": "09:00",
+        "arrivalTime": "14:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE643",
+        "destination": "SIN",
+        "departureTime": "23:55",
+        "arrivalTime": "05:35+1",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "베트남항공",
+        "flightNo": "VN417",
+        "destination": "HAN",
+        "departureTime": "10:05",
+        "arrivalTime": "13:00",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE679",
+        "destination": "HAN",
+        "departureTime": "19:25",
+        "arrivalTime": "22:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1261",
+        "destination": "CJU",
+        "departureTime": "07:00",
+        "arrivalTime": "08:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1263",
+        "destination": "CJU",
+        "departureTime": "08:00",
+        "arrivalTime": "09:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ8921",
+        "destination": "CJU",
+        "departureTime": "07:30",
+        "arrivalTime": "08:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "제주항공",
+        "flightNo": "7C111",
+        "destination": "CJU",
+        "departureTime": "06:30",
+        "arrivalTime": "07:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "진에어",
+        "flightNo": "LJ301",
+        "destination": "CJU",
+        "departureTime": "09:00",
+        "arrivalTime": "10:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1951",
+        "destination": "PUS",
+        "departureTime": "07:30",
+        "arrivalTime": "08:30",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ8801",
+        "destination": "PUS",
+        "departureTime": "08:20",
+        "arrivalTime": "09:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      }
+    ]
+  },
+  "GMP": {
+    "airport": "GMP",
+    "airportName": "김포국제공항",
+    "crawledAt": "2025-07-29T08:39:17.551736",
+    "totalFlights": 13,
+    "flights": [
+      {
+        "airline": "대한항공",
+        "flightNo": "KE2741",
+        "destination": "KIX",
+        "departureTime": "08:30",
+        "arrivalTime": "10:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "전일본공수",
+        "flightNo": "NH868",
+        "destination": "HND",
+        "departureTime": "08:00",
+        "arrivalTime": "10:15",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "일본항공",
+        "flightNo": "JL092",
+        "destination": "HND",
+        "departureTime": "09:20",
+        "arrivalTime": "11:35",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE2711",
+        "destination": "HND",
+        "departureTime": "19:40",
+        "arrivalTime": "21:55",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "중국동방항공",
+        "flightNo": "MU5042",
+        "destination": "SHA",
+        "departureTime": "12:55",
+        "arrivalTime": "14:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE2811",
+        "destination": "SHA",
+        "departureTime": "09:10",
+        "arrivalTime": "10:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "중국국제항공",
+        "flightNo": "CA140",
+        "destination": "PEK",
+        "departureTime": "14:05",
+        "arrivalTime": "15:35",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1201",
+        "destination": "CJU",
+        "departureTime": "07:00",
+        "arrivalTime": "08:10",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1203",
+        "destination": "CJU",
+        "departureTime": "07:30",
+        "arrivalTime": "08:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ8901",
+        "destination": "CJU",
+        "departureTime": "07:05",
+        "arrivalTime": "08:15",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "제주항공",
+        "flightNo": "7C101",
+        "destination": "CJU",
+        "departureTime": "06:50",
+        "arrivalTime": "08:00",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1401",
+        "destination": "PUS",
+        "departureTime": "07:20",
+        "arrivalTime": "08:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ8701",
+        "destination": "PUS",
+        "departureTime": "08:00",
+        "arrivalTime": "09:00",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      }
+    ]
+  },
+  "CJU": {
+    "airport": "CJU",
+    "airportName": "제주국제공항",
+    "crawledAt": "2025-07-29T08:39:17.551737",
+    "totalFlights": 12,
+    "flights": [
+      {
+        "airline": "티웨이항공",
+        "flightNo": "TW301",
+        "destination": "KIX",
+        "departureTime": "10:30",
+        "arrivalTime": "12:30",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "진에어",
+        "flightNo": "LJ711",
+        "destination": "NRT",
+        "departureTime": "11:00",
+        "arrivalTime": "13:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1202",
+        "destination": "GMP",
+        "departureTime": "08:50",
+        "arrivalTime": "10:00",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ8902",
+        "destination": "GMP",
+        "departureTime": "08:55",
+        "arrivalTime": "10:05",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "제주항공",
+        "flightNo": "7C102",
+        "destination": "GMP",
+        "departureTime": "09:30",
+        "arrivalTime": "10:40",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1262",
+        "destination": "ICN",
+        "departureTime": "09:10",
+        "arrivalTime": "10:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ8922",
+        "destination": "ICN",
+        "departureTime": "09:40",
+        "arrivalTime": "10:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1402",
+        "destination": "PUS",
+        "departureTime": "10:30",
+        "arrivalTime": "11:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ8112",
+        "destination": "PUS",
+        "departureTime": "10:00",
+        "arrivalTime": "10:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "에어부산",
+        "flightNo": "BX8102",
+        "destination": "PUS",
+        "departureTime": "13:00",
+        "arrivalTime": "13:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "대한항공",
+        "flightNo": "KE1902",
+        "destination": "TAE",
+        "departureTime": "11:30",
+        "arrivalTime": "12:20",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      },
+      {
+        "airline": "아시아나항공",
+        "flightNo": "OZ8122",
+        "destination": "TAE",
+        "departureTime": "12:00",
+        "arrivalTime": "12:50",
+        "days": {
+          "mon": true,
+          "tue": true,
+          "wed": true,
+          "thu": true,
+          "fri": true,
+          "sat": true,
+          "sun": true
+        }
+      }
+    ]
+  }
+}

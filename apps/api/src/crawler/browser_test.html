@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API 테스트</title>
+</head>
+<body>
+    <h1>Entrip API 테스트</h1>
+    <button onclick="testAPI()">API 테스트</button>
+    <pre id="result"></pre>
+    
+    <script>
+        async function testAPI() {
+            const resultEl = document.getElementById('result');
+            
+            try {
+                // 8001 포트로 직접 호출
+                const response = await fetch('http://localhost:8001/api/schedule/PUS');
+                const data = await response.json();
+                
+                resultEl.textContent = `API 응답 성공!\n`;
+                resultEl.textContent += `항공편 수: ${data.totalFlights}개\n`;
+                resultEl.textContent += `크롤링 방법: ${data.method}\n\n`;
+                
+                // 도착지별 집계
+                const destinations = {};
+                data.flights.forEach(flight => {
+                    const dest = flight.destination;
+                    destinations[dest] = (destinations[dest] || 0) + 1;
+                });
+                
+                resultEl.textContent += '도착지별 항공편:\n';
+                Object.entries(destinations).forEach(([dest, count]) => {
+                    resultEl.textContent += `- ${dest}: ${count}편\n`;
+                });
+                
+                // NRT 항공편 상세
+                const nrtFlights = data.flights.filter(f => f.destination === 'NRT');
+                resultEl.textContent += `\nNRT 항공편 (${nrtFlights.length}편):\n`;
+                nrtFlights.forEach(flight => {
+                    resultEl.textContent += `- ${flight.airline} ${flight.flightNo} (${flight.departureTime})\n`;
+                });
+                
+            } catch (error) {
+                resultEl.textContent = `오류: ${error.message}`;
+            }
+        }
+        
+        // 페이지 로드시 자동 실행
+        window.onload = () => {
+            testAPI();
+        };
+    </script>
+</body>
+</html>

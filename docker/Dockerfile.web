@@ -1,0 +1,82 @@
+# Build stage
+FROM node:18-alpine AS builder
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+COPY pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/design-tokens/package.json ./packages/design-tokens/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY apps/web ./apps/web
+COPY packages/ui ./packages/ui
+COPY packages/shared ./packages/shared
+COPY packages/design-tokens ./packages/design-tokens
+COPY tsconfig.base.json ./
+COPY apps/web/tsconfig.json ./apps/web/
+COPY packages/ui/tsconfig.json ./packages/ui/
+COPY packages/shared/tsconfig.json ./packages/shared/
+COPY packages/design-tokens/tsconfig.json ./packages/design-tokens/
+
+# Build design tokens first
+RUN pnpm --filter @entrip/design-tokens build
+
+# Build shared and UI packages
+RUN pnpm --filter @entrip/shared build
+RUN pnpm --filter @entrip/ui build
+
+# Build Next.js app
+WORKDIR /app/apps/web
+RUN pnpm build
+
+# Production stage
+FROM node:18-alpine
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
+WORKDIR /app
+
+# Copy package files
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+
+# Copy built application
+COPY --from=builder /app/apps/web/.next ./apps/web/.next
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/web/package.json ./apps/web/
+COPY --from=builder /app/apps/web/next.config.js ./apps/web/
+
+# Copy dependencies
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=builder /app/packages ./packages
+
+# Expose port
+EXPOSE 3000
+
+# Set environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Set working directory to web app
+WORKDIR /app/apps/web
+
+# Start command
+CMD ["pnpm", "start"]

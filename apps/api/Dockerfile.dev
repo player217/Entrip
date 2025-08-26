@@ -1,0 +1,44 @@
+FROM node:20-slim
+
+# 필수 빌드 툴 설치
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# pnpm 설치
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# workspace 설정 및 lockfile 복사
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json .npmrc ./
+
+# 모든 package.json 복사 (의존성 설치를 위해)
+COPY packages/design-tokens/package.json ./packages/design-tokens/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/ui/package.json ./packages/ui/
+COPY apps/api/package.json ./apps/api/
+
+# 전체 의존성 설치 (postinstall 무시)
+RUN pnpm install --no-frozen-lockfile --ignore-scripts
+
+# Prisma schema 복사 및 Client 생성
+COPY apps/api/prisma ./apps/api/prisma
+RUN pnpm --filter @entrip/api-legacy exec prisma generate
+
+# 전체 소스 코드 복사
+COPY . .
+
+# 패키지 빌드
+RUN pnpm --filter @entrip/design-tokens build || true
+RUN pnpm --filter @entrip/shared build || true
+
+EXPOSE 4000
+
+WORKDIR /app/apps/api
+
+# ts-node-dev로 실행
+CMD ["pnpm", "exec", "ts-node-dev", "--respawn", "--transpile-only", "src/index.ts"]

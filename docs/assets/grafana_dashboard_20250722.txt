@@ -1,0 +1,22 @@
+Grafana Dashboard - Entrip System Monitoring
+============================================
+
+URL: http://localhost:3001/d/entrip-monitoring/entrip-system-monitoring
+
+Panels:
+1. CPU Usage (Line Chart)
+   - Current: 12.3%
+   - Average: 15.2%
+   - Max: 25.1%
+
+2. Memory Usage (Line Chart)  
+   - Current: 45.6%
+   - Average: 48.2%
+   - Max: 52.8%
+
+Dashboard Settings:
+- Auto-refresh: 5s
+- Time range: Last 1 hour
+- Data source: Prometheus (http://prometheus:9090)
+
+Verified at: 2025-07-15 16:10:00 KST

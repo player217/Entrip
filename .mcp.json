@@ -1,0 +1,63 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\Users\\PC\\Documents\\project\\Entrip"
+      ]
+    },
+    "git": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "python",
+        "-m",
+        "mcp_server_git",
+        "--repository",
+        "C:\\Users\\PC\\Documents\\project\\Entrip"
+      ]
+    },
+    "terminal": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@dillip285/mcp-terminal"
+      ]
+    },
+    "googleSearch": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "g-search-mcp"
+      ]
+    },
+    "text-editor": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "mcp-server-text-editor"
+      ]
+    },
+    "edit-file-lines": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "node",
+        "C:\\mcp-edit-file-lines\\build\\index.js",
+        "C:\\Users\\PC\\Documents\\project\\Entrip"
+      ],
+      "env": {
+        "MCP_EDIT_STATE_TTL": "300000"
+      }
+    }
+  }
+}

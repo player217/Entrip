@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  teamName    String        @db.VarChar(100)
+  type        BookingType
+  origin      String        @db.VarChar(60)
+  destination String        @db.VarChar(60)
+  startDate   DateTime
+  endDate     DateTime
+  totalPax    Int           @default(1)
+  coordinator String        @db.VarChar(60)
+  revenue     Decimal?      @db.Numeric(14, 2)
+  status      BookingStatus @default(pending)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+}
+
+enum BookingType {
+  incentive
+  golf
+  honeymoon
+  airtel
+  etc
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  done
+  cancelled
+}
+EOF < /dev/null

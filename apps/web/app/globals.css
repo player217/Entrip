@@ -1,0 +1,203 @@
+@import '@entrip/design-tokens/build/variables.css';
+@import '../src/styles/calendar.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global font settings */
+@layer base {
+  html {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    font-size: 20px; /* 125% 스케일 (16px * 1.25) */
+    -webkit-text-size-adjust: 100%; /* 모바일 브라우저 자동 크기 조정 방지 */
+    text-size-adjust: 100%;
+    zoom: 1.25; /* 전체 UI 125% 스케일 */
+  }
+  
+  body {
+    @apply text-base leading-normal;
+    font-size: 1rem; /* html 기준 20px */
+  }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+  
+  .bg-flow {
+    background-color: var(--color-canvas-base);
+    background-image: radial-gradient(circle at 1px 1px, var(--color-canvas-grid) 1px, transparent 1px);
+    background-size: calc(var(--spacing-dot)*1px) calc(var(--spacing-dot)*1px);
+  }
+  
+  /* Modal animations */
+  .animate-in {
+    animation-duration: 0.3s;
+    animation-fill-mode: both;
+  }
+  
+  .fade-in {
+    animation-name: fade-in;
+  }
+  
+  .slide-in-from-bottom-4 {
+    animation-name: slide-in-from-bottom-4;
+  }
+  
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slide-in-from-bottom-4 {
+    from {
+      transform: translateY(1rem);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Custom scrollbar styles */
+@layer base {
+  /* Webkit browsers */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.gray.400') theme('colors.gray.100');
+  }
+}
+
+/* Focus styles */
+@layer base {
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--tw-ring-offset-color), 0 0 0 calc(2px + 2px) var(--color-brand-500);
+  }
+}
+
+
+/* 캘린더 셀 호버 스타일 */
+@layer components {
+  .calendar-cell-hover {
+    @apply ring-2 ring-orange-400/30;
+  }
+}
+
+/* Remove scrollbar for tab container */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Date and Time input styling */
+@layer base {
+  /* Style the date/time input to look better */
+  input[type="date"],
+  input[type="time"] {
+    position: relative;
+  }
+  
+  /* Hide native calendar/clock icons but keep functionality */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-time-picker-indicator {
+    position: absolute;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  
+  /* Better placeholder for time input */
+  input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+    color: inherit;
+  }
+  
+  input[type="time"]::-webkit-datetime-edit-hour-field:focus,
+  input[type="time"]::-webkit-datetime-edit-minute-field:focus {
+    background-color: transparent;
+    color: inherit;
+  }
+}
+
+/* Radix UI Select animations */
+@keyframes slideDownAndFade {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideLeftAndFade {
+  from {
+    opacity: 0;
+    transform: translateX(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideUpAndFade {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideRightAndFade {
+  from {
+    opacity: 0;
+    transform: translateX(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

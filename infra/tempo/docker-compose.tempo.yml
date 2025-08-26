@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  tempo:
+    image: grafana/tempo:2.4.1
+    container_name: entrip-tempo
+    command: [ "-config.file=/etc/tempo/tempo.yaml" ]
+    volumes:
+      - ./tempo.yaml:/etc/tempo/tempo.yaml
+      - tempo-data:/tmp/tempo
+    ports:
+      - "3200:3200"   # tempo query frontend
+      - "4317:4317"   # otlp grpc receiver
+      - "4318:4318"   # otlp http receiver
+      - "9411:9411"   # zipkin receiver
+      - "14268:14268" # jaeger ingest
+    networks:
+      - entrip-observability
+    restart: unless-stopped
+    environment:
+      - TEMPO_LOG_LEVEL=info
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3200/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional: Tempo Query for better search capabilities
+  tempo-query:
+    image: grafana/tempo-query:2.4.1
+    container_name: entrip-tempo-query
+    command: ["--grpc-storage-plugin.configuration-file=/etc/tempo-query.yaml"]
+    volumes:
+      - ./tempo-query.yaml:/etc/tempo-query.yaml
+    ports:
+      - "16686:16686"
+    networks:
+      - entrip-observability
+    restart: unless-stopped
+    depends_on:
+      tempo:
+        condition: service_healthy
+
+volumes:
+  tempo-data:
+    driver: local
+
+networks:
+  entrip-observability:
+    external: true

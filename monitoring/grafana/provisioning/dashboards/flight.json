@@ -1,0 +1,190 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "flight-api-monitoring-v1",
+    "title": "Flight API Rate & Latency",
+    "version": 1,
+    "tags": ["entrip", "flight", "monitoring", "v1", "auto-generated"],
+    "timezone": "Asia/Seoul",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Flight API Request Rate (per second)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(flight_requests_total[1m])",
+            "legendFormat": "{{endpoint}} - {{method}} ({{status}})",
+            "refId": "A"
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "yAxes": [
+          {
+            "label": "Requests/sec",
+            "show": true
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "alert": {
+          "name": "High Request Rate Alert",
+          "message": "Flight API request rate is above threshold",
+          "frequency": "10s",
+          "conditions": [
+            {
+              "query": {
+                "queryType": "",
+                "refId": "A"
+              },
+              "reducer": {
+                "type": "avg",
+                "params": []
+              },
+              "evaluator": {
+                "params": [10],
+                "type": "gt"
+              }
+            }
+          ],
+          "executionErrorState": "alerting",
+          "noDataState": "no_data",
+          "for": "30s"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Flight API Response Time (95th & 99th percentile)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(flight_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p95 - {{endpoint}} - {{method}}",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(flight_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p99 - {{endpoint}} - {{method}}",
+            "refId": "C"
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "yAxes": [
+          {
+            "label": "Response Time (seconds)",
+            "show": true
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "alert": {
+          "name": "High Latency Alert",
+          "message": "Flight API response time is above 3 seconds",
+          "frequency": "10s",
+          "conditions": [
+            {
+              "query": {
+                "queryType": "",
+                "refId": "B"
+              },
+              "reducer": {
+                "type": "avg",
+                "params": []
+              },
+              "evaluator": {
+                "params": [3],
+                "type": "gt"
+              }
+            }
+          ],
+          "executionErrorState": "alerting",
+          "noDataState": "no_data",
+          "for": "30s"
+        }
+      },
+      {
+        "id": 3,
+        "title": "Cache Hit Rate & External API Health",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(flight_cache_hits_total[5m]) / (rate(flight_cache_hits_total[5m]) + rate(flight_cache_misses_total[5m]))",
+            "legendFormat": "Cache Hit Rate - {{endpoint}}",
+            "refId": "C"
+          },
+          {
+            "expr": "flight_api_availability",
+            "legendFormat": "API Health - {{api_name}}",
+            "refId": "D"
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "yAxes": [
+          {
+            "label": "Rate / Status",
+            "show": true,
+            "min": 0,
+            "max": 1
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 8
+        },
+        "alert": {
+          "name": "Low Cache Hit Rate Alert",
+          "message": "Cache hit rate dropped below 80%",
+          "frequency": "10s",
+          "conditions": [
+            {
+              "query": {
+                "queryType": "",
+                "refId": "C"
+              },
+              "reducer": {
+                "type": "avg",
+                "params": []
+              },
+              "evaluator": {
+                "params": [0.8],
+                "type": "lt"
+              }
+            }
+          ],
+          "executionErrorState": "alerting",
+          "noDataState": "no_data",
+          "for": "30s"
+        }
+      }
+    ],
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": []
+    },
+    "schemaVersion": 16,
+    "version": 1
+  }
+}

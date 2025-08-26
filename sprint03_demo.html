@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrip Sprint 03 - 구현 결과 데모</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.7.2/dist/Recharts.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* Tailwind Config with Safelist */
+        .bg-warning { background-color: #f59e0b; }
+        .bg-success { background-color: #22c55e; }
+        .bg-danger { background-color: #ef4444; }
+        .bg-info { background-color: #3b82f6; }
+        .bg-brand-50 { background-color: #e6efff; }
+        .bg-brand-500 { background-color: #0050c8; }
+        .bg-brand-600 { background-color: #0040a0; }
+        .bg-brand-700 { background-color: #00357f; }
+        .text-brand-600 { color: #0040a0; }
+        .border-brand-500 { border-color: #0050c8; }
+        
+        /* Shimmer Animation */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .animate-shimmer {
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f3f4f6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { LineChart, Line, BarChart, Bar, ComposedChart, PieChart, Pie, Cell, 
+                XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = Recharts;
+
+        // Routes 상수 (S3-C)
+        const ROUTES = {
+            home: '/',
+            stats: '/stats',
+            reservations: '/reservations',
+            approval: '/approval',
+            accounts: '/accounts',
+            mail: '/mail',
+            chat: '/chat',
+            login: '/login'
+        };
+
+        // Auth Guard 시뮬레이션 (S3-B)
+        const useAuth = () => {
+            const [isAuthenticated, setIsAuthenticated] = useState(false);
+            const [user, setUser] = useState(null);
+
+            const login = (email, password) => {
+                if (email === 'test@entrip.com' && password === 'password') {
+                    setIsAuthenticated(true);
+                    setUser({ name: '테스트 사용자', email, role: 'admin' });
+                    return true;
+                }
+                return false;
+            };
+
+            const logout = () => {
+                setIsAuthenticated(false);
+                setUser(null);
+            };
+
+            return { isAuthenticated, user, login, logout };
+        };
+
+        // Card Component
+        const Card = ({ children, className = '' }) => (
+            <div className={`bg-white rounded-lg shadow ${className}`}>
+                {children}
+            </div>
+        );
+
+        // Button Component
+        const Button = ({ children, variant = 'primary', onClick, className = '' }) => {
+            const variants = {
+                primary: 'bg-brand-500 text-white hover:bg-brand-600',
+                secondary: 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            };
+            
+            return (
+                <button
+                    onClick={onClick}
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${variants[variant]} ${className}`}
+                >
+                    {children}
+                </button>
+            );
+        };
+
+        // DualChartCard Component (S3-D)
+        const DualChartCard = ({ title, subtitle, data, primaryLabel, secondaryLabel }) => {
+            const formatKRW = (value) => {
+                if (value >= 100000000) return `${(value / 100000000).toFixed(1)}억`;
+                if (value >= 10000000) return `${(value / 10000000).toFixed(1)}천만`;
+                return value.toLocaleString();
+            };
+
+            return (
+                <Card className="p-6">
+                    <div className="mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+                        {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+                    </div>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <ComposedChart data={data}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="label" />
+                            <YAxis yAxisId="left" tickFormatter={formatKRW} />
+                            <YAxis yAxisId="right" orientation="right" />
+                            <Tooltip />
+                            <Legend />
+                            <Bar yAxisId="left" dataKey="primary" fill="#0050c8" name={primaryLabel} />
+                            <Line yAxisId="right" type="monotone" dataKey="secondary" stroke="#f59e0b" 
+                                  name={secondaryLabel} strokeWidth={2} />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </Card>
+            );
+        };
+
+        // CalendarWeek Component (S3-E)
+        const CalendarWeek = ({ events = [] }) => {
+            const getEventColor = (type, status) => {
+                if (status === 'cancelled') return 'bg-gray-300';
+                const colors = {
+                    golf: 'bg-brand-500',
+                    incentive: 'bg-success',
+                    honeymoon: 'bg-danger',
+                    airtel: 'bg-warning',
+                    other: 'bg-info',
+                };
+                return colors[type] || 'bg-gray-400';
+            };
+
+            const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
+            const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8AM to 7PM
+
+            return (
+                <Card className="overflow-hidden">
+                    <div className="grid grid-cols-8 border-b">
+                        <div className="p-2 text-center text-sm font-medium text-gray-500 border-r">시간</div>
+                        {weekDays.map(day => (
+                            <div key={day} className="p-2 text-center text-sm font-medium text-gray-900 border-r last:border-r-0">
+                                {day}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="overflow-y-auto max-h-[400px]">
+                        {hours.map(hour => (
+                            <div key={hour} className="grid grid-cols-8 border-b">
+                                <div className="p-2 text-xs text-gray-500 text-right border-r">
+                                    {hour}:00
+                                </div>
+                                {weekDays.map((_, dayIdx) => (
+                                    <div key={dayIdx} className="relative p-1 border-r last:border-r-0 min-h-[50px]">
+                                        {events
+                                            .filter(e => e.dayIndex === dayIdx && e.hour === hour)
+                                            .map((event, idx) => (
+                                                <div
+                                                    key={event.id}
+                                                    className={`absolute inset-x-1 p-1 rounded cursor-pointer hover:opacity-80 
+                                                              text-xs text-white overflow-hidden ${getEventColor(event.type, event.status)}`}
+                                                    style={{ top: `${idx * 22}px`, zIndex: idx + 1 }}
+                                                >
+                                                    <div className="font-medium truncate">
+                                                        {event.time} {event.title}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="border-t p-4 flex flex-wrap gap-4 text-xs">
+                        <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-brand-500 rounded" />
+                            <span>골프</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-success rounded" />
+                            <span>인센티브</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-danger rounded" />
+                            <span>허니문</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-warning rounded" />
+                            <span>에어텔</span>
+                        </div>
+                    </div>
+                </Card>
+            );
+        };
+
+        // Sidebar Component
+        const Sidebar = ({ currentPath, onNavigate }) => {
+            const navigation = [
+                { name: '대시보드', href: ROUTES.home, icon: '📊' },
+                { name: '예약 관리', href: ROUTES.reservations, icon: '📅' },
+                { name: '운영 현황', href: ROUTES.stats, icon: '📈' },
+                { name: '결재', href: ROUTES.approval, icon: '✅' },
+                { name: '계좌 관리', href: ROUTES.accounts, icon: '💰' },
+                { name: '메일', href: ROUTES.mail, icon: '📧' },
+                { name: '메신저', href: ROUTES.chat, icon: '💬' },
+            ];
+
+            return (
+                <div className="bg-brand-700 text-white w-64">
+                    <div className="flex h-16 items-center px-4">
+                        <div className="h-8 w-8 rounded-lg bg-white text-brand-700 flex items-center justify-center font-bold">
+                            E
+                        </div>
+                        <span className="ml-2 text-xl font-semibold">Entrip</span>
+                    </div>
+                    <nav className="mt-5 px-2">
+                        <div className="space-y-1">
+                            {navigation.map((item) => (
+                                <button
+                                    key={item.name}
+                                    onClick={() => onNavigate(item.href)}
+                                    className={`w-full text-left flex items-center px-3 py-2 text-sm font-medium rounded-md 
+                                              transition-colors ${
+                                        currentPath === item.href
+                                            ? 'bg-brand-600 text-white'
+                                            : 'text-white hover:bg-brand-600'
+                                    }`}
+                                >
+                                    <span className="mr-3">{item.icon}</span>
+                                    {item.name}
+                                </button>
+                            ))}
+                        </div>
+                    </nav>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [currentPath, setCurrentPath] = useState(ROUTES.home);
+            const { isAuthenticated, user, login, logout } = useAuth();
+            const [showLoginModal, setShowLoginModal] = useState(false);
+
+            // Demo data
+            const revenueData = [
+                { label: '1월', primary: 450000000, secondary: 15 },
+                { label: '2월', primary: 520000000, secondary: 16 },
+                { label: '3월', primary: 480000000, secondary: 15 },
+                { label: '4월', primary: 610000000, secondary: 17 },
+                { label: '5월', primary: 580000000, secondary: 16 },
+                { label: '6월', primary: 650000000, secondary: 18 },
+            ];
+
+            const weekEvents = [
+                { id: '1', dayIndex: 0, hour: 10, time: '10:00', title: '삼성전자 연수팀', type: 'incentive', status: 'confirmed' },
+                { id: '2', dayIndex: 2, hour: 14, time: '14:00', title: '현대차 골프팀', type: 'golf', status: 'pending' },
+                { id: '3', dayIndex: 4, hour: 9, time: '09:00', title: '신혼여행 김철수', type: 'honeymoon', status: 'confirmed' },
+                { id: '4', dayIndex: 1, hour: 11, time: '11:00', title: 'SK 에어텔팀', type: 'airtel', status: 'confirmed' },
+            ];
+
+            const renderContent = () => {
+                switch (currentPath) {
+                    case ROUTES.home:
+                        return (
+                            <div className="p-6">
+                                <h1 className="text-2xl font-bold mb-6">대시보드</h1>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <Card className="p-6">
+                                        <h2 className="text-lg font-semibold mb-4">오늘의 업무</h2>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                                <span>김철수팀 항공권 예약</span>
+                                                <span className="text-sm text-danger">14:00</span>
+                                            </div>
+                                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                                <span>이영희팀 호텔 확정</span>
+                                                <span className="text-sm text-warning">16:00</span>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                    <Card className="p-6">
+                                        <h2 className="text-lg font-semibold mb-4">진행 현황</h2>
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between">
+                                                <span>오늘 예약</span>
+                                                <span className="font-semibold">12건</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span>진행중 프로젝트</span>
+                                                <span className="font-semibold">24건</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span>대기중 결재</span>
+                                                <span className="font-semibold text-danger">3건</span>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </div>
+                            </div>
+                        );
+                    
+                    case ROUTES.stats:
+                        return (
+                            <div className="p-6">
+                                <h1 className="text-2xl font-bold mb-6">운영 현황</h1>
+                                <DualChartCard
+                                    title="월별 매출 및 수익률"
+                                    subtitle="매출과 수익률의 추이를 한눈에 확인하세요"
+                                    data={revenueData}
+                                    primaryLabel="매출"
+                                    secondaryLabel="수익률(%)"
+                                />
+                            </div>
+                        );
+                    
+                    case ROUTES.reservations:
+                        return (
+                            <div className="p-6">
+                                <h1 className="text-2xl font-bold mb-6">예약 관리 - 주간 뷰</h1>
+                                <CalendarWeek events={weekEvents} />
+                            </div>
+                        );
+                    
+                    default:
+                        return (
+                            <div className="p-6">
+                                <h1 className="text-2xl font-bold mb-4">{currentPath} 페이지</h1>
+                                <Card className="p-6">
+                                    <p className="text-gray-600">해당 페이지는 아직 구현 중입니다.</p>
+                                </Card>
+                            </div>
+                        );
+                }
+            };
+
+            // Login Modal
+            const LoginModal = () => {
+                const [email, setEmail] = useState('');
+                const [password, setPassword] = useState('');
+                const [error, setError] = useState('');
+
+                const handleLogin = (e) => {
+                    e.preventDefault();
+                    if (login(email, password)) {
+                        setShowLoginModal(false);
+                        setError('');
+                    } else {
+                        setError('이메일 또는 비밀번호가 올바르지 않습니다');
+                    }
+                };
+
+                if (!showLoginModal) return null;
+
+                return (
+                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                        <Card className="p-6 w-96">
+                            <h2 className="text-xl font-bold mb-4">로그인</h2>
+                            <form onSubmit={handleLogin}>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                        placeholder="test@entrip.com"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                        placeholder="password"
+                                    />
+                                </div>
+                                {error && <p className="text-sm text-danger mb-4">{error}</p>}
+                                <div className="flex gap-2">
+                                    <Button type="submit">로그인</Button>
+                                    <Button variant="secondary" onClick={() => setShowLoginModal(false)}>취소</Button>
+                                </div>
+                            </form>
+                        </Card>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="flex h-screen bg-gray-50">
+                    <Sidebar currentPath={currentPath} onNavigate={setCurrentPath} />
+                    <div className="flex-1 flex flex-col">
+                        <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+                            <h1 className="text-lg font-semibold">Entrip ERP System</h1>
+                            <div className="flex items-center gap-4">
+                                <span className="text-sm text-gray-600">
+                                    환율: USD 1,320.50 | EUR 1,440.30 | JPY 8.95
+                                </span>
+                                {isAuthenticated ? (
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-medium">{user?.name}</span>
+                                        <Button variant="secondary" onClick={logout} className="text-sm">
+                                            로그아웃
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <Button onClick={() => setShowLoginModal(true)} className="text-sm">
+                                        로그인
+                                    </Button>
+                                )}
+                            </div>
+                        </header>
+                        <main className="flex-1 overflow-auto">
+                            {renderContent()}
+                        </main>
+                    </div>
+                    <LoginModal />
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

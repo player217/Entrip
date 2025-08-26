@@ -1,0 +1,296 @@
+/* Force blue theme colors */
+.bg-header {
+  background-color: #016B9F !important;
+}
+
+.bg-side {
+  background-color: #016B9F !important;
+}
+
+.bg-sidebar-bg {
+  background-color: #016B9F !important;
+}
+
+.bg-header-tabBg {
+  background-color: rgba(1, 107, 159, 0.7) !important;
+}
+
+/* Calendar Container Styles */
+.calendar-container {
+  background: #fff;
+  border: 3px solid #d1d5db;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, .1);
+}
+
+/* Calendar Today Style */
+.calendar-day-cell.today {
+  background: rgba(255, 113, 46, 0.07);
+  box-shadow: inset 0 0 0 2px var(--color-brand-500);
+}
+
+/* Remove focus outline */
+.calendar-day-cell:focus-visible {
+  outline: none;
+}
+
+/* Calendar Add Button - Keyboard Accessible */
+.calendar-add-btn {
+  opacity: 0;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background-color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 200ms;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.calendar-add-btn:hover {
+  background-color: #FF4A00;
+  color: white;
+  transform: scale(1.1);
+}
+
+.calendar-add-btn:active {
+  transform: scale(0.95);
+}
+
+.calendar-day-cell:hover .calendar-add-btn,
+.calendar-day-cell:focus-within .calendar-add-btn {
+  opacity: 1;
+}
+
+/* Calendar Event Tooltip Styles */
+.event-tooltip {
+  backdrop-filter: blur(8px);
+  animation: tooltipFadeIn 0.2s ease-in-out;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tooltip-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.tooltip-info {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.tooltip-label {
+  font-weight: 400;
+  color: #9ca3af;
+}
+
+/* Event Item Base Styles */
+.event-item {
+  display: block;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: all 150ms ease;
+}
+
+.event-item:hover {
+  transform: translateX(2px);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Event Status Colors */
+.event-pending {
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+.event-confirmed {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.event-cancelled {
+  background-color: #FEE2E2;
+  color: #991B1B;
+}
+
+/* Calendar Cell Today Highlight */
+.calendar-day-cell.today {
+  box-shadow: inset 0 0 0 2px var(--color-brand-500);
+}
+
+/* Chrome Tab Styles */
+.chrome-tab {
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.chrome-tab::before {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: transparent;
+}
+
+.chrome-tab.active::before {
+  background-color: var(--color-canvas-base);
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Pulse animation for notification badges */
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1;
+  }
+  50% { 
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Responsive header */
+@media (max-width: 768px) {
+  header {
+    height: auto;
+    padding-block: 8px;
+  }
+  
+  header > div:first-child {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+}
+
+/* Sidebar collapsed state active icon */
+.sidebar.collapsed .nav-item.active .nav-icon {
+  color: #FF4A00;
+}
+
+/* Print Styles for Calendar */
+@media print {
+  /* Color preservation */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  /* Hide non-printable elements */
+  .no-print,
+  button,
+  .calendar-add-btn,
+  header,
+  nav,
+  aside,
+  .sidebar,
+  .event-tooltip {
+    display: none !important;
+  }
+  
+  /* Calendar layout optimization */
+  .calendar-month {
+    width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid !important;
+  }
+  
+  .calendar-grid {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    width: 100% !important;
+    border: 1px solid #333 !important;
+  }
+  
+  .calendar-day-cell {
+    min-height: 90px !important;
+    border: 1px solid #666 !important;
+    padding: 4px !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Event items preservation */
+  .event-item {
+    font-size: 8pt !important;
+    padding: 2px 4px !important;
+    margin: 2px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+  }
+  
+  /* Status colors */
+  .event-pending {
+    background-color: #FEF3C7 !important;
+    color: #92400E !important;
+    border-left: 3px solid #92400E !important;
+  }
+  
+  .event-confirmed {
+    background-color: #D1FAE5 !important;
+    color: #065F46 !important;
+    border-left: 3px solid #065F46 !important;
+  }
+  
+  .event-cancelled {
+    background-color: #FEE2E2 !important;
+    color: #991B1B !important;
+    border-left: 3px solid #991B1B !important;
+  }
+  
+  /* Today highlight */
+  .calendar-day-cell.today {
+    background-color: rgba(255, 113, 46, 0.07) !important;
+    box-shadow: inset 0 0 0 2px #FF712E !important;
+  }
+  
+  /* Weekend colors */
+  .calendar-print-sunday {
+    color: #d00 !important;
+  }
+  
+  .calendar-print-saturday {
+    color: #00d !important;
+  }
+  
+  /* Page setup */
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+}

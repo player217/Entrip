@@ -1,0 +1,42 @@
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alertmanager@entrip.io'
+  slack_api_url: 'https://hooks.slack.com/services/PLACEHOLDER'
+
+route:
+  group_by: ['alertname', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'slack-ops-flight'
+  routes:
+    - match:
+        service: flight-api
+      receiver: 'slack-ops-flight'
+      group_wait: 5s
+      repeat_interval: 30m
+
+receivers:
+  - name: 'slack-ops-flight'
+    slack_configs:
+      - channel: '#ops-flight'
+        username: 'Alertmanager'
+        icon_emoji: ':warning:'
+        title: 'Flight API Alert - {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Service:* {{ .Labels.service }}
+          {{ if .Labels.endpoint }}*Endpoint:* {{ .Labels.endpoint }}{{ end }}
+          *Status:* {{ .Status }}
+          {{ end }}
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service']

@@ -1,0 +1,60 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # API v1 service (legacy)
+  - job_name: 'entrip-api-v1'
+    static_configs:
+      - targets: ['api:4000']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # API v2 service (new)
+  - job_name: 'entrip-api-v2'
+    static_configs:
+      - targets: ['api-v2:4002']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Web application
+  - job_name: 'entrip-web'
+    static_configs:
+      - targets: ['web:3000']
+    metrics_path: '/api/metrics'
+    scrape_interval: 30s
+
+  # Crawler service
+  - job_name: 'entrip-crawler'
+    static_configs:
+      - targets: ['crawler:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 60s
+
+  # Infrastructure monitoring
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['nodeexporter:9100']
+      
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Redis monitoring
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 30s

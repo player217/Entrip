@@ -1,0 +1,157 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: entrip-postgres-local
+    environment:
+      POSTGRES_USER: entrip
+      POSTGRES_PASSWORD: entrip
+      POSTGRES_DB: entrip
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U entrip -d entrip"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Legacy API (apps/api) - v1
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: entrip-api-local
+    environment:
+      DATABASE_URL: postgres://entrip:entrip@postgres:5432/entrip
+      PORT: 4000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "4001:4000"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4000/api/v1/health"]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+
+  # New API (packages/api) - v2
+  api-v2:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile
+    container_name: entrip-api-v2-local
+    environment:
+      DATABASE_URL: postgres://entrip:entrip@postgres:5432/entrip
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      PORT: 4002
+      NODE_ENV: development
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "4002:4002"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4002/health"]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+
+  # Crawler API service
+  crawler:
+    build:
+      context: ./apps/api/src/crawler
+      dockerfile: Dockerfile.simple
+    container_name: entrip-crawler-local
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - ./apps/api/src/crawler/korean_flight_schedules.json:/app/korean_flight_schedules.json:ro
+
+  # Web service
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: entrip-web-local
+    depends_on:
+      api:
+        condition: service_healthy
+      api-v2:
+        condition: service_healthy
+      crawler:
+        condition: service_healthy
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4001
+      INTERNAL_API_URL: http://api:4000
+      INTERNAL_API_V2_URL: http://api-v2:4002
+      NEXT_PUBLIC_CRAWLER_API_URL: http://crawler:8001
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+      NEXT_PUBLIC_EXCHANGE_RATE_API_KEY: ${NEXT_PUBLIC_EXCHANGE_RATE_API_KEY:-}
+      NEXT_PUBLIC_API_MOCKING: ${NEXT_PUBLIC_API_MOCKING:-disabled}
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis service for caching and WebSocket scaling
+  redis:
+    image: redis:7-alpine
+    container_name: entrip-redis-local
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  # Optional monitoring services (uncomment to enable)
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: entrip-prometheus-local
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #   volumes:
+  #     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+  #     - prometheus_data:/prometheus
+  #   ports:
+  #     - "9090:9090"
+
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: entrip-grafana-local
+  #   environment:
+  #     GF_SECURITY_ADMIN_PASSWORD: admin
+  #   volumes:
+  #     - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+  #     - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+  #     - grafana_data:/var/lib/grafana
+  #   ports:
+  #     - "3001:3000"
+  #   depends_on:
+  #     - prometheus
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:

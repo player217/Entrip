@@ -1,0 +1,264 @@
+{
+  "companies": [
+    {
+      "code": "ENTRIP_MAIN",
+      "name": "엔트립 본사",
+      "logo": "/images/companies/entrip-main-logo.png",
+      "isActive": true,
+      "settings": {
+        "maxUsers": 100,
+        "features": ["booking", "calendar", "reports", "messenger"]
+      }
+    },
+    {
+      "code": "ENTRIP_BRANCH",
+      "name": "엔트립 지점",
+      "logo": "/images/companies/entrip-branch-logo.png",
+      "isActive": true,
+      "settings": {
+        "maxUsers": 50,
+        "features": ["booking", "calendar", "reports"]
+      }
+    },
+    {
+      "code": "PARTNER_TRAVEL",
+      "name": "파트너 여행사",
+      "logo": "/images/companies/partner-travel-logo.png",
+      "isActive": true,
+      "settings": {
+        "maxUsers": 30,
+        "features": ["booking", "calendar"]
+      }
+    },
+    {
+      "code": "GLOBAL_TOURS",
+      "name": "글로벌 투어",
+      "logo": "/images/companies/global-tours-logo.png",
+      "isActive": true,
+      "settings": {
+        "maxUsers": 25,
+        "features": ["booking", "calendar", "reports"]
+      }
+    },
+    {
+      "code": "j1",
+      "name": "J1 여행사",
+      "logo": "/images/companies/j1-logo.png",
+      "isActive": true,
+      "settings": {
+        "maxUsers": 50,
+        "features": ["booking", "calendar", "reports", "messenger"]
+      }
+    }
+  ],
+  "users": [
+    {
+      "id": "u001",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "admin",
+      "email": "admin@entrip.main",
+      "name": "본사 관리자",
+      "role": "ADMIN",
+      "department": "관리팀",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T06:30:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u002", 
+      "companyCode": "ENTRIP_MAIN",
+      "username": "manager1",
+      "email": "manager1@entrip.main",
+      "name": "김매니저",
+      "role": "MANAGER",
+      "department": "예약팀",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T08:15:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u003",
+      "companyCode": "ENTRIP_BRANCH", 
+      "username": "admin",
+      "email": "admin@entrip.branch",
+      "name": "지점 관리자",
+      "role": "ADMIN",
+      "department": "관리팀",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-20T17:45:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u004",
+      "companyCode": "PARTNER_TRAVEL",
+      "username": "admin", 
+      "email": "admin@partner.travel",
+      "name": "파트너 관리자",
+      "role": "ADMIN",
+      "department": "관리팀",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T09:20:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u005",
+      "companyCode": "GLOBAL_TOURS",
+      "username": "admin",
+      "email": "admin@global.tours", 
+      "name": "글로벌 관리자",
+      "role": "ADMIN",
+      "department": "관리팀",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T07:30:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u006",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "user1",
+      "email": "user1@entrip.main", 
+      "name": "박직원",
+      "role": "USER",
+      "department": "예약팀",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T07:30:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u007",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "manager2",
+      "email": "manager2@entrip.main",
+      "name": "이매니저",
+      "role": "MANAGER",
+      "department": "운영팀",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T08:45:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u008",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "user2",
+      "email": "user2@entrip.main", 
+      "name": "최직원",
+      "role": "USER",
+      "department": "운영팀",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T08:00:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u009",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "user3",
+      "email": "user3@entrip.main", 
+      "name": "정직원",
+      "role": "USER",
+      "department": "예약팀",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T09:15:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u010",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "user4",
+      "email": "user4@entrip.main", 
+      "name": "강직원",
+      "role": "USER",
+      "department": "고객팀",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T08:30:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u011",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "user5",
+      "email": "user5@entrip.main", 
+      "name": "윤직원",
+      "role": "USER",
+      "department": "고객팀",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T07:45:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u012",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "guest1",
+      "email": "guest1@entrip.main", 
+      "name": "손게스트",
+      "role": "GUEST",
+      "department": "방문자",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T10:00:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "u013",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "guest2",
+      "email": "guest2@entrip.main", 
+      "name": "한게스트",
+      "role": "GUEST",
+      "department": "방문자",
+      "isActive": true,
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-21T10:30:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "j1-admin",
+      "companyCode": "j1",
+      "username": "admin",
+      "email": "admin@j1.travel",
+      "name": "J1 관리자",
+      "role": "ADMIN",
+      "department": "관리팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-23T09:00:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "j1-manager1",
+      "companyCode": "j1",
+      "username": "manager1",
+      "email": "manager1@j1.travel",
+      "name": "김매니저",
+      "role": "MANAGER",
+      "department": "예약팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-23T08:30:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    },
+    {
+      "id": "j1-user1",
+      "companyCode": "j1",
+      "username": "user1",
+      "email": "user1@j1.travel",
+      "name": "박직원",
+      "role": "USER",
+      "department": "예약팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-08-23T08:00:00.000Z",
+      "passwordHash": "$2b$10$rKzSqJF.O8uKzKzKzKzKzOP.O8uKzKzKzKzKzKzKzKzKzKzKzKzK."
+    }
+  ]
+}

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrip Current Theme Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+        }
+        
+        /* Header Styles */
+        .header {
+            height: 64px;
+            background: #016b9f;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,.05);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .header-icons {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .icon-button {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .icon-button:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        /* Tab Bar */
+        .tab-bar {
+            height: 44px;
+            background: #016b9f;
+            display: flex;
+            padding-left: 256px;
+        }
+        
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: 256px;
+            background: #016b9f;
+            color: white;
+            padding: 16px;
+            overflow-y: auto;
+        }
+        
+        .nav-item {
+            padding: 12px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .nav-icon {
+            width: 28px;
+            height: 28px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+        }
+        
+        .nav-icon.active {
+            background: #FF4A00;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            background: #FDF9F2;
+            border-top-left-radius: 12px;
+            padding: 24px;
+            overflow-y: auto;
+        }
+        
+        /* Color Palette Display */
+        .color-section {
+            margin-bottom: 32px;
+        }
+        
+        .color-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1f2937;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+        }
+        
+        .color-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .color-sample {
+            height: 80px;
+        }
+        
+        .color-info {
+            padding: 12px;
+        }
+        
+        .color-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .color-value {
+            font-size: 12px;
+            color: #6b7280;
+            font-family: monospace;
+        }
+        
+        /* Brand Colors */
+        .brand-50 { background: #FFF7F3; }
+        .brand-100 { background: #FFEBE0; }
+        .brand-200 { background: #FFD1B8; }
+        .brand-300 { background: #FFB08A; }
+        .brand-400 { background: #FF8A5B; }
+        .brand-500 { background: #FF712E; }
+        .brand-600 { background: #F55A12; }
+        .brand-700 { background: #CC4209; }
+        .brand-800 { background: #A13407; }
+        .brand-900 { background: #7A2805; }
+        
+        /* Surface Colors */
+        .surface-header { background: #016b9f; }
+        .surface-side { background: #016b9f; }
+        .canvas-base { background: #FDF9F2; }
+        .canvas-grid { background: #E6E2DE; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">Entrip</div>
+            <div class="header-icons">
+                <div class="icon-button">💱</div>
+                <div class="icon-button">📍</div>
+                <div class="icon-button">✈️</div>
+                <div class="icon-button">🔔</div>
+                <div class="icon-button">✉️</div>
+                <div class="icon-button">💬</div>
+                <div class="icon-button">⚙️</div>
+            </div>
+        </div>
+        
+        <!-- Tab Bar -->
+        <div class="tab-bar"></div>
+        
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="nav-item active">
+                    <div class="nav-icon active"></div>
+                    <span>대시보드</span>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"></div>
+                    <span>예약관리</span>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"></div>
+                    <span>운영현황</span>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"></div>
+                    <span>Enformation</span>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"></div>
+                    <span>결재 <span style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 10px;">BETA</span></span>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"></div>
+                    <span>계좌관리 <span style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 10px;">BETA</span></span>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"></div>
+                    <span>메신저</span>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon"></div>
+                    <span>메일</span>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="main-content">
+                <h1 style="font-size: 24px; font-weight: 600; margin-bottom: 24px; color: #1f2937;">현재 Entrip 테마 색상</h1>
+                
+                <!-- Brand Colors -->
+                <div class="color-section">
+                    <h2 class="color-title">브랜드 색상</h2>
+                    <div class="color-grid">
+                        <div class="color-card">
+                            <div class="color-sample brand-50"></div>
+                            <div class="color-info">
+                                <div class="color-name">Brand 50</div>
+                                <div class="color-value">#FFF7F3</div>
+                            </div>
+                        </div>
+                        <div class="color-card">
+                            <div class="color-sample brand-100"></div>
+                            <div class="color-info">
+                                <div class="color-name">Brand 100</div>
+                                <div class="color-value">#FFEBE0</div>
+                            </div>
+                        </div>
+                        <div class="color-card">
+                            <div class="color-sample brand-500"></div>
+                            <div class="color-info">
+                                <div class="color-name">Brand 500 (Primary)</div>
+                                <div class="color-value">#FF712E</div>
+                            </div>
+                        </div>
+                        <div class="color-card">
+                            <div class="color-sample brand-600"></div>
+                            <div class="color-info">
+                                <div class="color-name">Brand 600</div>
+                                <div class="color-value">#F55A12</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Surface Colors -->
+                <div class="color-section">
+                    <h2 class="color-title">서피스 색상</h2>
+                    <div class="color-grid">
+                        <div class="color-card">
+                            <div class="color-sample surface-header"></div>
+                            <div class="color-info">
+                                <div class="color-name">Header Background</div>
+                                <div class="color-value">#016b9f</div>
+                            </div>
+                        </div>
+                        <div class="color-card">
+                            <div class="color-sample surface-side"></div>
+                            <div class="color-info">
+                                <div class="color-name">Sidebar Background</div>
+                                <div class="color-value">#016b9f</div>
+                            </div>
+                        </div>
+                        <div class="color-card">
+                            <div class="color-sample canvas-base"></div>
+                            <div class="color-info">
+                                <div class="color-name">Canvas Base</div>
+                                <div class="color-value">#FDF9F2</div>
+                            </div>
+                        </div>
+                        <div class="color-card">
+                            <div class="color-sample" style="background: #FF4A00;"></div>
+                            <div class="color-info">
+                                <div class="color-name">Sidebar Icon Active</div>
+                                <div class="color-value">#FF4A00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Theme Issues -->
+                <div class="color-section">
+                    <h2 class="color-title">발견된 테마 이슈</h2>
+                    <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <ul style="list-style: none; padding: 0; color: #374151; line-height: 1.8;">
+                            <li style="margin-bottom: 12px;">
+                                <strong>1. 색상 불일치:</strong><br>
+                                - 사이드바 아이콘 활성 색상: tokens.json에는 #FF4A00으로 정의되어 있지만, Tailwind config에서는 이 색상이 정의되지 않음
+                            </li>
+                            <li style="margin-bottom: 12px;">
+                                <strong>2. CSS 변수 연결:</strong><br>
+                                - Tailwind config는 CSS 변수를 참조하지만, 실제 CSS 변수가 생성되지 않았을 가능성
+                            </li>
+                            <li style="margin-bottom: 12px;">
+                                <strong>3. 빌드 문제:</strong><br>
+                                - design-tokens 패키지가 제대로 빌드되지 않아 CSS 변수가 생성되지 않았을 수 있음
+                            </li>
+                            <li style="margin-bottom: 12px;">
+                                <strong>4. 헤더/사이드바 색상:</strong><br>
+                                - 파란색(#016b9f) 사용 중이나, 브랜드 색상과의 일관성 검토 필요
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

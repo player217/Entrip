@@ -1,0 +1,86 @@
+/* Sidebar Styles */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 4rem;
+    height: calc(100vh - 4rem);
+    width: 4rem;
+    background-color: #241E1A;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
+    transition: width 0.3s ease;
+    z-index: 40;
+}
+
+.sidebar.expanded {
+    width: 16rem;
+}
+
+.nav-section {
+    width: 100%;
+}
+
+.nav-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    color: #B8AFA6;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.sidebar.expanded .nav-item {
+    justify-content: flex-start;
+    padding: 1rem 1.5rem;
+}
+
+.nav-item:hover {
+    color: #FF712E;
+    background-color: rgba(255, 113, 46, 0.1);
+}
+
+.nav-item.active {
+    color: #FF712E;
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #FF712E;
+}
+
+.nav-icon {
+    font-size: 1.5rem;
+    min-width: 1.5rem;
+}
+
+.nav-label {
+    display: none;
+    margin-left: 1rem;
+    white-space: nowrap;
+}
+
+.sidebar.expanded .nav-label {
+    display: block;
+}
+
+.nav-divider {
+    width: 80%;
+    height: 1px;
+    background-color: #352D29;
+    margin: 1rem 0;
+}
+
+.nav-bottom {
+    margin-top: auto;
+    width: 100%;
+}

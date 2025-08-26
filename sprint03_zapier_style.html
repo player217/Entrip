@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrip Sprint 03 - Zapier Style Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-inter: 'Inter', system-ui, sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-inter);
+        }
+        
+        /* Custom Colors */
+        .bg-sidebar-bg { background-color: #342A26; }
+        .text-sidebar-text { color: rgba(255, 255, 255, 0.8); }
+        .text-sidebar-text-active { color: #FFFFFF; }
+        .text-sidebar-icon { color: #FF4A00; }
+        
+        /* Tailwind Config with Safelist */
+        .bg-warning { background-color: #f59e0b; }
+        .bg-success { background-color: #22c55e; }
+        .bg-danger { background-color: #ef4444; }
+        .bg-info { background-color: #3b82f6; }
+        .bg-brand-50 { background-color: #e6efff; }
+        .bg-brand-500 { background-color: #0050c8; }
+        .bg-brand-600 { background-color: #0040a0; }
+        .bg-brand-700 { background-color: #00357f; }
+        .text-brand-600 { color: #0040a0; }
+        .border-brand-500 { border-color: #0050c8; }
+        
+        /* Shimmer Animation */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .animate-shimmer {
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f3f4f6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+
+        /* Hide/Show sections */
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        /* Sidebar hover effect */
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Icons */
+        .icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen">
+        <!-- Sidebar - Zapier Style -->
+        <div class="bg-sidebar-bg text-sidebar-text w-56 flex-shrink-0">
+            <div class="pt-8 px-6">
+                <h1 class="text-base font-semibold mb-6 text-white">Entrip Automation Platform</h1>
+            </div>
+            <nav class="flex flex-col gap-4">
+                <button onclick="showSection('dashboard')" class="nav-item nav-btn active flex items-center gap-3 px-6 py-2 text-[13px] font-semibold transition-all duration-200">
+                    <svg class="icon text-sidebar-icon" viewBox="0 0 16 16">
+                        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm1.5 2.5c5.523 0 10 4.477 10 10a1 1 0 1 1-2 0 8 8 0 0 0-8-8 1 1 0 0 1 0-2zm0 4a6 6 0 0 1 6 6 1 1 0 1 1-2 0 4 4 0 0 0-4-4 1 1 0 0 1 0-2zm.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </button>
+                <button onclick="showSection('reservations')" class="nav-item nav-btn flex items-center gap-3 px-6 py-2 text-[13px] font-semibold transition-all duration-200">
+                    <svg class="icon text-sidebar-icon" viewBox="0 0 16 16">
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                    </svg>
+                    <span>Reservations</span>
+                </button>
+                <button onclick="showSection('stats')" class="nav-item nav-btn flex items-center gap-3 px-6 py-2 text-[13px] font-semibold transition-all duration-200">
+                    <svg class="icon text-sidebar-icon" viewBox="0 0 16 16">
+                        <path d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5v12h-2V2h2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1h-2zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zM1 10a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-4z"/>
+                    </svg>
+                    <span>Stats</span>
+                </button>
+                <button onclick="showSection('approval')" class="nav-item nav-btn flex items-center gap-3 px-6 py-2 text-[13px] font-semibold transition-all duration-200">
+                    <svg class="icon text-sidebar-icon" viewBox="0 0 16 16">
+                        <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                    </svg>
+                    <span>Approval</span>
+                    <span class="ml-auto bg-white bg-opacity-10 px-1.5 py-0.5 text-[10px] font-medium rounded">BETA</span>
+                </button>
+                <button onclick="showSection('accounts')" class="nav-item nav-btn flex items-center gap-3 px-6 py-2 text-[13px] font-semibold transition-all duration-200">
+                    <svg class="icon text-sidebar-icon" viewBox="0 0 16 16">
+                        <path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
+                    </svg>
+                    <span>Accounts</span>
+                    <span class="ml-auto bg-white bg-opacity-10 px-1.5 py-0.5 text-[10px] font-medium rounded">BETA</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Header -->
+            <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+                <h1 class="text-lg font-semibold">Entrip ERP System - Sprint 03 Demo</h1>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-gray-600">
+                        환율: USD 1,320.50 | EUR 1,440.30 | JPY 8.95
+                    </span>
+                    <div id="auth-status" class="flex items-center gap-3">
+                        <button onclick="showLogin()" class="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 text-sm">
+                            로그인
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="flex-1 overflow-auto p-6">
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="section active">
+                    <h2 class="text-2xl font-bold mb-6">대시보드</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">오늘의 업무</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
+                                    <span>김철수팀 항공권 예약</span>
+                                    <span class="text-sm text-danger font-medium">14:00</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
+                                    <span>이영희팀 호텔 확정</span>
+                                    <span class="text-sm text-warning font-medium">16:00</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
+                                    <span>박민수팀 비자 서류 제출</span>
+                                    <span class="text-sm text-success font-medium">17:00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">진행 현황</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">오늘 예약</span>
+                                    <span class="text-2xl font-bold text-brand-600">12건</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">진행중 프로젝트</span>
+                                    <span class="text-2xl font-bold text-success">24건</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">대기중 결재</span>
+                                    <span class="text-2xl font-bold text-danger">3건</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="mt-6 bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">빠른 작업</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <button class="p-4 bg-brand-50 text-brand-600 rounded-lg hover:bg-brand-100 transition-colors font-medium">
+                                새 예약 등록
+                            </button>
+                            <button class="p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors font-medium">
+                                결재 승인
+                            </button>
+                            <button class="p-4 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors font-medium">
+                                환율 조회
+                            </button>
+                            <button class="p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors font-medium">
+                                보고서 생성
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reservations Section -->
+                <div id="reservations" class="section">
+                    <h2 class="text-2xl font-bold mb-6">예약 관리 - 주간 뷰</h2>
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <!-- Week Calendar Header -->
+                        <div class="grid grid-cols-8 border-b bg-gray-50">
+                            <div class="p-3 text-center text-sm font-medium text-gray-500 border-r">시간</div>
+                            <div class="p-3 text-center border-r"><div class="text-sm text-gray-500">월</div><div class="text-lg font-semibold">23</div></div>
+                            <div class="p-3 text-center border-r"><div class="text-sm text-gray-500">화</div><div class="text-lg font-semibold">24</div></div>
+                            <div class="p-3 text-center border-r"><div class="text-sm text-gray-500">수</div><div class="text-lg font-semibold">25</div></div>
+                            <div class="p-3 text-center border-r"><div class="text-sm text-gray-500">목</div><div class="text-lg font-semibold">26</div></div>
+                            <div class="p-3 text-center border-r bg-brand-50"><div class="text-sm text-gray-500">금</div><div class="text-lg font-semibold text-brand-600">27</div></div>
+                            <div class="p-3 text-center border-r"><div class="text-sm text-gray-500">토</div><div class="text-lg font-semibold">28</div></div>
+                            <div class="p-3 text-center"><div class="text-sm text-gray-500">일</div><div class="text-lg font-semibold">29</div></div>
+                        </div>
+                        
+                        <!-- Time Grid -->
+                        <div class="overflow-y-auto" style="max-height: 400px;">
+                            <!-- 9:00 -->
+                            <div class="grid grid-cols-8 border-b">
+                                <div class="p-2 text-xs text-gray-500 text-right border-r">09:00</div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative bg-brand-50/30">
+                                    <div class="absolute inset-x-1 top-1 p-2 bg-danger text-white text-xs rounded cursor-pointer hover:opacity-80">
+                                        <div class="font-medium">09:00 신혼여행 김철수</div>
+                                        <div class="text-xs opacity-80">몰디브 7일</div>
+                                    </div>
+                                </div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 min-h-[60px] relative"></div>
+                            </div>
+                            
+                            <!-- 10:00 -->
+                            <div class="grid grid-cols-8 border-b">
+                                <div class="p-2 text-xs text-gray-500 text-right border-r">10:00</div>
+                                <div class="p-1 border-r min-h-[60px] relative">
+                                    <div class="absolute inset-x-1 top-1 p-2 bg-success text-white text-xs rounded cursor-pointer hover:opacity-80">
+                                        <div class="font-medium">10:00 삼성전자 연수팀</div>
+                                        <div class="text-xs opacity-80">방콕 5일</div>
+                                    </div>
+                                </div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative bg-brand-50/30"></div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 min-h-[60px] relative"></div>
+                            </div>
+                            
+                            <!-- 11:00 -->
+                            <div class="grid grid-cols-8 border-b">
+                                <div class="p-2 text-xs text-gray-500 text-right border-r">11:00</div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative">
+                                    <div class="absolute inset-x-1 top-1 p-2 bg-warning text-white text-xs rounded cursor-pointer hover:opacity-80">
+                                        <div class="font-medium">11:00 SK 에어텔팀</div>
+                                        <div class="text-xs opacity-80">괌 4일</div>
+                                    </div>
+                                </div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative bg-brand-50/30"></div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 min-h-[60px] relative"></div>
+                            </div>
+                            
+                            <!-- 14:00 -->
+                            <div class="grid grid-cols-8 border-b">
+                                <div class="p-2 text-xs text-gray-500 text-right border-r">14:00</div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative">
+                                    <div class="absolute inset-x-1 top-1 p-2 bg-brand-500 text-white text-xs rounded cursor-pointer hover:opacity-80">
+                                        <div class="font-medium">14:00 현대차 골프팀</div>
+                                        <div class="text-xs opacity-80">다낭 골프</div>
+                                    </div>
+                                </div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 border-r min-h-[60px] relative bg-brand-50/30"></div>
+                                <div class="p-1 border-r min-h-[60px] relative"></div>
+                                <div class="p-1 min-h-[60px] relative"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Legend -->
+                        <div class="border-t p-4 flex flex-wrap gap-4 text-xs bg-gray-50">
+                            <div class="flex items-center gap-1">
+                                <div class="w-3 h-3 bg-brand-500 rounded"></div>
+                                <span>골프</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <div class="w-3 h-3 bg-success rounded"></div>
+                                <span>인센티브</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <div class="w-3 h-3 bg-danger rounded"></div>
+                                <span>허니문</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <div class="w-3 h-3 bg-warning rounded"></div>
+                                <span>에어텔</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <div class="w-3 h-3 bg-gray-300 rounded"></div>
+                                <span>취소됨</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Section -->
+                <div id="stats" class="section">
+                    <h2 class="text-2xl font-bold mb-6">운영 현황</h2>
+                    
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white rounded-lg shadow p-4">
+                            <h3 class="text-sm font-medium text-gray-500">총 건수</h3>
+                            <p class="text-2xl font-semibold mt-1">164건</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-4">
+                            <h3 class="text-sm font-medium text-gray-500">총 매출</h3>
+                            <p class="text-2xl font-semibold mt-1">32.9억</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-4">
+                            <h3 class="text-sm font-medium text-gray-500">총 수익</h3>
+                            <p class="text-2xl font-semibold mt-1">5.3억</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-4">
+                            <h3 class="text-sm font-medium text-gray-500">평균 수익률</h3>
+                            <p class="text-2xl font-semibold mt-1">16.1%</p>
+                        </div>
+                    </div>
+
+                    <!-- DualChartCard Visualization -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-1">월별 매출 및 수익률</h3>
+                        <p class="text-sm text-gray-500 mb-4">매출과 수익률의 추이를 한눈에 확인하세요</p>
+                        
+                        <!-- Simple Chart Visualization -->
+                        <div class="relative h-64 bg-gray-50 rounded p-4">
+                            <div class="absolute bottom-0 left-0 right-0 flex items-end justify-around h-full px-8">
+                                <!-- January -->
+                                <div class="flex flex-col items-center flex-1">
+                                    <div class="relative w-full flex flex-col items-center">
+                                        <span class="text-xs text-warning font-medium mb-1">15%</span>
+                                        <div class="w-12 bg-brand-500 rounded-t hover:bg-brand-600 transition-colors" style="height: 135px;"></div>
+                                    </div>
+                                    <span class="text-xs mt-2">1월</span>
+                                    <span class="text-xs text-gray-500">4.5억</span>
+                                </div>
+                                <!-- February -->
+                                <div class="flex flex-col items-center flex-1">
+                                    <div class="relative w-full flex flex-col items-center">
+                                        <span class="text-xs text-warning font-medium mb-1">16%</span>
+                                        <div class="w-12 bg-brand-500 rounded-t hover:bg-brand-600 transition-colors" style="height: 156px;"></div>
+                                    </div>
+                                    <span class="text-xs mt-2">2월</span>
+                                    <span class="text-xs text-gray-500">5.2억</span>
+                                </div>
+                                <!-- March -->
+                                <div class="flex flex-col items-center flex-1">
+                                    <div class="relative w-full flex flex-col items-center">
+                                        <span class="text-xs text-warning font-medium mb-1">15%</span>
+                                        <div class="w-12 bg-brand-500 rounded-t hover:bg-brand-600 transition-colors" style="height: 144px;"></div>
+                                    </div>
+                                    <span class="text-xs mt-2">3월</span>
+                                    <span class="text-xs text-gray-500">4.8억</span>
+                                </div>
+                                <!-- April -->
+                                <div class="flex flex-col items-center flex-1">
+                                    <div class="relative w-full flex flex-col items-center">
+                                        <span class="text-xs text-warning font-medium mb-1">17%</span>
+                                        <div class="w-12 bg-brand-500 rounded-t hover:bg-brand-600 transition-colors" style="height: 183px;"></div>
+                                    </div>
+                                    <span class="text-xs mt-2">4월</span>
+                                    <span class="text-xs text-gray-500">6.1억</span>
+                                </div>
+                                <!-- May -->
+                                <div class="flex flex-col items-center flex-1">
+                                    <div class="relative w-full flex flex-col items-center">
+                                        <span class="text-xs text-warning font-medium mb-1">16%</span>
+                                        <div class="w-12 bg-brand-500 rounded-t hover:bg-brand-600 transition-colors" style="height: 174px;"></div>
+                                    </div>
+                                    <span class="text-xs mt-2">5월</span>
+                                    <span class="text-xs text-gray-500">5.8억</span>
+                                </div>
+                                <!-- June -->
+                                <div class="flex flex-col items-center flex-1">
+                                    <div class="relative w-full flex flex-col items-center">
+                                        <span class="text-xs text-warning font-medium mb-1">18%</span>
+                                        <div class="w-12 bg-brand-500 rounded-t hover:bg-brand-600 transition-colors" style="height: 195px;"></div>
+                                    </div>
+                                    <span class="text-xs mt-2">6월</span>
+                                    <span class="text-xs text-gray-500">6.5억</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex items-center justify-center gap-6 text-sm">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-brand-500"></div>
+                                <span>매출</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-warning"></div>
+                                <span>수익률</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Sections -->
+                <div id="approval" class="section">
+                    <h2 class="text-2xl font-bold mb-4">결재</h2>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <p class="text-gray-600">결재 기능은 Phase 3에서 구현 예정입니다.</p>
+                        <div class="mt-4 p-4 bg-orange-50 rounded-lg">
+                            <p class="text-sm text-orange-800">
+                                <strong>BETA 기능:</strong> 이 기능은 현재 개발 중이며, Sprint 05에서 완성될 예정입니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="accounts" class="section">
+                    <h2 class="text-2xl font-bold mb-4">계좌 관리</h2>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <p class="text-gray-600">계좌 관리 기능은 Phase 3에서 구현 예정입니다.</p>
+                        <div class="mt-4 p-4 bg-orange-50 rounded-lg">
+                            <p class="text-sm text-orange-800">
+                                <strong>BETA 기능:</strong> 이 기능은 현재 개발 중이며, Sprint 05에서 완성될 예정입니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+            <h2 class="text-xl font-bold mb-4">로그인</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+                    <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="test@entrip.com">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
+                    <input type="password" id="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="password">
+                </div>
+                <div id="loginError" class="text-sm text-danger mb-4 hidden"></div>
+                <div class="flex gap-2">
+                    <button type="submit" class="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600">로그인</button>
+                    <button type="button" onclick="hideLogin()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.remove('text-sidebar-text-active');
+                btn.classList.add('text-sidebar-text');
+            });
+            event.target.closest('.nav-btn').classList.add('active');
+            event.target.closest('.nav-btn').classList.remove('text-sidebar-text');
+            event.target.closest('.nav-btn').classList.add('text-sidebar-text-active');
+        }
+
+        // Auth
+        let isAuthenticated = false;
+        let currentUser = null;
+
+        function showLogin() {
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function hideLogin() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (email === 'test@entrip.com' && password === 'password') {
+                isAuthenticated = true;
+                currentUser = { name: '테스트 사용자', email: email };
+                updateAuthStatus();
+                hideLogin();
+            } else {
+                document.getElementById('loginError').textContent = '이메일 또는 비밀번호가 올바르지 않습니다';
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            isAuthenticated = false;
+            currentUser = null;
+            updateAuthStatus();
+        }
+
+        function updateAuthStatus() {
+            const authStatus = document.getElementById('auth-status');
+            if (isAuthenticated) {
+                authStatus.innerHTML = `
+                    <span class="text-sm font-medium">${currentUser.name}</span>
+                    <button onclick="logout()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm">
+                        로그아웃
+                    </button>
+                `;
+            } else {
+                authStatus.innerHTML = `
+                    <button onclick="showLogin()" class="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 text-sm">
+                        로그인
+                    </button>
+                `;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial active nav button
+            const firstNavBtn = document.querySelector('.nav-btn');
+            firstNavBtn.classList.add('active');
+            firstNavBtn.classList.remove('text-sidebar-text');
+            firstNavBtn.classList.add('text-sidebar-text-active');
+        });
+    </script>
+</body>
+</html>

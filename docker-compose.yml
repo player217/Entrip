@@ -1,0 +1,87 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: entrip-postgres
+    environment:
+      POSTGRES_USER: entrip
+      POSTGRES_PASSWORD: entrip
+      POSTGRES_DB: entrip
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U entrip"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - entrip-network
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.simple
+    container_name: entrip-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://entrip:entrip@postgres:5432/entrip
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-here}
+      NODE_ENV: production
+      PORT: 4000
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - "4000:4000"
+    networks:
+      - entrip-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: entrip-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - entrip-network
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: entrip-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=changeme
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - entrip-network
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: entrip-node-exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - entrip-network
+
+volumes:
+  postgres-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  entrip-network:
+    driver: bridge

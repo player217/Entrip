@@ -1,0 +1,71 @@
+# Dependencies
+node_modules/
+**/node_modules/**
+
+# Build outputs
+**/dist/**
+**/build/**
+**/.next/**
+**/out/**
+
+# Coverage
+**/coverage/**
+**/.nyc_output/**
+
+# Testing
+**/__tests__/**
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Config files
+*.config.js
+*.config.ts
+**/*.config.js
+**/*.config.ts
+
+# Type definitions
+**/*.d.ts
+
+# Generated files
+**/generated/**
+packages/api/src/generated/**
+
+# Storybook
+storybook-static/
+**/.storybook/**
+
+# Design tokens build
+packages/design-tokens/build/**
+
+# API docs
+packages/api/docs/**
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Environment files
+.env*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# Miscellaneous
+*.tsbuildinfo
+.turbo/

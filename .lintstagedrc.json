@@ -1,0 +1,4 @@
+{
+  "**/*.{ts,tsx}": ["eslint --fix", "pnpm -w run build:ts --noEmit"],
+  "**/*.{md,html,css,json}": ["prettier --write"]
+}

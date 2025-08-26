@@ -1,0 +1,68 @@
+<!-- Header Component -->
+<header class="h-header bg-header-bg text-white flex items-center px-4 z-20">
+    <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-orange-500 rounded flex items-center justify-center text-white font-bold text-sm">
+            E
+        </div>
+        <span class="text-white font-medium">Entrip Automation Platform</span>
+    </div>
+    
+    <!-- Center flex-1 -->
+    <div class="flex-1 flex items-center gap-4 text-sm px-4">
+        <button class="flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity" id="userDropdown">
+            <span id="userName" class="hidden"></span>
+            <svg class="w-[14px] h-[14px] hidden" id="userChevron" viewBox="0 0 16 16" fill="currentColor">
+                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+            </svg>
+        </button>
+        
+        <!-- 환율 -->
+        <div class="ml-auto flex items-center gap-3 text-xs">
+            <button class="flex items-center gap-1 p-1.5 hover:bg-white/10 rounded transition-colors">
+                <svg class="w-[14px] h-[14px]" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05zm1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73l.348.086z"/>
+                </svg>
+                <span class="hidden sm:inline">환율:</span>
+            </button>
+            <span>USD 1,320.50</span>
+            <span class="hidden md:inline">EUR 1,440.30</span>
+            <span class="hidden lg:inline">JPY 8.95</span>
+        </div>
+    </div>
+
+    <!-- Right cluster -->
+    <div class="flex items-center gap-1 pr-3">
+        <button class="p-2 text-header-icon text-header-icon-hover rounded hover:bg-white/10 transition-colors" title="지도">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 16 16" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+            </svg>
+        </button>
+        <button class="p-2 text-header-icon text-header-icon-hover rounded hover:bg-white/10 transition-colors" title="항공 노선">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
+            </svg>
+        </button>
+        <button class="relative p-2 text-header-icon text-header-icon-hover rounded hover:bg-white/10 transition-colors" title="알림">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
+            </svg>
+            <span class="absolute -top-0.5 -right-0.5 h-2 w-2 bg-orange-500 rounded-full animate-pulse"></span>
+        </button>
+        <button class="p-2 text-header-icon text-header-icon-hover rounded hover:bg-white/10 transition-colors" title="메일">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+            </svg>
+        </button>
+        <button class="p-2 text-header-icon text-header-icon-hover rounded hover:bg-white/10 transition-colors" title="메신저">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M0 7.76C0 3.301 3.493 0 8 0s8 3.301 8 7.76-3.493 7.76-8 7.76c-.81 0-1.586-.107-2.316-.307a.639.639 0 0 0-.427.03l-1.588.702a.64.64 0 0 1-.898-.566l-.044-1.423a.639.639 0 0 0-.215-.456C.956 12.108 0 10.092 0 7.76zm5.546-1.459-2.35 3.728c-.225.358.214.761.551.506l2.525-1.916a.48.48 0 0 1 .578-.002l1.869 1.402a1.2 1.2 0 0 0 1.735-.32l2.35-3.728c.226-.358-.214-.761-.551-.506L9.728 7.381a.48.48 0 0 1-.578.002L7.281 5.98a1.2 1.2 0 0 0-1.735.32z"/>
+            </svg>
+        </button>
+        <button class="p-2 text-header-icon text-header-icon-hover rounded hover:bg-white/10 transition-colors" title="설정" onclick="if(!isAuthenticated) showLogin(); else showSettings();">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+            </svg>
+        </button>
+    </div>
+</header>

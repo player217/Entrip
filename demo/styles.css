@@ -1,0 +1,154 @@
+/* Entrip Demo Styles */
+:root {
+    --font-inter: 'Inter', system-ui, sans-serif;
+    --color-surface-header: #352D29;
+    --color-surface-side: #352D29;
+    --color-canvas-base: #FDF9F2;
+    --color-canvas-grid: #E6E2DE;
+}
+
+html {
+    font-size: 14px;
+    line-height: 20px;
+}
+
+body {
+    font-family: var(--font-inter);
+}
+
+/* Custom Colors */
+.bg-sidebar-bg { background-color: #352D29; }
+.text-sidebar-text { color: rgba(255, 255, 255, 0.8); }
+.text-sidebar-text-active { color: #FFFFFF; }
+.text-sidebar-icon { color: #FF4A00; }
+
+/* Tailwind Config with Safelist */
+.bg-warning { background-color: #f59e0b; }
+.bg-success { background-color: #22c55e; }
+.bg-danger { background-color: #ef4444; }
+.bg-info { background-color: #3b82f6; }
+.bg-brand-50 { background-color: #e6efff; }
+.bg-brand-500 { background-color: #FF712E; }
+.bg-brand-600 { background-color: #0040a0; }
+.bg-brand-700 { background-color: #00357f; }
+.text-brand-600 { color: #0040a0; }
+.text-brand-500 { color: #FF712E; }
+.text-danger { color: #ef4444; }
+.text-warning { color: #f59e0b; }
+.text-success { color: #22c55e; }
+.border-brand-500 { border-color: #FF712E; }
+
+/* Header Styles */
+.bg-header-bg { background-color: #352D29; }
+.text-header-icon { color: rgba(255, 255, 255, 0.6); }
+.text-header-icon-hover:hover { color: #FFFFFF; }
+.text-header-icon-active { color: #FF4A00; }
+.h-header { height: 48px; }
+.header-divider { border-bottom: 1px solid rgba(0, 0, 0, 0.1); }
+.bg-canvas { background-color: #FDF9F2; }
+
+/* Flow Canvas Background */
+.bg-flow {
+    background-color: var(--color-canvas-base);
+    background-image: radial-gradient(#E6E2DE 1px, transparent 0);
+    background-size: 4px 4px;
+}
+
+/* Flow Node Styles */
+.flow-node {
+    border-radius: 8px;
+    box-shadow: 0 3px 6px rgba(0,0,0,.08);
+    border: 2px solid #0050c8;
+    background-color: white;
+    transition: box-shadow 100ms ease;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.flow-node:hover {
+    box-shadow: 0 6px 12px rgba(0,0,0,.08);
+}
+
+/* Flow Connector Color */
+.flow-connector {
+    stroke: #7046FF;
+    stroke-width: 2px;
+    stroke-linecap: round;
+}
+
+/* Plus Button */
+.plus-button {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid #d1d5db;
+    background-color: white;
+    transition: all 100ms ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plus-button:hover {
+    background-color: #FF712E;
+    color: white;
+}
+
+/* Property Panel */
+.property-panel {
+    width: 360px;
+    border-left: 1px solid #e5e7eb;
+    background-color: white;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f3f4f6;
+}
+::-webkit-scrollbar-thumb {
+    background: #9ca3af;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+/* Hide/Show sections */
+.section { display: none; }
+.section.active { display: block; }
+
+/* Sidebar hover effect */
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.nav-item.active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Icons */
+.icon {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+/* Tab styles */
+.tab-active {
+    border-bottom: 2px solid #FF712E;
+    color: #FF712E;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}

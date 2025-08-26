@@ -1,0 +1,44 @@
+# Redocly OpenAPI Linter Configuration
+# Docs: https://redocly.com/docs/cli/configuration/
+
+extends:
+  - recommended
+
+rules:
+  # Disable localhost warning for development
+  no-server-example.com: warn
+  
+  # Require operation IDs
+  operation-operationId: error
+  
+  # Require 4xx responses
+  operation-4xx-response: warn
+  
+  # Ensure security is defined
+  security-defined: error
+  
+  # Component naming convention
+  component-name-unique: error
+  
+  # No unused components
+  no-unused-components: warn
+  
+  # Path parameter validation
+  path-parameters-defined: error
+  
+  # Info section completeness
+  info-license: warn
+  info-contact: warn
+
+# Theme customization for ReDoc (if used)
+theme:
+  colors:
+    primary:
+      main: '#1976d2'
+  logo:
+    gutter: '20px'
+  typography:
+    fontSize: '14px'
+    lineHeight: '1.5'
+    code:
+      fontSize: '13px'

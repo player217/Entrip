@@ -1,0 +1,68 @@
+/* Header Styles */
+.header {
+    background-color: #352D29;
+    height: 4rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo {
+    height: 2.5rem;
+}
+
+.logo-text {
+    color: #FF712E;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    color: #B8AFA6;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.icon-button:hover {
+    color: #FF712E;
+}
+
+.user-avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: #FF712E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}

@@ -1,0 +1,58 @@
+{
+  "name": "@entrip/shared",
+  "version": "0.1.0-rc.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./server": {
+      "import": "./dist/server.js",
+      "require": "./dist/server.js",
+      "types": "./dist/server.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client.js",
+      "require": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    },
+    "./mocks/browser": {
+      "import": "./dist/mocks/browser.js",
+      "require": "./dist/mocks/browser.js",
+      "types": "./dist/mocks/browser.d.ts"
+    },
+    "./hooks/useTeamBooking": {
+      "import": "./dist/hooks/useTeamBooking.js",
+      "require": "./dist/hooks/useTeamBooking.js",
+      "types": "./dist/hooks/useTeamBooking.d.ts"
+    },
+    "./types/team-booking": {
+      "import": "./dist/types/team-booking.js",
+      "require": "./dist/types/team-booking.js",
+      "types": "./dist/types/team-booking.d.ts"
+    }
+  },
+  "dependencies": {
+    "axios": "^1.10.0",
+    "swr": "^2.3.4",
+    "zustand": "^4.5.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint 'src/**/*.{ts,tsx}' --max-warnings 10",
+    "api:gen": "openapi-typescript openapi/openapi.json -o src/generated/api.d.ts",
+    "api:watch": "nodemon --watch openapi/openapi.json --exec npm run api:gen"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "axios-mock-adapter": "^2.1.0",
+    "nodemon": "^3.0.0",
+    "openapi-typescript": "^7.4.1",
+    "typescript": "^5.3.0"
+  }
+}

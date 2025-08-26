@@ -1,0 +1,43 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**"]
+    },
+    "bundle": {
+      "dependsOn": ["^bundle"],
+      "outputs": ["dist/**", ".next/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "outputs": []
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": [],
+      "cache": false
+    },
+    "@entrip/ui#bundle": {
+      "outputs": ["packages/ui/dist/**"]
+    },
+    "@entrip/ui#dev": {
+      "cache": false,
+      "persistent": true,
+      "outputs": []
+    },
+    "@entrip/web#dev": {
+      "cache": false,
+      "persistent": true,
+      "outputs": []
+    },
+    "@entrip/web#bundle": {
+      "outputs": ["apps/web/.next/**"]
+    }
+  }
+}

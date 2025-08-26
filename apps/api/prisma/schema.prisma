@@ -1,0 +1,585 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 사용자 관리
+model User {
+  id              String          @id @default(cuid())
+  email           String          @unique
+  name            String
+  password        String
+  role            UserRole        @default(USER)
+  department      String?
+  companyCode     String          // 회사 코드 - 회사별 사용자 구분용
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations - Booking
+  bookings        Booking[]
+  bookingHistory  BookingHistory[]
+  approvals       Approval[]      @relation("Requester")
+  approvedItems   Approval[]      @relation("Approver")
+  accounts        Account[]
+  transactions    Transaction[]
+  
+  // Relations - Messaging
+  conversations   ConversationParticipant[] @relation("UserConversations")
+  invitedParticipants ConversationParticipant[] @relation("ParticipantInviter")
+  sentMessages    Message[]       @relation("SentMessages")
+  messageReads    MessageRead[]   @relation("MessageReads")
+  messageReactions MessageReaction[] @relation("MessageReactions")
+  presence        UserPresence?
+  
+  @@index([companyCode])
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  USER
+}
+
+// 예약 관리
+model Booking {
+  id              String          @id @default(cuid())
+  bookingNumber   String          @unique
+  companyCode     String          // 회사 코드 - 회사별 데이터 구분용
+  customerName    String
+  teamName        String
+  teamType        String          // 팀 타입 (필수) - 추가
+  bookingType     BookingType
+  origin          String          // 출발지 (필수) - 추가
+  destination     String
+  startDate       DateTime
+  endDate         DateTime
+  paxCount        Int
+  nights          Int
+  days            Int
+  status          BookingStatus   @default(PENDING)
+  manager         String          // 담당자 (필수) - 추가
+  
+  // 고객 정보 - 추가
+  representative  String?         // 대표자
+  contact         String?         // 연락처
+  email           String?         // 이메일
+  
+  // 금액 정보
+  totalPrice      Decimal
+  depositAmount   Decimal?
+  currency        String          @default("KRW")
+  
+  // 상세 정보
+  flightInfo      Json?           // 향후 제거 예정
+  hotelInfo       Json?           // 향후 제거 예정
+  insuranceInfo   Json?
+  notes           String?
+  memo            String?         // 메모 (500자 제한) - 추가
+  
+  // 메타데이터
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  createdBy       String
+  updatedBy       String?
+  
+  // Relations
+  user            User            @relation(fields: [createdBy], references: [id])
+  events          BookingEvent[]
+  history         BookingHistory[]
+  approvals       Approval[]
+  transactions    Transaction[]
+  documents       Document[]
+  flights         Flight[]        // 추가
+  vehicles        Vehicle[]       // 추가
+  hotels          Hotel[]         // 추가
+  settlements     Settlement[]    // 추가
+  
+  @@index([status, startDate])
+  @@index([customerName])
+  @@index([teamName])
+  @@index([companyCode])
+  @@index([manager])              // 추가
+  }
+
+enum BookingType {
+  PACKAGE
+  FIT
+  GROUP
+  BUSINESS
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+// 예약 변경 이력
+model BookingHistory {
+  id              String          @id @default(cuid())
+  bookingId       String
+  action          String
+  changedFields   Json
+  previousValues  Json?
+  newValues       Json?
+  changedAt       DateTime        @default(now())
+  changedBy       String
+  
+  // Relations
+  booking         Booking         @relation(fields: [bookingId], references: [id])
+  user            User            @relation(fields: [changedBy], references: [id])
+  
+  @@index([bookingId, changedAt])
+}
+
+// 결재 관리
+model Approval {
+  id              String          @id @default(cuid())
+  approvalNumber  String          @unique
+  type            ApprovalType
+  title           String
+  content         String
+  amount          Decimal?
+  status          ApprovalStatus  @default(PENDING)
+  
+  // 결재선
+  requesterId     String
+  approverId      String
+  approvedAt      DateTime?
+  rejectReason    String?
+  
+  // 연관 데이터
+  bookingId       String?
+  accountId       String?
+  
+  // 메타데이터
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  requester       User            @relation("Requester", fields: [requesterId], references: [id])
+  approver        User            @relation("Approver", fields: [approverId], references: [id])
+  booking         Booking?        @relation(fields: [bookingId], references: [id])
+  account         Account?        @relation(fields: [accountId], references: [id])
+  
+  @@index([status, requesterId])
+  @@index([status, approverId])
+}
+
+enum ApprovalType {
+  BOOKING
+  PAYMENT
+  REFUND
+  MISC
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// 계좌 관리
+model Account {
+  id              String          @id @default(cuid())
+  name            String
+  accountNumber   String          @unique
+  bankName        String
+  currency        String          @default("KRW")
+  balance         Decimal         @default(0)
+  isActive        Boolean         @default(true)
+  
+  // 담당자
+  managerId       String
+  
+  // 메타데이터
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  manager         User            @relation(fields: [managerId], references: [id])
+  transactions    Transaction[]
+  approvals       Approval[]
+  
+  @@index([managerId])
+}
+
+// 거래 내역
+model Transaction {
+  id              String          @id @default(cuid())
+  transactionNumber String        @unique
+  type            TransactionType
+  amount          Decimal
+  currency        String
+  exchangeRate    Decimal?
+  description     String
+  
+  // 계좌 정보
+  accountId       String
+  counterparty    String?
+  
+  // 연관 데이터
+  bookingId       String?
+  userId          String
+  
+  // 메타데이터
+  transactionDate DateTime        @default(now())
+  createdAt       DateTime        @default(now())
+  
+  // Relations
+  account         Account         @relation(fields: [accountId], references: [id])
+  booking         Booking?        @relation(fields: [bookingId], references: [id])
+  user            User            @relation(fields: [userId], references: [id])
+  
+  @@index([accountId, transactionDate])
+  @@index([bookingId])
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER_IN
+  TRANSFER_OUT
+}
+
+// 문서 관리
+model Document {
+  id              String          @id @default(cuid())
+  fileName        String
+  fileUrl         String
+  fileType        String
+  fileSize        Int
+  
+  // 연관 데이터
+  bookingId       String
+  uploadedBy      String
+  
+  // 메타데이터
+  uploadedAt      DateTime        @default(now())
+  
+  // Relations
+  booking         Booking         @relation(fields: [bookingId], references: [id])
+  
+  @@index([bookingId])
+}
+
+// 예약 이벤트
+model BookingEvent {
+  id              String          @id @default(cuid())
+  booking         Booking         @relation(fields: [bookingId], references: [id])
+  bookingId       String
+  date            DateTime
+  typeCode        String          // GF | IN | HM | AT
+  status          BookingStatus
+  
+  @@index([bookingId, date])
+}
+
+// 환율 정보 (캐싱용)
+model ExchangeRate {
+  id              String          @id @default(cuid())
+  fromCurrency    String
+  toCurrency      String
+  rate            Decimal
+  validFrom       DateTime
+  validUntil      DateTime
+  source          String          @default("MANUAL")
+  
+  @@unique([fromCurrency, toCurrency, validFrom])
+  @@index([validFrom, validUntil])
+}
+
+// ==================== MESSAGING SYSTEM ====================
+
+// 대화방 (1:1 또는 그룹)
+model Conversation {
+  id              String          @id @default(cuid())
+  type            ConversationType @default(DIRECT)
+  name            String?         // 그룹 채팅방 이름
+  avatar          String?         // 그룹 채팅방 아바타
+  lastMessageId   String?         @unique
+  lastActivity    DateTime        @default(now())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  participants    ConversationParticipant[]
+  messages        Message[]
+  lastMessage     Message?        @relation("LastMessage", fields: [lastMessageId], references: [id])
+  
+  @@index([lastActivity])
+}
+
+enum ConversationType {
+  DIRECT    // 1:1 대화
+  GROUP     // 그룹 대화
+  CHANNEL   // 공개 채널
+}
+
+// 대화 참여자
+model ConversationParticipant {
+  id              String          @id @default(cuid())
+  conversationId  String
+  userId          String
+  role            ParticipantRole @default(MEMBER)
+  nickname        String?         // 대화방별 닉네임
+  joinedAt        DateTime        @default(now())
+  lastReadAt      DateTime        @default(now())
+  isNotificationEnabled Boolean   @default(true)
+  muted           Boolean         @default(false) // 알림 음소거
+  invitedById     String?         // 초대한 사용자
+  
+  // Relations
+  conversation    Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user            User            @relation("UserConversations", fields: [userId], references: [id])
+  invitedBy       User?           @relation("ParticipantInviter", fields: [invitedById], references: [id])
+  
+  @@unique([conversationId, userId])  // 중복 참여 방지
+  @@index([userId])
+  @@index([userId, conversationId])   // 조회 최적화
+  @@index([conversationId, role])     // 권한별 조회
+  @@index([conversationId, lastReadAt]) // unread 계산 최적화
+}
+
+enum ParticipantRole {
+  OWNER     // 방장
+  ADMIN     // 관리자
+  MEMBER    // 일반 멤버
+}
+
+// 메시지
+model Message {
+  id              String          @id @default(cuid())
+  conversationId  String
+  senderId        String
+  content         String?         // 텍스트 내용
+  type            MessageType     @default(TEXT)
+  metadata        Json?           // 추가 메타데이터
+  isEdited        Boolean         @default(false)
+  isDeleted       Boolean         @default(false)
+  editedAt        DateTime?
+  deletedAt       DateTime?
+  createdAt       DateTime        @default(now())
+  
+  // Relations
+  conversation    Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender          User            @relation("SentMessages", fields: [senderId], references: [id])
+  readBy          MessageRead[]
+  attachments     MessageAttachment[]
+  reactions       MessageReaction[]
+  replyTo         Message?        @relation("MessageReplies", fields: [replyToId], references: [id])
+  replyToId       String?
+  replies         Message[]       @relation("MessageReplies")
+  lastMessageFor  Conversation[]  @relation("LastMessage")
+  
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+enum MessageType {
+  TEXT        // 텍스트 메시지
+  IMAGE       // 이미지
+  FILE        // 파일
+  VOICE       // 음성 메시지
+  VIDEO       // 비디오
+  LOCATION    // 위치 공유
+  SYSTEM      // 시스템 메시지
+}
+
+// 메시지 읽음 상태
+model MessageRead {
+  id              String          @id @default(cuid())
+  messageId       String
+  userId          String
+  readAt          DateTime        @default(now())
+  
+  // Relations
+  message         Message         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user            User            @relation("MessageReads", fields: [userId], references: [id])
+  
+  @@unique([messageId, userId])
+  @@index([userId, readAt])
+}
+
+// 메시지 첨부파일
+model MessageAttachment {
+  id              String          @id @default(cuid())
+  messageId       String
+  fileName        String
+  fileUrl         String
+  fileType        String
+  fileSize        Int
+  thumbnailUrl    String?         // 이미지/비디오 썸네일
+  createdAt       DateTime        @default(now())
+  
+  // Relations
+  message         Message         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  @@index([messageId])
+}
+
+// 메시지 반응 (이모지)
+model MessageReaction {
+  id              String          @id @default(cuid())
+  messageId       String
+  userId          String
+  emoji           String          // 이모지 유니코드
+  createdAt       DateTime        @default(now())
+  
+  // Relations
+  message         Message         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user            User            @relation("MessageReactions", fields: [userId], references: [id])
+  
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+}
+
+// 사용자 온라인 상태
+model UserPresence {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  status          PresenceStatus  @default(OFFLINE)
+  lastSeen        DateTime        @default(now())
+  isTyping        Boolean         @default(false)
+  typingInConversation String?
+  
+  // Relations
+  user            User            @relation(fields: [userId], references: [id])
+  
+  @@index([status])
+}
+
+enum PresenceStatus {
+  ONLINE      // 온라인
+  AWAY        // 자리비움
+  BUSY        // 바쁨
+  OFFLINE     // 오프라인
+}
+
+// ==================== BOOKING RELATED TABLES ====================
+
+// 항공편 정보
+model Flight {
+  id              String          @id @default(cuid())
+  bookingId       String          // FK to Booking
+  
+  // 항공편 정보
+  airline         String          // 항공사 (필수)
+  flightNo        String?         // 항공편명 (선택)
+  departDate      String?         // 출발일 (선택, ISO 날짜 형식)
+  departureTime   String          // 출발시간 (필수, HH:MM 형식)
+  arriveDate      String?         // 도착일 (선택, ISO 날짜 형식)
+  arrivalTime     String          // 도착시간 (필수, HH:MM 형식)
+  from            String?         // 출발지 (선택)
+  to              String?         // 목적지 (선택)
+  note            String?         // 비고 (선택)
+  
+  // 메타데이터
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@index([bookingId])
+  @@index([departDate, departureTime])
+}
+
+// 차량 정보
+model Vehicle {
+  id              String          @id @default(cuid())
+  bookingId       String          // FK to Booking
+  
+  // 차량 정보
+  vendor          String?         // 업체명 (선택)
+  type            String          // 차량 유형 (필수)
+  count           Int?            // 대수 (선택)
+  passengers      Int             // 탑승 인원 (필수, 최소 1)
+  duration        String          // 이용 시간 (필수)
+  route           String?         // 노선 (선택)
+  pickupDate      String?         // 픽업일 (선택, ISO 날짜 형식)
+  pickupTime      String?         // 픽업시간 (선택, HH:MM 형식)
+  returnDate      String?         // 반납일 (선택, ISO 날짜 형식)
+  returnTime      String?         // 반납시간 (선택, HH:MM 형식)
+  driver          String?         // 기사님 (선택)
+  phone           String?         // 연락처 (선택)
+  note            String?         // 비고 (선택)
+  
+  // 메타데이터
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@index([bookingId])
+  @@index([pickupDate, pickupTime])
+}
+
+// 호텔 정보
+model Hotel {
+  id              String          @id @default(cuid())
+  bookingId       String          // FK to Booking
+  
+  // 호텔 정보
+  name            String          // 호텔명 (필수)
+  roomType        String          // 객실 타입 (필수)
+  checkIn         String          // 체크인 날짜 (필수, ISO 날짜 형식)
+  checkOut        String          // 체크아웃 날짜 (필수, ISO 날짜 형식)
+  nights          Int?            // 박수 (선택, 자동 계산 가능)
+  breakfast       String?         // 조식 정보 (선택)
+  address         String?         // 주소 (선택)
+  phone           String?         // 전화번호 (선택)
+  note            String?         // 비고 (선택)
+  
+  // 메타데이터
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@index([bookingId])
+  @@index([checkIn, checkOut])
+}
+
+// 정산 유형
+enum SettlementType {
+  income          // 입금
+  expense         // 출금
+}
+
+// 정산 정보
+model Settlement {
+  id              String          @id @default(cuid())
+  bookingId       String          // FK to Booking
+  
+  // 정산 정보
+  type            SettlementType  // 입금/출금 (필수)
+  currency        String          // 통화 (필수, 3글자 코드)
+  amount          Decimal         // 금액 (필수, 소수점 2자리)
+  exchangeRate    Decimal?        // 환율 (선택)
+  quantity        Int?            // 수량 (선택)
+  unitPrice       Decimal?        // 단가 (선택)
+  memo            String?         // 메모 (선택)
+  
+  // 메타데이터
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@index([bookingId])
+  @@index([type, currency])
+}

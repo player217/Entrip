@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: entrip-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    networks:
+      - entrip-observability
+    restart: unless-stopped
+    environment:
+      - LOKI_AUTH_ENABLED=false
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: entrip-promtail
+    volumes:
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - entrip-observability
+    depends_on:
+      loki:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  loki-data:
+    driver: local
+
+networks:
+  entrip-observability:
+    external: true

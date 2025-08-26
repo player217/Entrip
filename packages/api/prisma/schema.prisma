@@ -1,0 +1,293 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum BookingType {
+  incentive
+  golf
+  honeymoon
+  airtel
+  etc
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  done
+  cancelled
+}
+
+enum CalendarEventStatus {
+  pending
+  confirmed
+  cancelled
+}
+
+enum FinanceType {
+  income
+  expense
+}
+
+enum FinanceStatus {
+  pending
+  approved
+  rejected
+  deleted
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
+enum ApprovalTargetType {
+  finance
+  custom
+}
+
+enum ApprovalAction {
+  approve
+  reject
+}
+
+enum AccountRole {
+  admin
+  approver
+  staff
+  viewer
+}
+
+enum AccountStatus {
+  active
+  suspended
+  deleted
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model Booking {
+  // Primary ID
+  id          String        @id @default(cuid())
+  
+  // Basic Information
+  teamName    String        // @db.VarChar(100) - SQLite doesn't support this
+  type        BookingType
+  origin      String        // @db.VarChar(60)
+  destination String        // @db.VarChar(60)
+  startDate   DateTime
+  endDate     DateTime
+  
+  // Passenger Information
+  totalPax    Int           @default(1)
+  
+  // Coordination
+  coordinator String        // @db.VarChar(60)
+  
+  // Financial
+  revenue     Decimal?      // @db.Numeric(14, 2) - SQLite uses REAL
+  
+  // Additional Information
+  notes       String?       // @db.Text
+  status      BookingStatus @default(pending)
+  
+  // Audit Fields (Common to all models)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?     // For soft delete
+  
+  // Relations (will be added later when Team model is created)
+  // team        Team?         @relation(fields: [teamId], references: [id])
+  // teamId      String?
+  // auditLogs   AuditLog[]
+  
+  // Indexes
+  @@index([status])
+  @@index([startDate, endDate])
+  @@index([createdAt])
+}
+
+model CalendarEvent {
+  // Primary ID
+  id          String              @id @default(cuid())
+  
+  // Event Information
+  title       String
+  description String?
+  location    String?
+  
+  // Timing
+  start       DateTime
+  end         DateTime
+  allDay      Boolean             @default(false)
+  
+  // Visual
+  color       String?             // HEX color (e.g., "#2563EB")
+  
+  // Status and Organization
+  status      CalendarEventStatus @default(confirmed)
+  
+  // Relations (will be added later)
+  // teamId      String?
+  // team        Team?              @relation(fields: [teamId], references: [id])
+  
+  // Audit Fields (Common to all models)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  deletedAt   DateTime?           // For soft delete
+  createdBy   String?             // User ID who created this event
+  updatedBy   String?             // User ID who last updated this event
+  
+  // Indexes
+  @@index([start, end])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model FinanceRecord {
+  // Primary ID
+  id            String        @id @default(cuid())
+  
+  // Finance Information
+  type          FinanceType
+  category      String        // e.g., "travel", "accommodation", "meals"
+  amount        Decimal       // Amount in original currency
+  currency      String        @default("KRW") // Currency code (KRW, USD, EUR, etc.)
+  exchangeRate  Decimal       @default(1.0) // Exchange rate to base currency
+  occurredAt    DateTime      // When the transaction occurred
+  
+  // Description and References
+  description   String?
+  remarks       String?       // Additional remarks for approval process
+  
+  // Relations (will be added later)
+  // accountId     String?
+  // account       Account?     @relation(fields: [accountId], references: [id])
+  // projectId     String?
+  // project       Project?     @relation(fields: [projectId], references: [id])
+  
+  // Approval Workflow
+  status        FinanceStatus @default(pending)
+  approvedBy    String?       // User ID who approved
+  approvedAt    DateTime?     // When it was approved
+  rejectedBy    String?       // User ID who rejected
+  rejectedAt    DateTime?     // When it was rejected
+  
+  // Audit Fields (Common to all models)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?     // For soft delete
+  createdBy     String?       // User ID who created this record
+  updatedBy     String?       // User ID who last updated this record
+  
+  // Indexes
+  @@index([type, status])
+  @@index([occurredAt])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Approval {
+  // Primary ID
+  id          String              @id @default(cuid())
+  
+  // Request Information
+  title       String              // Approval request title
+  content     String              // Detailed request content
+  targetType  ApprovalTargetType  // Type of target being approved
+  targetId    String?             // ID of the target (e.g., finance record ID)
+  
+  // Financial Information (optional, synced from target)
+  amount      Decimal?            // Amount being approved
+  currency    String              @default("KRW") // Currency code
+  
+  // Approval Flow
+  status      ApprovalStatus      @default(pending)
+  currentStep Int                 @default(0) // Current approval step index
+  requesterId String              // User who requested approval
+  
+  // Relations
+  steps       ApprovalStep[]
+  
+  // Audit Fields (Common to all models)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  deletedAt   DateTime?           // For soft delete
+  
+  // Indexes
+  @@index([status])
+  @@index([requesterId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+}
+
+model ApprovalStep {
+  // Primary ID
+  id          String          @id @default(cuid())
+  
+  // Step Information
+  approvalId  String          // Reference to parent approval
+  approverId  String          // User who should approve this step
+  order       Int             // Step order (0-based index)
+  
+  // Action Information
+  action      ApprovalAction? // Action taken (approve/reject)
+  comment     String?         // Comment from approver
+  actedAt     DateTime?       // When action was taken
+  
+  // Relations
+  approval    Approval        @relation(fields: [approvalId], references: [id], onDelete: Cascade)
+  
+  // Audit Fields
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  // Indexes and Constraints
+  @@index([approvalId, order])
+  @@index([approverId])
+  @@unique([approvalId, order]) // Ensure unique order per approval
+}
+
+model Account {
+  // Primary ID
+  id        String        @id @default(cuid())
+  
+  // Basic Information
+  name      String        // Full name of the user
+  email     String        @unique // Unique email address
+  phone     String?       // Optional phone number
+  
+  // Role and Status
+  role      AccountRole   @default(staff)
+  status    AccountStatus @default(active)
+  
+  // Optional Authentication Fields (for future use)
+  passwordHash String?     // Hashed password (optional for future auth)
+  lastLoginAt  DateTime?   // Last login timestamp
+  
+  // Audit Fields (Common to all models)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  deletedAt DateTime?     // For soft delete
+  
+  // Indexes
+  @@index([email])
+  @@index([role])
+  @@index([status])
+  @@index([createdAt])
+}

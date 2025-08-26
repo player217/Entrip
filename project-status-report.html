@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrip 프로젝트 상태 보고서</title>
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; }
+        h2 { color: #555; margin-top: 30px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #e8f5e9; border-left: 4px solid #4CAF50; }
+        .error { background: #ffebee; border-left: 4px solid #f44336; }
+        .warning { background: #fff3e0; border-left: 4px solid #ff9800; }
+        .info { background: #e3f2fd; border-left: 4px solid #2196F3; }
+        code { background: #f5f5f5; padding: 2px 5px; border-radius: 3px; font-family: 'Consolas', monospace; }
+        pre { background: #263238; color: #aed581; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 10px; text-align: left; border: 1px solid #ddd; }
+        th { background: #f5f5f5; font-weight: bold; }
+        .timestamp { color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Entrip 프로젝트 상태 보고서</h1>
+        <p class="timestamp">최종 업데이트: 2025-06-29 오후 3:17</p>
+
+        <h2>✅ 완료된 작업</h2>
+        <div class="status success">
+            <h3>1. 테스트 인프라 수정 완료</h3>
+            <ul>
+                <li>Express 앱과 서버 분리 (app.ts / index.ts)</li>
+                <li>Swagger 테스트 6개 모두 통과</li>
+                <li>DataGrid 테스트를 TanStack Table API로 업데이트</li>
+                <li>Jest/TypeScript 설정에서 백업 폴더 제외</li>
+            </ul>
+        </div>
+
+        <div class="status success">
+            <h3>2. 개발 서버 실행 문제 해결</h3>
+            <ul>
+                <li>ts-node-dev를 @entrip/api 패키지에 직접 설치</li>
+                <li>dev 스크립트를 pnpm exec 사용으로 수정</li>
+                <li>style-dictionary config.json 파일 생성</li>
+                <li>design-tokens 빌드 성공</li>
+            </ul>
+        </div>
+
+        <h2>📊 현재 상태</h2>
+        <table>
+            <tr>
+                <th>항목</th>
+                <th>상태</th>
+                <th>설명</th>
+            </tr>
+            <tr>
+                <td>API 서버</td>
+                <td>✅ 실행 가능</td>
+                <td>포트 4000 또는 환경변수로 변경 가능</td>
+            </tr>
+            <tr>
+                <td>웹 서버</td>
+                <td>✅ 실행 가능</td>
+                <td>포트 3000에서 Next.js 실행</td>
+            </tr>
+            <tr>
+                <td>테스트</td>
+                <td>⚠️ 일부 실패</td>
+                <td>39개 중 29개 통과 (74.4%)</td>
+            </tr>
+            <tr>
+                <td>TypeScript</td>
+                <td>❌ 오류 존재</td>
+                <td>127개 타입 오류 (주로 UI 컴포넌트)</td>
+            </tr>
+            <tr>
+                <td>ESLint</td>
+                <td>⚠️ 경고 존재</td>
+                <td>13개 에러, 100개 경고</td>
+            </tr>
+        </table>
+
+        <h2>🔧 주요 수정 파일</h2>
+        <pre><code># 새로 생성된 파일
++ apps/api/src/app.ts (Express 앱 로직 분리)
++ packages/design-tokens/config.json (style-dictionary 설정)
+
+# 수정된 파일
+~ apps/api/src/index.ts (서버 실행 로직만 포함)
+~ apps/api/package.json (pnpm exec 추가)
+~ apps/api/tests/swagger.spec.ts (app.ts import)
+~ tsconfig.json (백업 폴더 exclude)
+~ jest.config.js (백업 폴더 ignore)</code></pre>
+
+        <h2>🚀 서버 실행 방법</h2>
+        <pre><code># 전체 개발 서버 실행
+pnpm run dev
+
+# API 서버만 실행
+pnpm run dev:api
+
+# 웹 서버만 실행
+pnpm run dev:web
+
+# 다른 포트로 API 실행
+PORT=4001 pnpm --filter @entrip/api dev</code></pre>
+
+        <h2>⚠️ 남은 이슈</h2>
+        <div class="status warning">
+            <h3>TypeScript 오류 (127개)</h3>
+            <ul>
+                <li>CalendarMonth props 타입 불일치</li>
+                <li>DataGrid 사용법 변경 필요</li>
+                <li>any 타입 남용</li>
+                <li>누락된 컴포넌트 import (BookingModal)</li>
+            </ul>
+        </div>
+
+        <div class="status warning">
+            <h3>테스트 실패 (10개)</h3>
+            <ul>
+                <li>CommandBar 테스트 - react/display-name 오류</li>
+                <li>Input 테스트 - props 불일치</li>
+                <li>BookingModal 테스트 - 컴포넌트 누락</li>
+            </ul>
+        </div>
+
+        <h2>📋 다음 단계</h2>
+        <div class="status info">
+            <ol>
+                <li>TypeScript 오류 수정 (UI 컴포넌트 props 정리)</li>
+                <li>누락된 컴포넌트 구현 (BookingModal)</li>
+                <li>ESLint 오류 정리 (@ts-ignore → @ts-expect-error)</li>
+                <li>precommit 스크립트 통과 확인</li>
+                <li>openapi.json을 packages/shared/openapi/로 이동</li>
+            </ol>
+        </div>
+
+        <h2>✨ 성과</h2>
+        <div class="status success">
+            <ul>
+                <li>개발 서버 실행 가능 상태로 복구 ✅</li>
+                <li>테스트 인프라 정상 작동 ✅</li>
+                <li>API 테스트 100% 통과 ✅</li>
+                <li>디자인 토큰 빌드 성공 ✅</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

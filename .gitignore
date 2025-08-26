@@ -1,0 +1,80 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+.pnpm-store
+
+# testing
+coverage
+.playwright-mcp
+audit-bundle
+*.tar.gz
+
+# production
+build
+dist
+.next
+out
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+
+# local env files
+.env*.local
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# storybook
+storybook-static
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+temp_*.sql
+test-*.html
+*.tmp
+
+# Logs
+logs
+*.log
+
+# E2E / Testing Artifacts
+playwright-report/
+playwright/.cache/
+e2e/screenshots/
+test-results/
+
+# Generated files
+packages/shared/src/generated/
+
+# Backup folders
+*_backup_*
+*_old
+*.orig
+ui_backup_*
+app_backup_*
+packages_backup_*
+Entrip_demo_backup_*

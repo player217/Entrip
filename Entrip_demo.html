@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrip 프로젝트 상태</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #016B9F 0%, #0099cc 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .section {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #016B9F;
+            padding-bottom: 10px;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        .status.running {
+            background: #4CAF50;
+            color: white;
+        }
+        .status.stopped {
+            background: #f44336;
+            color: white;
+        }
+        .status.building {
+            background: #FF9800;
+            color: white;
+        }
+        .status.completed {
+            background: #2196F3;
+            color: white;
+        }
+        .update-time {
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+        }
+        .code-block {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            overflow-x: auto;
+        }
+        .progress {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: #4CAF50;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        ul {
+            line-height: 1.8;
+        }
+        .highlight {
+            background: #ffeb3b;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .issue {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Entrip 프로젝트 상태 대시보드</h1>
+        <div class="update-time">마지막 업데이트: 2025년 8월 1일 오후 1:31</div>
+    </div>
+
+    <div class="section">
+        <h2>📊 프로젝트 상태</h2>
+        <p><strong>현재 작업:</strong> 헤더-사이드바 조인트 부분 오목한 곡선 처리</p>
+        <div class="status running">서비스 실행 중</div>
+        <div class="status completed">빌드 완료</div>
+        
+        <h3>실행 중인 서비스:</h3>
+        <ul>
+            <li>PostgreSQL: <span class="status running">Running</span> - localhost:5432</li>
+            <li>API Server: <span class="status running">Running</span> - http://localhost:4000</li>
+            <li>Web Application: <span class="status running">Running</span> - http://localhost:3000</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🔧 최근 작업 내역</h2>
+        
+        <div class="success">
+            <strong>✅ 완료된 작업:</strong>
+            <ul>
+                <li>Docker 컨테이너 전체 재빌드 완료</li>
+                <li>shared 모듈 빌드 문제 해결</li>
+                <li>ContentShell 컴포넌트 마스킹 단순화</li>
+                <li>헤더-사이드바 조인트 부분에 오목한 곡선 효과 적용</li>
+            </ul>
+        </div>
+
+        <h3>구현된 기능:</h3>
+        <ul>
+            <li>ContentShell.tsx에서 복잡한 두 개의 마스킹 요소를 제거</li>
+            <li>CSS를 사용한 오목한 곡선 효과 구현</li>
+            <li>borderRadius와 원형 요소를 조합하여 자연스러운 오목 곡선 생성</li>
+            <li>흰색 선 문제 해결을 위한 미세 조정</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>💻 코드 변경사항</h2>
+        
+        <h3>ContentShell.tsx 수정 내용:</h3>
+        <div class="code-block">
+// 오목한 코너를 만들기 위한 요소들
+// 1. 파란색 배경으로 모서리 채우기
+&lt;div style={{
+  width: '24px',
+  height: '24px',
+  background: '#016B9F',
+  zIndex: 10
+}} /&gt;
+
+// 2. 흰색 원으로 오목한 효과 만들기
+&lt;div style={{
+  width: '48px',
+  height: '48px',
+  background: 'white',
+  borderRadius: '50%',
+  transform: 'translate(-24px, -24px)',
+  zIndex: 20
+}} /&gt;
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📝 프로젝트 구조</h2>
+        <ul>
+            <li><strong>Frontend (Web):</strong> Next.js 14, React 18, TypeScript</li>
+            <li><strong>Backend (API):</strong> Express, Prisma, PostgreSQL</li>
+            <li><strong>모노레포:</strong> pnpm workspaces 사용</li>
+            <li><strong>컨테이너화:</strong> Docker Compose로 전체 스택 관리</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🎯 다음 단계</h2>
+        <ul>
+            <li>UI 개선사항 지속적 적용</li>
+            <li>기능 테스트 및 안정화</li>
+            <li>성능 최적화</li>
+        </ul>
+    </div>
+</body>
+</html>

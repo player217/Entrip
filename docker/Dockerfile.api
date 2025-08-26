@@ -1,0 +1,72 @@
+# Build stage
+FROM node:18-alpine AS builder
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+COPY pnpm-workspace.yaml ./
+COPY packages/api/package.json ./packages/api/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/design-tokens/package.json ./packages/design-tokens/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY packages/api ./packages/api
+COPY packages/shared ./packages/shared
+COPY packages/design-tokens ./packages/design-tokens
+COPY tsconfig.base.json ./
+COPY packages/api/tsconfig.json ./packages/api/
+COPY packages/shared/tsconfig.json ./packages/shared/
+COPY packages/design-tokens/tsconfig.json ./packages/design-tokens/
+
+# Copy Prisma schema
+COPY packages/api/prisma ./packages/api/prisma
+
+# Build shared packages first
+RUN pnpm --filter @entrip/design-tokens build
+RUN pnpm --filter @entrip/shared build
+
+# Generate Prisma client and build API
+WORKDIR /app/packages/api
+RUN npx prisma generate
+RUN pnpm build
+
+# Production stage
+FROM node:18-alpine
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
+WORKDIR /app
+
+# Copy package files
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+
+# Copy built packages
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/node_modules ./node_modules
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
+
+# Expose port
+EXPOSE 4000
+
+# Set environment
+ENV NODE_ENV=production
+
+# Start command
+CMD ["node", "packages/api/dist/index.js"]

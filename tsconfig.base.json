@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "paths": {
+      "@entrip/design-tokens": ["packages/design-tokens/src/index.ts"],
+      "@entrip/shared": ["packages/shared/src/index.ts"],
+      "@entrip/shared/*": ["packages/shared/src/*"],
+      "@entrip/ui": ["packages/ui/src/index.ts"],
+      "@entrip/ui/*": ["packages/ui/src/*"]
+    }
+  },
+  "references": [
+    { "path": "packages/design-tokens" },
+    { "path": "packages/shared" },
+    { "path": "packages/ui" },
+    { "path": "apps/web" }
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    ".next",
+    "out",
+    "docs",
+    "**/*.md",
+    "**/*_backup_*/**",
+    "*_backup_*/**",
+    "ui_backup_*/**",
+    "app_backup_*/**",
+    "packages_backup_*/**"
+  ]
+}

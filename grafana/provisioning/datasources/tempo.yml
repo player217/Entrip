@@ -1,0 +1,40 @@
+apiVersion: 1
+
+datasources:
+  - name: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    jsonData:
+      httpMethod: GET
+      serviceMap:
+        datasourceUid: prometheus
+      tracesToLogs:
+        datasourceUid: loki
+        tags: 
+          - "container_name"
+          - "service"
+        filterByTraceID: true
+        filterBySpanID: false
+        mapTagNamesEnabled: true
+        mappedTags:
+          - key: "service.name"
+            value: "service"
+      tracesToMetrics:
+        datasourceUid: prometheus
+        tags:
+          - key: "service.name"
+            value: "service"
+          - key: "http.method"
+            value: "method"
+        queries:
+          - name: "Request rate"
+            query: 'sum(rate(flight_requests_total{service="$${service}",method="$${method}"}[5m]))'
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false
+      lokiSearch:
+        datasourceUid: loki
+    isDefault: false
+    editable: true

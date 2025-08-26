@@ -1,0 +1,1 @@
+{"code":404,"message":"요청한 엔드포인트를 찾을 수 없습니다","details":{"path":"/api/v1/bookings/export","method":"POST"}}

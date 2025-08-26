@@ -1,0 +1,209 @@
+name: Deploy Canary
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      canary_percentage:
+        description: 'Canary traffic percentage (0-100)'
+        required: false
+        default: '10'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ secrets.DOCKER_USERNAME }}/entrip-api
+        tags: |
+          type=ref,event=branch
+          type=sha,prefix=canary-
+          
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./apps/api
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+  deploy-canary:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        echo "KUBECONFIG=$PWD/kubeconfig" >> $GITHUB_ENV
+        
+    - name: Install Istio CLI
+      run: |
+        curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.20.0 sh -
+        echo "$PWD/istio-1.20.0/bin" >> $GITHUB_PATH
+        
+    - name: Update canary deployment
+      run: |
+        IMAGE_TAG="${{ needs.build-and-push.outputs.image_tag }}"
+        CANARY_WEIGHT="${{ github.event.inputs.canary_percentage || '10' }}"
+        
+        # Update canary deployment image
+        kubectl set image deployment/entrip-api-canary \
+          entrip-api=$IMAGE_TAG \
+          -n entrip
+          
+        # Wait for rollout
+        kubectl rollout status deployment/entrip-api-canary -n entrip --timeout=300s
+        
+        # Update traffic split using Istio
+        cat <<EOF | kubectl apply -f -
+        apiVersion: networking.istio.io/v1beta1
+        kind: VirtualService
+        metadata:
+          name: entrip-api
+          namespace: entrip
+        spec:
+          hosts:
+          - entrip-api
+          http:
+          - match:
+            - headers:
+                x-canary:
+                  exact: "true"
+            route:
+            - destination:
+                host: entrip-api
+                subset: canary
+              weight: 100
+          - route:
+            - destination:
+                host: entrip-api
+                subset: stable
+              weight: $((100 - CANARY_WEIGHT))
+            - destination:
+                host: entrip-api
+                subset: canary
+              weight: $CANARY_WEIGHT
+        ---
+        apiVersion: networking.istio.io/v1beta1
+        kind: DestinationRule
+        metadata:
+          name: entrip-api
+          namespace: entrip
+        spec:
+          host: entrip-api
+          subsets:
+          - name: stable
+            labels:
+              version: stable
+          - name: canary
+            labels:
+              version: canary
+        EOF
+        
+        echo "✅ Canary deployment updated with $CANARY_WEIGHT% traffic"
+        
+    - name: Verify canary health
+      run: |
+        CANARY_URL="http://entrip-api.entrip.svc.cluster.local/healthz"
+        
+        # Check canary health with retry
+        for i in {1..10}; do
+          HTTP_CODE=$(kubectl run curl-test-$i --rm -i --restart=Never \
+            --image=curlimages/curl:latest \
+            --command -- curl -s -o /dev/null -w "%{http_code}" \
+            -H "x-canary: true" \
+            $CANARY_URL 2>/dev/null | tail -n1)
+            
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Canary health check passed"
+            break
+          else
+            echo "⏳ Waiting for canary to be ready... (attempt $i/10)"
+            sleep 10
+          fi
+        done
+        
+    - name: Collect initial metrics
+      id: metrics
+      run: |
+        # Query Prometheus for initial SLO metrics
+        PROMETHEUS_URL="http://prometheus.monitoring.svc.cluster.local:9090"
+        
+        # Get current success rate
+        SUCCESS_RATE=$(kubectl run prometheus-query --rm -i --restart=Never \
+          --image=curlimages/curl:latest \
+          --command -- curl -s "$PROMETHEUS_URL/api/v1/query?query=flight_api_success_rate_5m{version=\"canary\"}" \
+          | jq -r '.data.result[0].value[1] // "0"')
+          
+        echo "success_rate=$SUCCESS_RATE" >> $GITHUB_OUTPUT
+        echo "📊 Initial canary success rate: $SUCCESS_RATE"
+        
+    - name: Create monitoring alert
+      run: |
+        cat <<EOF | kubectl apply -f -
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: canary-alerts
+          namespace: monitoring
+        data:
+          canary.rules: |
+            groups:
+            - name: canary
+              interval: 30s
+              rules:
+              - alert: CanaryHighErrorRate
+                expr: |
+                  (1 - flight_api_success_rate_5m{version="canary"}) > 0.10
+                for: 2m
+                labels:
+                  severity: critical
+                  service: entrip-api
+                  version: canary
+                annotations:
+                  summary: "Canary deployment has high error rate"
+                  description: "Canary error rate is {{ \$value | humanizePercentage }} (threshold: 10%)"
+                  action: "Rollback canary deployment"
+        EOF
+        
+        # Reload Prometheus config
+        kubectl rollout restart deployment/prometheus -n monitoring
+        
+    - name: Summary
+      run: |
+        echo "## 🚀 Canary Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Image**: ${{ needs.build-and-push.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Traffic Split**: ${{ github.event.inputs.canary_percentage || '10' }}% canary / $((100 - ${{ github.event.inputs.canary_percentage || '10' }}))% stable" >> $GITHUB_STEP_SUMMARY
+        echo "- **Initial Success Rate**: ${{ steps.metrics.outputs.success_rate }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Monitoring**: Prometheus alerts configured" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "1. Monitor canary metrics for 30 minutes" >> $GITHUB_STEP_SUMMARY
+        echo "2. If SLO maintained (>95%), auto-promote to stable" >> $GITHUB_STEP_SUMMARY
+        echo "3. If errors detected, auto-rollback" >> $GITHUB_STEP_SUMMARY

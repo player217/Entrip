@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Entrip 항공편 조회 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        select { padding: 8px; margin: 10px; width: 200px; }
+        button { padding: 10px 20px; margin: 10px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .error { color: red; }
+        .info { color: blue; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Entrip 항공편 조회 (실제 데이터)</h1>
+    
+    <div>
+        <label>출발 공항:</label>
+        <select id="departure">
+            <option value="">선택하세요</option>
+            <option value="ICN">ICN - 인천공항</option>
+            <option value="PUS">PUS - 김해공항</option>
+            <option value="CJU">CJU - 제주공항</option>
+        </select>
+        
+        <label>도착 공항:</label>
+        <select id="arrival" disabled>
+            <option value="">먼저 출발 공항을 선택하세요</option>
+        </select>
+        
+        <button onclick="searchFlights()">조회</button>
+    </div>
+    
+    <div id="info" class="info"></div>
+    <div id="error" class="error"></div>
+    <div id="results"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:8001';
+        let currentData = null;
+        
+        document.getElementById('departure').addEventListener('change', async (e) => {
+            const departure = e.target.value;
+            const arrivalSelect = document.getElementById('arrival');
+            const infoDiv = document.getElementById('info');
+            
+            if (!departure) {
+                arrivalSelect.disabled = true;
+                arrivalSelect.innerHTML = '<option value="">먼저 출발 공항을 선택하세요</option>';
+                return;
+            }
+            
+            infoDiv.textContent = `API 호출 중: ${API_URL}/api/schedule/${departure}`;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/schedule/${departure}`);
+                const data = await response.json();
+                currentData = data;
+                
+                infoDiv.textContent = `API 응답: ${data.totalFlights || data.flights.length}개 항공편 (${data.method})`;
+                
+                // 도착지 추출
+                const destinations = new Set();
+                data.flights.forEach(flight => {
+                    const dest = flight.destination.split(' ')[0].trim();
+                    if (dest.length === 3) {
+                        destinations.add(dest);
+                    }
+                });
+                
+                // 도착 공항 드롭다운 업데이트
+                arrivalSelect.disabled = false;
+                arrivalSelect.innerHTML = '<option value="">도착 공항을 선택하세요</option>';
+                
+                Array.from(destinations).sort().forEach(dest => {
+                    const option = document.createElement('option');
+                    option.value = dest;
+                    option.textContent = dest;
+                    arrivalSelect.appendChild(option);
+                });
+                
+                document.getElementById('error').textContent = '';
+                
+            } catch (error) {
+                document.getElementById('error').textContent = `오류: ${error.message}`;
+                arrivalSelect.disabled = true;
+            }
+        });
+        
+        function searchFlights() {
+            const departure = document.getElementById('departure').value;
+            const arrival = document.getElementById('arrival').value;
+            
+            if (!departure || !arrival || !currentData) {
+                alert('출발/도착 공항을 모두 선택하세요');
+                return;
+            }
+            
+            // 선택한 도착지로 필터링
+            const filteredFlights = currentData.flights.filter(flight => {
+                const dest = flight.destination.split(' ')[0].trim();
+                return dest === arrival;
+            });
+            
+            // 결과 표시
+            const resultsDiv = document.getElementById('results');
+            
+            if (filteredFlights.length === 0) {
+                resultsDiv.innerHTML = '<p>해당 노선의 항공편이 없습니다.</p>';
+                return;
+            }
+            
+            let html = `<h2>${departure} → ${arrival} 항공편 (${filteredFlights.length}편)</h2>`;
+            html += '<table>';
+            html += '<tr><th>항공사</th><th>편명</th><th>출발</th><th>도착</th><th>운항요일</th></tr>';
+            
+            filteredFlights.forEach(flight => {
+                const days = flight.days ? 
+                    ['월','화','수','목','금','토','일']
+                        .filter((_, i) => flight.days[['mon','tue','wed','thu','fri','sat','sun'][i]])
+                        .join(',') : '매일';
+                
+                html += '<tr>';
+                html += `<td>${flight.airline}</td>`;
+                html += `<td>${flight.flightNo}</td>`;
+                html += `<td>${flight.departureTime}</td>`;
+                html += `<td>${flight.arrivalTime || '-'}</td>`;
+                html += `<td>${days}</td>`;
+                html += '</tr>';
+            });
+            
+            html += '</table>';
+            resultsDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

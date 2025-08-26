@@ -1,0 +1,75 @@
+groups:
+  - name: flight_api_slo
+    rules:
+      # SLO: 95% of requests should return 2xx status codes over 5 minutes
+      - record: flight_api_success_rate_5m
+        expr: |
+          sum(rate(flight_requests_total{status=~"2.."}[5m])) by (endpoint) /
+          sum(rate(flight_requests_total[5m])) by (endpoint)
+      
+      # SLO: 95% of requests should complete within 2 seconds
+      - record: flight_api_latency_slo_5m
+        expr: |
+          histogram_quantile(0.95, sum(rate(flight_request_duration_seconds_bucket[5m])) by (endpoint, le)) < 2
+      
+      # Rate limit alerts - more than 50 rate limits per minute
+      - record: flight_rate_limit_5m
+        expr: |
+          sum(rate(flight_429_total[5m])) by (endpoint) * 60
+
+    # Alert rules
+  - name: flight_api_alerts
+    rules:
+      - alert: FlightAPIHighErrorRate
+        expr: flight_api_success_rate_5m < 0.95
+        for: 2m
+        labels:
+          severity: warning
+          service: flight-api
+        annotations:
+          summary: "Flight API error rate is above 5%"
+          description: "Flight API endpoint {{ $labels.endpoint }} has error rate of {{ $value | humanizePercentage }} (threshold: 95%)"
+      
+      - alert: FlightAPIHighLatency
+        expr: histogram_quantile(0.95, sum(rate(flight_request_duration_seconds_bucket[5m])) by (endpoint, le)) > 2
+        for: 2m
+        labels:
+          severity: warning
+          service: flight-api
+        annotations:
+          summary: "Flight API 95th percentile latency is high"
+          description: "Flight API endpoint {{ $labels.endpoint }} has 95th percentile latency of {{ $value }}s (threshold: 2s)"
+      
+      - alert: FlightAPIExcessiveRateLimit
+        expr: flight_rate_limit_5m > 50
+        for: 1m
+        labels:
+          severity: critical
+          service: flight-api
+        annotations:
+          summary: "Flight API rate limiting is excessive"
+          description: "Flight API endpoint {{ $labels.endpoint }} is receiving {{ $value }} rate limits per minute (threshold: 50/min)"
+      
+      - alert: FlightAPIDown
+        expr: up{job="flight-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: flight-api
+        annotations:
+          summary: "Flight API is down"
+          description: "Flight API is not responding to health checks"
+      
+      - alert: FlightAPICacheHitRateLow
+        expr: |
+          (
+            sum(rate(flight_cache_hits_total[5m])) by (endpoint) /
+            (sum(rate(flight_cache_hits_total[5m])) by (endpoint) + sum(rate(flight_cache_misses_total[5m])) by (endpoint))
+          ) < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: flight-api
+        annotations:
+          summary: "Flight API cache hit rate is low"
+          description: "Flight API endpoint {{ $labels.endpoint }} cache hit rate is {{ $value | humanizePercentage }} (threshold: 80%)"

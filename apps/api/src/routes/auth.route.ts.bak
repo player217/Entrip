@@ -1,0 +1,77 @@
+import { Router } from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
+import { UserRole } from '@entrip/shared';
+
+const r: Router = Router();
+const prisma = new PrismaClient();
+
+// Development-only login endpoint for testing
+r.post('/login/dev', (req, res) => {
+  if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
+    return res.status(403).json({ error: 'Dev login not allowed in production' });
+  }
+  
+  const token = jwt.sign(
+    { userId: '1', email: 'admin@entrip.com', role: UserRole.ADMIN }, 
+    process.env.JWT_SECRET || 'dev-secret-key', 
+    { expiresIn: '4h' }
+  );
+  
+  res.json({ token });
+});
+
+// Email/password based login
+r.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+    
+    if (!user || !user.isActive) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    // For demo purposes, accept any password that starts with the role name
+    // In production, use bcrypt.compare(password, user.password)
+    const validPassword = password.toLowerCase().startsWith(user.role.toLowerCase());
+    
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: user.id, 
+        email: user.email, 
+        role: user.role 
+      }, 
+      process.env.JWT_SECRET || 'dev-secret-key', 
+      { expiresIn: '24h' }
+    );
+    
+    res.json({ 
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+export const authRouter = r;

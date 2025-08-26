@@ -1,0 +1,70 @@
+{
+  "company": {
+    "code": "j1",
+    "name": "ENTRIP",
+    "description": "ENTRIP 여행사 통합 관리 시스템"
+  },
+  "demo_accounts": [
+    {
+      "username": "admin",
+      "password": "pass1234",
+      "role": "관리자 (ADMIN)",
+      "name": "관리자",
+      "department": "관리팀",
+      "description": "전체 시스템 관리 권한"
+    },
+    {
+      "username": "manager1",
+      "password": "pass1234",
+      "role": "매니저 (MANAGER)",
+      "name": "김매니저",
+      "department": "예약팀",
+      "description": "팀 관리 및 승인 권한"
+    },
+    {
+      "username": "manager2",
+      "password": "pass1234",
+      "role": "매니저 (MANAGER)",
+      "name": "정매니저",
+      "department": "호텔팀",
+      "description": "호텔팀 관리 권한"
+    },
+    {
+      "username": "user1",
+      "password": "pass1234",
+      "role": "직원 (USER)",
+      "name": "박직원",
+      "department": "예약팀",
+      "description": "일반 사용자 권한"
+    },
+    {
+      "username": "user2",
+      "password": "pass1234",
+      "role": "직원 (USER)",
+      "name": "이직원",
+      "department": "고객서비스팀",
+      "description": "일반 사용자 권한"
+    },
+    {
+      "username": "user3",
+      "password": "pass1234",
+      "role": "직원 (USER)",
+      "name": "최직원",
+      "department": "운항팀",
+      "description": "일반 사용자 권한"
+    }
+  ],
+  "login_instructions": {
+    "url": "http://localhost:3000/login",
+    "fields": {
+      "company_code": "j1",
+      "username": "위 계정 중 선택",
+      "password": "pass1234"
+    },
+    "notes": [
+      "데모 계정 선택 버튼으로 빠른 로그인 가능",
+      "모든 계정 비밀번호는 'pass1234'로 통일",
+      "회사 코드는 항상 'j1' 사용"
+    ]
+  }
+}
