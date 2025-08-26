@@ -106,7 +106,7 @@ app.get('/healthz', (req, res) => res.json({ status: 'ok', timestamp: new Date()
 app.get('/metrics', metricsHandler);
 
 // Documentation routes (schema-based OpenAPI)
-app.use('/api', docsRouter);
+app.use('/api/docs', docsRouter);
 
 // API 라우트
 app.use('/api/v1', healthRouter);
