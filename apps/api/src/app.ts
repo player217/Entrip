@@ -151,6 +151,7 @@ app.use('/api/health', require('./routes/health.route').default);
 // Phase 2A test routes (development only)
 if (process.env.NODE_ENV !== 'production') {
   app.use('/api/test-respond', require('./routes/test-respond.route').default);
+  app.use('/api/test-db', require('./routes/test-database.route').default);
 }
 
 // 404 핸들러

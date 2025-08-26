@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { ApiError } from './api-error';
 
 export const errorHandler = (
   error: any,
@@ -7,6 +8,18 @@ export const errorHandler = (
   next: NextFunction
 ) => {
   console.error('Error:', error);
+  
+  // Handle ApiError instances
+  if (error instanceof ApiError) {
+    return res.status(error.http).json({
+      error: {
+        code: error.code,
+        message: error.message,
+        details: error.details || null,
+        traceId: req.get('x-request-id') || null
+      }
+    });
+  }
   
   if (error.name === 'ValidationError') {
     return res.status(400).json({
