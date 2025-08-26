@@ -1,0 +1,100 @@
+version: "3.8"
+
+services:
+  # PgBouncer connection pooler
+  pgbouncer:
+    image: pgbouncer/pgbouncer:latest
+    container_name: entrip-pgbouncer-local
+    restart: unless-stopped
+    environment:
+      DATABASES_HOST: postgres
+      DATABASES_PORT: 5432
+      DATABASES_DBNAME: entrip
+      DATABASES_USER: entrip
+      DATABASES_PASSWORD: entrip
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 20
+      MIN_POOL_SIZE: 5
+      RESERVE_POOL_SIZE: 5
+      SERVER_IDLE_TIMEOUT: 600
+      SERVER_LIFETIME: 3600
+      QUERY_WAIT_TIMEOUT: 120
+      LOG_CONNECTIONS: 1
+      LOG_DISCONNECTIONS: 1
+      LOG_POOLER_ERRORS: 1
+      ADMIN_USERS: admin
+      STATS_USERS: stats,admin
+    volumes:
+      - ./docker/pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./docker/pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
+      - pgbouncer_logs:/var/log/pgbouncer
+    ports:
+      - "6432:6432"  # PgBouncer port
+      - "9127:9127"  # Metrics port (for Prometheus)
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 6432 -U entrip"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - entrip-network
+
+  # Update API services to use PgBouncer
+  api-with-pooler:
+    extends:
+      file: docker-compose.local.yml
+      service: api
+    environment:
+      DATABASE_URL: postgres://entrip:entrip@pgbouncer:6432/entrip?pgbouncer=true
+      # Set Prisma connection pool to work with PgBouncer
+      DATABASE_CONNECTION_LIMIT: 10
+      DATABASE_POOL_TIMEOUT: 0
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+    networks:
+      - entrip-network
+
+  api-v2-with-pooler:
+    extends:
+      file: docker-compose.local.yml
+      service: api-v2
+    environment:
+      DATABASE_URL: postgres://entrip:entrip@pgbouncer:6432/entrip?pgbouncer=true
+      DATABASE_CONNECTION_LIMIT: 10
+      DATABASE_POOL_TIMEOUT: 0
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+    networks:
+      - entrip-network
+
+  # PgBouncer exporter for Prometheus monitoring
+  pgbouncer-exporter:
+    image: prometheuscommunity/pgbouncer-exporter:latest
+    container_name: entrip-pgbouncer-exporter
+    environment:
+      PGBOUNCER_HOST: pgbouncer
+      PGBOUNCER_PORT: 6432
+      PGBOUNCER_USER: stats
+      PGBOUNCER_PASS: stats
+      PGBOUNCER_DATABASE: pgbouncer
+    ports:
+      - "9128:9127"
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+    networks:
+      - entrip-network
+
+volumes:
+  pgbouncer_logs:
+    driver: local
+
+networks:
+  entrip-network:
+    driver: bridge

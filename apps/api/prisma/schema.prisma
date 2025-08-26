@@ -23,6 +23,7 @@ model User {
   isActive        Boolean         @default(true)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+  version         Int             @default(1) // Optimistic locking
   
   // Relations - Booking
   bookings        Booking[]
@@ -90,6 +91,7 @@ model Booking {
   updatedAt       DateTime        @updatedAt
   createdBy       String
   updatedBy       String?
+  version         Int             @default(1) // Optimistic locking
   
   // Relations
   user            User            @relation(fields: [createdBy], references: [id])
@@ -164,6 +166,7 @@ model Approval {
   // 메타데이터
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+  version         Int             @default(1) // Optimistic locking
   
   // Relations
   requester       User            @relation("Requester", fields: [requesterId], references: [id])
@@ -205,6 +208,7 @@ model Account {
   // 메타데이터
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+  version         Int             @default(1) // Optimistic locking
   
   // Relations
   manager         User            @relation(fields: [managerId], references: [id])
@@ -235,6 +239,7 @@ model Transaction {
   // 메타데이터
   transactionDate DateTime        @default(now())
   createdAt       DateTime        @default(now())
+  version         Int             @default(1) // Optimistic locking
   
   // Relations
   account         Account         @relation(fields: [accountId], references: [id])
@@ -311,6 +316,7 @@ model Conversation {
   lastActivity    DateTime        @default(now())
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+  version         Int             @default(1) // Optimistic locking
   
   // Relations
   participants    ConversationParticipant[]
@@ -576,6 +582,7 @@ model Settlement {
   // 메타데이터
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+  version         Int             @default(1) // Optimistic locking
   
   // Relations
   booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
@@ -643,6 +650,7 @@ model IntegrationProvider {
   circuitOpenUntil DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  version          Int      @default(1) // Optimistic locking
 
   @@index([status, circuitOpenUntil])
 }

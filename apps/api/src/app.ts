@@ -109,6 +109,13 @@ app.use('/api/flight', require('./routes/flight.route').default);
 app.use('/api', require('./routes/stats.route').default);
 app.use('/api/messages', require('./routes/message.route').default);
 
+// Data integrity and health monitoring routes
+app.use('/api/data', require('./routes/data-health.route').default);
+
+// Integration resilience routes
+app.use('/api/integration', require('./routes/integration-example').default);
+app.use('/api/health', require('./routes/health.route').default);
+
 // 404 핸들러
 app.use((req, res) => {
   res.status(404).json({ 

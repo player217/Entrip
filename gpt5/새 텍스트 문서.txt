@@ -1,0 +1,447 @@
+아래는 **1번: 필수 데이터 누락** 문제를 막기 위한 “실전 수정 가이드”입니다. 바로 적용할 수 있게 **진단→스키마 보강→API/서비스 계층 보강→이중화/복구→테스트/모니터링** 순서로 구성했습니다.
+
+---
+
+# 필수 데이터 누락 방지 상세 가이드
+
+## 0) 목표 & 범위
+
+* **목표:** 예약/결제/사용자/결재 등 핵심 데이터가 “항상 저장·일관·복구”되도록 보장
+* **적용 범위:** `apps/api`(Express/Prisma), `apps/web`(폼/검증), DB(Prisma schema & 마이그레이션), 배치/모니터링
+
+---
+
+## 1) 현황 진단 퀵체크 (30분 점검)
+
+1. **핵심 엔터티 식별**
+
+   * 예약(Booking), 고객/담당자(User/Account), 결제/정산(Finance/Payment), 승인(Approval), 첨부 파일(File), 감사로그(AuditLog)
+2. **필수 필드 누락 여부**
+
+   * 예약: 고객명/연락처/여정(출발-도착)/상태/통화/금액/작성·수정시각
+   * 결제/정산: 금액/통화/세금/결제수단/승인ID/정산상태
+   * 승인: 요청자/단계/상태/사유
+3. **DB 제약 확인**
+
+   * NOT NULL, UNIQUE, FK, CHECK, DEFAULT, INDEX 유무
+4. **API 보증 확인**
+
+   * 요청 DTO 검증(Zod), 트랜잭션 적용, 멱등성(Idempotency) 키 지원, 에러 반환 일관성
+5. **백업/복구·로그/모니터링**
+
+   * 주기 백업, 복구 리허설, 실패율/지연 모니터링, 무결성 점검 쿼리 존재 여부
+
+> 위 5개 항목 중 하나라도 비어있으면 본 가이드를 그대로 적용하세요.
+
+---
+
+## 2) 데이터 스키마 보강 (Prisma) — “누락 불가”를 스키마로 강제
+
+### 2.1 모델/필드 최소 보증
+
+`apps/api/prisma/schema.prisma` (예시 — 실제 모델명/필드명에 맞게 반영)
+
+```prisma
+model Booking {
+  id             String   @id @default(cuid())
+  code           String   @unique           // 예약코드 (중복 방지)
+  customerName   String
+  customerPhone  String
+  itineraryFrom  String
+  itineraryTo    String
+  departAt       DateTime
+  arriveAt       DateTime
+  currency       String   @default("KRW")
+  amount         Decimal  @db.Decimal(18,2)
+  status         BookingStatus @default(PENDING)
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId, status])
+  @@check(amount > 0)
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  bookingId     String
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  method        String
+  approvedAt    DateTime?
+  currency      String   @default("KRW")
+  amount        Decimal  @db.Decimal(18,2)
+  status        PaymentStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([bookingId, status])
+  @@check(amount > 0)
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  FAILED
+}
+
+model Approval {
+  id          String   @id @default(cuid())
+  title       String
+  requesterId String
+  status      ApprovalStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  requester   User     @relation(fields: [requesterId], references: [id], onDelete: Restrict)
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// 중복 생성 방지용 멱등성 키 저장 테이블
+model IdempotencyKey {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  endpoint      String
+  requestHash   String
+  responseBody  Json?
+  createdAt     DateTime @default(now())
+  ttl           DateTime // 만료 시 정리
+
+  @@index([endpoint, ttl])
+}
+
+// 소켓/외부연동 안전 전송을 위한 outbox
+model Outbox {
+  id          String   @id @default(cuid())
+  topic       String
+  payload     Json
+  createdAt   DateTime @default(now())
+  deliveredAt DateTime?
+  attempts    Int      @default(0)
+
+  @@index([topic, deliveredAt])
+}
+
+// 감사 로그
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  detail    Json?
+  createdAt DateTime @default(now())
+}
+```
+
+### 2.2 마이그레이션 실행
+
+```bash
+# 로컬
+pnpm prisma generate
+pnpm prisma migrate dev -n "harden_required_fields_constraints"
+
+# 스테이징/프로덕션
+pnpm prisma migrate deploy
+```
+
+> 포인트
+>
+> * **NOT NULL/DEFAULT/CHECK/UNIQUE/FK**로 “데이터 누락” 자체가 DB 차원에서 불가능하도록.
+> * 금액은 `Decimal(18,2)`, 시간은 UTC 기준, 코드/번호류는 `@unique`로 충돌 방지.
+> * FK의 `onDelete` 전략은 **Cascade**(연쇄 삭제 필요) 또는 **Restrict**(보존)로 도메인 룰에 맞춤.
+
+---
+
+## 3) API/서비스 계층 보강 — “생성은 항상 원자적이고, 중복 없이, 검증된 데이터만”
+
+### 3.1 요청 DTO 엄격 검증 (Zod)
+
+`apps/api/src/dto/booking.ts`
+
+```ts
+import { z } from "zod";
+
+export const CreateBookingDTO = z.object({
+  code: z.string().min(6),
+  customerName: z.string().min(1),
+  customerPhone: z.string().min(7),
+  itineraryFrom: z.string().min(1),
+  itineraryTo: z.string().min(1),
+  departAt: z.coerce.date(),
+  arriveAt: z.coerce.date(),
+  currency: z.string().default("KRW"),
+  amount: z.coerce.number().positive(),
+  userId: z.string().min(1),
+  idempotencyKey: z.string().min(16) // 멱등성 키 필수
+});
+```
+
+### 3.2 멱등성 키 + 본문 해시로 중복 생성 차단
+
+`apps/api/src/lib/idempotency.ts`
+
+```ts
+import crypto from "crypto";
+import prisma from "../prisma";
+
+export async function withIdempotency<T>(
+  endpoint: string,
+  key: string,
+  body: unknown,
+  handler: () => Promise<T>,
+  ttlMs = 1000 * 60 * 15
+): Promise<T> {
+  const requestHash = crypto.createHash("sha256").update(JSON.stringify(body)).digest("hex");
+  const now = new Date();
+  const ttl = new Date(now.getTime() + ttlMs);
+
+  const existing = await prisma.idempotencyKey.findUnique({ where: { key } });
+  if (existing) {
+    // 동일 요청 재시도면 저장된 응답 반환
+    return existing.responseBody as T;
+  }
+
+  const result = await handler();
+
+  await prisma.idempotencyKey.create({
+    data: { key, endpoint, requestHash, responseBody: result as any, ttl }
+  });
+
+  return result;
+}
+```
+
+### 3.3 트랜잭션으로 원자적 생성
+
+`apps/api/src/routes/booking.route.ts`
+
+```ts
+import { Router } from "express";
+import { z } from "zod";
+import prisma from "../prisma";
+import { CreateBookingDTO } from "../dto/booking";
+import { withIdempotency } from "../lib/idempotency";
+
+const router = Router();
+
+router.post("/", async (req, res, next) => {
+  try {
+    const input = CreateBookingDTO.parse(req.body);
+
+    const data = await withIdempotency(
+      "POST /api/bookings",
+      input.idempotencyKey,
+      input,
+      async () => {
+        const result = await prisma.$transaction(async (tx) => {
+          // 예약 생성
+          const booking = await tx.booking.create({
+            data: {
+              code: input.code,
+              customerName: input.customerName,
+              customerPhone: input.customerPhone,
+              itineraryFrom: input.itineraryFrom,
+              itineraryTo: input.itineraryTo,
+              departAt: input.departAt,
+              arriveAt: input.arriveAt,
+              currency: input.currency,
+              amount: input.amount,
+              userId: input.userId,
+              status: "PENDING"
+            }
+          });
+
+          // 감사로그
+          await tx.auditLog.create({
+            data: {
+              actorId: input.userId,
+              action: "BOOKING_CREATE",
+              entity: "Booking",
+              entityId: booking.id,
+              detail: { input: { ...input, idempotencyKey: undefined } }
+            }
+          });
+
+          // 실시간/외부 전송은 Outbox에 적재(나중에 전달)
+          await tx.outbox.create({
+            data: {
+              topic: "booking.created",
+              payload: { bookingId: booking.id, code: booking.code }
+            }
+          });
+
+          return booking;
+        });
+
+        return { booking: data };
+      }
+    );
+
+    res.status(201).json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+export default router;
+```
+
+> 포인트
+>
+> * **`prisma.$transaction`** 내부에서만 상태 변경. 중간 실패 시 전체 롤백.
+> * **멱등성 키**로 네트워크 재시도/중복 클릭에도 중복 생성 방지.
+> * 실시간/외부 시스템 전파는 **Outbox 테이블에 적재** → 별도 워커가 재시도·보장 전달.
+
+### 3.4 Outbox 디스패처(백그라운드 워커)
+
+`apps/api/src/jobs/outbox-dispatcher.ts`
+
+```ts
+import prisma from "../prisma";
+import { io } from "../ws"; // socket.io 인스턴스
+
+export async function runOutboxDispatcher() {
+  const BATCH = 50;
+  const items = await prisma.outbox.findMany({
+    where: { deliveredAt: null, attempts: { lt: 10 } },
+    take: BATCH
+  });
+
+  for (const item of items) {
+    try {
+      // 예: 실시간 이벤트 브로드캐스트
+      if (item.topic === "booking.created") {
+        io.to("bookings").emit("booking:created", item.payload);
+      }
+      await prisma.outbox.update({
+        where: { id: item.id },
+        data: { deliveredAt: new Date() }
+      });
+    } catch (e) {
+      await prisma.outbox.update({
+        where: { id: item.id },
+        data: { attempts: { increment: 1 } }
+      });
+    }
+  }
+}
+```
+
+> 포인트
+>
+> * DB 커밋 후 **Outbox→전송** 순으로 처리해 “저장되었지만 알림 실패”를 **재시도 가능**하게 설계.
+> * 실패 시 시도 횟수 증가 & 모니터링 경보.
+
+---
+
+## 4) 프론트엔드(폼) 단 검증 & 멱등성 적용
+
+* **Zod 스키마 공유:** `packages/shared`에 DTO 스키마 선언 후 FE/BE가 함께 import
+* **폼 제출 시 `idempotencyKey` 생성:** `crypto.randomUUID()` 등으로 키 생성 → POST 본문에 포함
+* **이중 전송 방지:** 제출 버튼 disable & 응답/에러 처리 표준화
+* **사용자 확인 UX:** 필수 필드 누락 시 바로 인라인 에러
+
+---
+
+## 5) 백업·복구 & 무결성 점검
+
+### 5.1 백업
+
+* **PostgreSQL 권장:** PITR(시점 복구) + **일일 풀백업 + 시간대별 WAL 보관**
+* 보존 정책: 운영 30일, 준법 감안 90일(선택)
+
+### 5.2 복구 리허설(분기 1회 이상)
+
+* **별도 스테이징에 복구** → 핵심 API 정상 동작 확인
+* **RPO/RTO 목표치** 합의(예: RPO ≤ 5분, RTO ≤ 30분)
+
+### 5.3 무결성 점검 배치 (매 1시간)
+
+* 예시 쿼리:
+
+  * 결제 없는 `CONFIRMED` 예약 존재 여부
+  * 음수/0 금액 레코드 존재 여부
+  * FK 고아 레코드 존재 여부
+* 이상 발견 시 Slack/Webhook 경보 + 티켓 자동 생성
+
+---
+
+## 6) 테스트 플랜 (필수 시나리오)
+
+### 6.1 단위/통합
+
+* DTO 검증 실패 시 400
+* 동일 `idempotencyKey` 재시도 시 **중복 생성 없음** & 동일 응답
+* 트랜잭션 중 2단계 실패 → 전체 롤백
+* Outbox 생성 → 디스패처 전파 성공/재시도
+
+### 6.2 E2E
+
+* **예약 생성 → 결제 시뮬 → 승인 → 정산 반영** 전체 플로우
+* 네트워크 타임아웃/재시도 상황(프런트 새로고침)에서 **중복 없음** 확인
+* 장애 주입(외부 API 실패) 시 폴백 동작·알림 확인
+
+---
+
+## 7) 모니터링 & 알림(운영 관점)
+
+**지표**
+
+* `booking_create_fail_rate`(5m) < 0.5%
+* `booking_create_latency_p95` < 300ms
+* `idempotency_reuse_rate`(재시도 비율 추적)
+* `outbox_undelivered_count`(경보 임계: 100 이상 5분 지속)
+* DB 무결성 점검 실패 건수
+
+**알림**
+
+* 실패율/지연/미전달 임계 초과 시 Slack/PagerDuty
+
+---
+
+## 8) 릴리즈/마이그레이션 체크리스트
+
+* [ ] 스키마 변경 PR 분리(마이그레이션만) → 스테이징 적용
+* [ ] 코드 변경 PR(검증/트랜잭션/멱등성/아웃박스) → 통합 테스트 통과
+* [ ] **데이터 백업 스냅샷** 확보
+* [ ] 무중단 배포(Blue-Green/Canary)로 점진 전개
+* [ ] 장애 복구 Runbook 공유(온콜 대상 포함)
+
+---
+
+## 9) 운영 런북(요약)
+
+1. **예약 생성 실패 급증**
+
+* 최근 배포 롤백 검토 → 에러 로그 grep → DTO/트랜잭션/DB 제약 위반 확인
+* 임시 완화: 큐 길이 증가 시 배압·오토스케일
+
+2. **중복 예약 발생 신고**
+
+* `idempotencyKey` 로그로 요청 추적 → 키 미전달/중복 본문 해시 확인
+* 프런트 릴리즈 확인(키 생성 누락 여부) → 서버에서 키 필수로 강제
+
+3. **알림 누락**
+
+* Outbox 적재 여부 확인 → 디스패처 로그/재시도 횟수 확인 → 장애 시 수동 재처리 스크립트 실행
+
+---
+
+### 핵심 요약
+
+* **DB 제약**으로 “누락 자체를 차단”, **트랜잭션**으로 “원자성 보장”, **멱등성 키 + Outbox**로 “중복·전파 누락 방지”, **백업/무결성 점검**으로 “복구 가능성 확보”.
+* 위 네 박스만 깔끔히 적용하면 **데이터 누락·불일치·중복 생성**의 80% 이상을 제거합니다.
+
+원하시면 위 예시를 **Entrip 실제 파일 경로**(서비스/라우터 분리 구조)와 정확히 맞춰 **패치용 커밋 단위**로 쪼개서 드릴게요.

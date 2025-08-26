@@ -114,9 +114,18 @@
       "Bash(git init:*)",
       "Bash(git branch:*)",
       "Bash(git --version)",
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "Read(/C:\\c\\Users\\PC\\Documents\\project/**)",
+      "Read(/C:\\c\\Users\\PC\\Documents\\project/**)",
+      "Read(/C:\\c\\Users\\PC\\Documents\\project/**)",
+      "Read(/C:\\c\\Users\\PC\\Documents\\project/**)",
+      "Read(/C:\\c\\Users\\PC\\Documents\\project/**)",
+      "Read(/C:\\c\\Users\\PC\\Documents\\project/**)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "C:\\c\\Users\\PC\\Documents\\project"
+    ]
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [

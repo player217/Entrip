@@ -1,0 +1,405 @@
+아래는 \*\*2번: 데이터 연결/연동 문제(외부 API·실시간 동기화 실패, 데이터 불일치)\*\*를 근본적으로 막기 위한 “실전 수정 가이드”입니다. 지금 리포 구조에 맞춰 **추가 스키마 → 공통 클라이언트 → 어댑터 레이어 → 폴백/캐시 → 서킷브레이커 → 모니터링/헬스체크 → 테스트/런북** 순으로 바로 넣을 수 있게 구성했습니다.
+
+---
+
+# 2번 문제 상세 수정 가이드 (데이터 연결/연동)
+
+## 0) 목표 & 범위
+
+* **목표:** 외부 연동 실패시에도 서비스 연속성 유지(stale 데이터 허용), 데이터 불일치 최소화, 실시간 동기화 복원력 확보.
+* **대상:** 환율(FX), 항공편/공공데이터(ODcloud/KAC), 이메일/알림, 결제, WebSocket 실시간.
+
+---
+
+## 1) 스키마 추가 (Prisma) — 상태·로그·캐시·인박스
+
+`apps/api/prisma/schema.prisma` (핵심만 발췌; 실제 모델과 공존 가능)
+
+```prisma
+model IntegrationProvider {
+  id               String   @id @default(cuid())
+  name             String   @unique      // "fx_primary", "fx_secondary", "kac", ...
+  baseUrl          String
+  status           ProviderStatus @default(HEALTHY)
+  lastSuccessAt    DateTime?
+  lastErrorAt      DateTime?
+  errorCount       Int      @default(0)
+  circuitOpenUntil DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status, circuitOpenUntil])
+}
+
+enum ProviderStatus { HEALTHY DEGRADED DOWN }
+
+model ExternalCallLog {
+  id           String   @id @default(cuid())
+  providerName String
+  endpoint     String
+  method       String
+  statusCode   Int?
+  errorType    String?     // TIMEOUT, 429, 5XX, 4XX, PARSE, ...
+  durationMs   Int
+  requestHash  String      // 요청 본문+쿼리 해시
+  occurredAt   DateTime @default(now())
+
+  @@index([providerName, occurredAt])
+  @@index([statusCode, occurredAt])
+}
+
+model FxRateCache {
+  id        String   @id @default(cuid())
+  base      String
+  quote     String
+  rate      Decimal  @db.Decimal(18,6)
+  source    String
+  fetchedAt DateTime
+  ttlSec    Int       @default(86400) // 24h
+  @@unique([base, quote])
+}
+
+model FlightStatusCache {
+  id        String   @id @default(cuid())
+  flightNo  String
+  date      DateTime
+  payload   Json
+  status    String    // SCHEDULED, DELAYED, CANCELED...
+  fetchedAt DateTime
+  ttlSec    Int       @default(300) // 5m
+  @@unique([flightNo, date])
+}
+
+model Inbox { // 외부 이벤트 중복/역순 방지용
+  id          String   @id @default(cuid())
+  messageKey  String   @unique  // 공급자+메시지ID 등
+  receivedAt  DateTime @default(now())
+}
+```
+
+> 포인트
+>
+> * **IntegrationProvider**: 헬스/서킷 상태를 데이터화.
+> * **ExternalCallLog**: 장애 유형·속도 추적.
+> * **FxRateCache/FlightStatusCache**: **read-through 캐시 + stale-if-error** 구현 근거.
+> * **Inbox**: 외부 이벤트 **중복처리/순서 보장**(“at-least-once” 대응).
+
+마이그레이션:
+
+```bash
+pnpm prisma generate
+pnpm prisma migrate dev -n "integrations_state_cache_inbox"
+```
+
+---
+
+## 2) 공통 HTTP 클라이언트(타임아웃/재시도/백오프/지터)
+
+`apps/api/src/lib/http-client.ts`
+
+```ts
+import axios, { AxiosInstance } from "axios";
+
+export type RetryPolicy = {
+  retries: number;          // e.g., 3
+  baseDelayMs: number;      // 200
+  maxDelayMs: number;       // 2000
+  retryOn: (status?: number, err?: any) => boolean; // 5xx|429|timeout
+};
+
+export function expBackoff(attempt: number, base: number, max: number) {
+  const jitter = Math.random() * 100;
+  return Math.min(max, Math.pow(2, attempt) * base + jitter);
+}
+
+export function createHttpClient(baseURL: string, timeoutMs = 3000): AxiosInstance {
+  const inst = axios.create({ baseURL, timeout: timeoutMs });
+  return inst;
+}
+
+export async function withRetry<T>(
+  fn: () => Promise<T>, policy: RetryPolicy
+): Promise<T> {
+  let lastErr;
+  for (let i = 0; i <= policy.retries; i++) {
+    try { return await fn(); }
+    catch (e: any) {
+      lastErr = e;
+      const status = e?.response?.status;
+      if (!policy.retryOn(status, e) || i === policy.retries) throw e;
+      const delay = expBackoff(i + 1, policy.baseDelayMs, policy.maxDelayMs);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw lastErr;
+}
+```
+
+---
+
+## 3) 서킷 브레이커(OPEN/HALF-OPEN/CLOSED)
+
+`apps/api/src/lib/circuit-breaker.ts`
+
+```ts
+import prisma from "../prisma";
+
+export class CircuitBreaker {
+  constructor(private providerName: string, private failThreshold = 5, private openMs = 60_000) {}
+
+  async canCall() {
+    const p = await prisma.integrationProvider.findUnique({ where: { name: this.providerName } });
+    if (!p) return true;
+    if (p.circuitOpenUntil && p.circuitOpenUntil > new Date()) return false;
+    return true;
+  }
+
+  async onSuccess() {
+    await prisma.integrationProvider.upsert({
+      where: { name: this.providerName },
+      update: { status: "HEALTHY", errorCount: 0, lastSuccessAt: new Date(), circuitOpenUntil: null },
+      create: { name: this.providerName, baseUrl: "", status: "HEALTHY", errorCount: 0 }
+    });
+  }
+
+  async onFailure() {
+    const p = await prisma.integrationProvider.upsert({
+      where: { name: this.providerName },
+      update: { errorCount: { increment: 1 }, lastErrorAt: new Date() },
+      create: { name: this.providerName, baseUrl: "", status: "DEGRADED", errorCount: 1 }
+    });
+    const errorCount = (p.errorCount ?? 0) + 1;
+    if (errorCount >= this.failThreshold) {
+      await prisma.integrationProvider.update({
+        where: { name: this.providerName },
+        data: { status: "DOWN", circuitOpenUntil: new Date(Date.now() + this.openMs) }
+      });
+    }
+  }
+}
+```
+
+---
+
+## 4) 어댑터 레이어(1차/2차 공급자 + 캐시 폴백)
+
+폴더 구조:
+
+```
+apps/api/src/integrations/
+  fx/
+    fx.types.ts
+    fx.primary.ts
+    fx.secondary.ts
+    fx.service.ts
+  flights/
+    flights.kac.ts
+    flights.odcloud.ts
+    flights.service.ts
+```
+
+예) **환율 서비스** `fx.service.ts`
+
+```ts
+import prisma from "../../prisma";
+import { createHttpClient, withRetry } from "../lib/http-client";
+import { CircuitBreaker } from "../lib/circuit-breaker";
+
+const retryPolicy = {
+  retries: 3, baseDelayMs: 200, maxDelayMs: 2000,
+  retryOn: (status?: number, err?: any) => !status || status >= 500 || status === 429 || err?.code === "ECONNABORTED"
+};
+
+async function fetchFrom(name: "fx_primary" | "fx_secondary", base: string) {
+  const provider = await prisma.integrationProvider.findUnique({ where: { name } });
+  const cb = new CircuitBreaker(name);
+  if (!(await cb.canCall())) throw new Error("CIRCUIT_OPEN");
+
+  const client = createHttpClient(provider?.baseUrl || "", 3000);
+  try {
+    const res = await withRetry(() => client.get(`/rates?base=${base}`), retryPolicy);
+    await cb.onSuccess();
+    return { rates: res.data, source: name };
+  } catch (e) {
+    await cb.onFailure();
+    throw e;
+  }
+}
+
+export async function getRates(base: string) {
+  // 1) 캐시 적중 우선(신선 데이터)
+  const fresh = await prisma.fxRateCache.findMany({
+    where: { base },
+    orderBy: { fetchedAt: "desc" },
+    take: 50
+  });
+  if (fresh.length) {
+    const newest = fresh[0];
+    const ageSec = (Date.now() - newest.fetchedAt.getTime()) / 1000;
+    if (ageSec < newest.ttlSec) return { rates: fresh, cache: "HIT" };
+  }
+
+  // 2) 1차 → 2차 공급자 순차 호출
+  try {
+    const p = await fetchFrom("fx_primary", base);
+    // 성공 시 캐시 저장(일부만 발췌)
+    await prisma.$transaction(async (tx) => {
+      for (const [quote, rate] of Object.entries(p.rates)) {
+        await tx.fxRateCache.upsert({
+          where: { base_quote: { base, quote } },
+          update: { rate: rate as any, source: p.source, fetchedAt: new Date() },
+          create: { base, quote, rate: rate as any, source: p.source, fetchedAt: new Date(), ttlSec: 86400 }
+        });
+      }
+    });
+    return { rates: p.rates, cache: "MISS" };
+  } catch {
+    try {
+      const s = await fetchFrom("fx_secondary", base);
+      // 동일 캐시 저장 ...
+      return { rates: s.rates, cache: "MISS" };
+    } catch {
+      // 3) 최후 폴백: stale-while-error (오래된 캐시라도 반환)
+      if (fresh.length) return { rates: fresh, cache: "STALE" };
+      // 4) 최종 실패
+      throw new Error("FX_UNAVAILABLE");
+    }
+  }
+}
+```
+
+> 포인트
+>
+> * **1차 실패 → 2차 시도 → 마지막에 stale 캐시 반환**으로 **연속성 확보**.
+> * **서킷브레이커** + **재시도/백오프/지터** + **TTL 캐시** 기본기 탑재.
+> * **ExternalCallLog**는 미들웨어로 일괄 기록(아래 6참조).
+
+---
+
+## 5) WebSocket 실시간 복원력 (ACK/재전송/하트비트)
+
+서버: `apps/api/src/ws/index.ts`
+
+* **하트비트**: `pingInterval=25s`로 주기 핑, 미응답 시 연결 종료.
+* **ACK 필수 이벤트**: 서버가 `evtId` 부여 → 클라이언트가 `ack:evtId` 전송. 미수신 시 **Outbox에 재적재**하여 재발송(기존 Outbox 흐름 재활용).
+* **버전/리비전 넘버** 포함: 클라이언트가 lastSeen 리비전으로 **리플레이 요청** 가능.
+
+클라이언트(웹):
+
+* **자동 재접속 + 지수 백오프**.
+* `ack` 응답 누락 시 서버가 동일 `evtId` 재전송해도 클라에서 **멱등 처리**(evtId 중복 무시).
+
+---
+
+## 6) 로깅/모니터링/헬스체크
+
+### 6.1 외부 호출 로깅 미들웨어
+
+`apps/api/src/middleware/external-logging.ts`
+
+```ts
+import prisma from "../prisma";
+export async function logExternalCall(provider: string, endpoint: string, method: string, status?: number, errorType?: string, durationMs?: number, requestHash?: string) {
+  await prisma.externalCallLog.create({ data: { providerName: provider, endpoint, method, statusCode: status ?? null, errorType, durationMs: durationMs ?? 0, requestHash: requestHash ?? "" }});
+}
+```
+
+> 어댑터 호출부에서 **성공/실패 모두 기록**, 대시보드에서 **에러율/지연** 바로 보이게.
+
+### 6.2 Prometheus 메트릭 (예시)
+
+`apps/api/src/metrics/integrations.ts`
+
+```ts
+import client from "prom-client";
+export const extReqDuration = new client.Histogram({ name: "external_request_duration_seconds", help: "Duration", labelNames: ["provider","endpoint"] });
+export const extReqErrors = new client.Counter({ name: "external_request_errors_total", help: "Errors", labelNames: ["provider","type"] });
+export const circuitOpen = new client.Gauge({ name: "circuit_breaker_open", help: "1=open", labelNames: ["provider"] });
+```
+
+> 기존 메트릭 라우트에 등록.
+
+### 6.3 헬스체크 엔드포인트
+
+`GET /health/integrations`
+
+* 각 **provider** 상태, `lastSuccessAt`, `circuitOpenUntil`, 에러율(마지막 5분) 리턴.
+* **오류 기준치** 초과 시 503 (K8s Readiness에 활용).
+
+---
+
+## 7) API 적용 포인트
+
+* 서비스 함수(예: 정산/예약 상세에 환율 필요)에서 **`getRates()`** 사용.
+* 항공편 조회 API는 \*\*`flights.service.ts`\*\*를 통해 **캐시-1차-2차-스테일** 순.
+* 이메일/알림/결제도 동일 패턴으로 **어댑터화**.
+
+---
+
+## 8) 스케줄러(배치)
+
+* 환율: **00:05/12:05** 정시 사전 warm-up 캐시.
+* 항공편: **T-1h, T-30m, T-5m** 큐 기반 사전 조회.
+* **캐시 청소**: TTL 지난 캐시/Inbox 7일 지난 키 삭제.
+
+---
+
+## 9) 테스트 플랜
+
+**단위**
+
+* 재시도/백오프: 429/5xx/timeout에서만 재시도, 4xx는 즉시 실패.
+* 서킷브레이커: 연속 실패로 OPEN → half-open 단일 프로브 성공 시 CLOSE.
+
+**통합**
+
+* 1차 실패→2차 성공→캐시 저장.
+* 1·2차 모두 실패→stale 캐시 반환.
+* 헬스체크 상태 전이(HEALTHY→DEGRADED→DOWN) 검증.
+
+**E2E**
+
+* 네트워크 단절 중 예약 화면에서 환율/항공편 위젯은 **마지막 유효 값 + 스테일 배지** 표시.
+* WS 끊김→재접속 후 **미인증 이벤트 리플레이**.
+
+---
+
+## 10) 배포 체크리스트
+
+* [ ] 새 스키마 마이그레이션/롤백 스크립트.
+* [ ] 프로바이더 baseUrl/키/쿼터 ENV 정리 (`INTEGRATIONS__FX_PRIMARY__BASEURL` 등).
+* [ ] 알람 임계치: `external_request_errors_total` 비율, `circuit_breaker_open`, `p95 latency`.
+* [ ] /health/integrations을 ReadinessProbe에 연결.
+* [ ] 런북 배포(아래).
+
+---
+
+## 11) 런북(요약)
+
+**증상:** 환율 위젯 “STALE” 표시 증가
+**조치:** /health/integrations 확인 → fx\_primary DOWN & circuit open 확인 → 로그에서 429/5xx 비율 확인 → 한도초과면 쿼터/키 교체 → 임시로 TTL 연장(운영 변수) → 복구 후 circuit 수동 close(옵션)
+
+**증상:** 항공편 지연 알림 누락
+**조치:** Outbox 정상/WS ack 비율 확인 → Outbox 재시도 큐 적체 시 워커 스케일아웃 → 클라이언트 ack 로그에서 미수신 evtId 재요청 요청
+
+---
+
+## 12) 바로 넣을 파일 경로 요약
+
+* `apps/api/prisma/schema.prisma` (모델 추가)
+* `apps/api/src/lib/http-client.ts` (재시도/백오프)
+* `apps/api/src/lib/circuit-breaker.ts`
+* `apps/api/src/integrations/fx/*`, `.../flights/*` (어댑터/서비스)
+* `apps/api/src/middleware/external-logging.ts`
+* `apps/api/src/metrics/integrations.ts`
+* `apps/api/src/routes/health.route.ts` (`/health/integrations`)
+
+---
+
+### 핵심 요약
+
+* **어댑터 레이어 + 1·2차 공급자 + 캐시(stale-if-error) + 서킷브레이커 + 재시도(백오프/지터)** = 연동 장애에도 **기능 지속**.
+* **ExternalCallLog/Provider 상태/메트릭/헬스** = **빠른 감지·가시성**.
+* **WS ACK/재전송/리플레이** = 실시간 **신뢰성**.
+
+원하시면 위 가이드 기반으로 \*\*PR 단위(스키마→lib→fx/flights→헬스→메트릭→테스트)\*\*로 쪼개 드릴게요.
