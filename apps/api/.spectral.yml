@@ -1,0 +1,6 @@
+extends: ["spectral:oas"]
+
+rules:
+  # Basic linting rules for OpenAPI quality
+  operation-operationId: off
+  operation-tags: warn

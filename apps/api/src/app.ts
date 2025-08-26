@@ -7,6 +7,8 @@ import swaggerSpec from './swagger';
 import healthRouter from './routes/health';
 import sampleBookingRouter from './routes/sampleBooking';
 import { bookingRouter } from './modules/booking';
+import docsRouter from './routes/docs.route';
+import { requestId } from './middleware/request-id';
 import { errorHandler } from './middleware/errorHandler';
 import { metricsMiddleware, metricsHandler } from './middleware/metrics';
 import { fallbackCacheMiddleware, errorFallbackHandler } from './middleware/fallback-cache';
@@ -33,6 +35,12 @@ if (process.env.NODE_ENV !== 'test') {
     outboxDispatcher.stop();
   });
 }
+
+// Trust proxy 설정 (Docker 환경)
+app.set('trust proxy', true);
+
+// Request ID를 가장 먼저 적용 (모든 요청 추적)
+app.use(requestId());
 
 // 미들웨어
 app.use(cors({
@@ -96,6 +104,9 @@ app.get('/healthz', (req, res) => res.json({ status: 'ok', timestamp: new Date()
 
 // Metrics endpoint for Prometheus
 app.get('/metrics', metricsHandler);
+
+// Documentation routes (schema-based OpenAPI)
+app.use('/api', docsRouter);
 
 // API 라우트
 app.use('/api/v1', healthRouter);
