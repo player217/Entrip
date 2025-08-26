@@ -112,7 +112,7 @@ app.use('/api', docsRouter);
 app.use('/api/v1', healthRouter);
 app.use('/api/v1', sampleBookingRouter);
 app.use('/api/v1/bookings', bookingRouter);
-app.use('/api/bookings', require('./routes/booking.route').default);
+app.use('/api/bookings', require('./routes/booking-2a.route').default);
 app.use('/api/auth', require('./routes/auth-simple').default);
 app.use('/auth', require('./routes/auth-simple').default);
 app.use('/api', require('./routes/export.route').default);
@@ -126,6 +126,9 @@ app.use('/api/data', require('./routes/data-health.route').default);
 // Integration resilience routes
 app.use('/api/integration', require('./routes/integration-example').default);
 app.use('/api/health', require('./routes/health.route').default);
+
+// Phase 2A test routes (temporary)
+app.use('/api/test-respond', require('./routes/test-respond.route').default);
 
 // 404 핸들러
 app.use((req, res) => {
