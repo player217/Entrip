@@ -3,6 +3,31 @@ import { BookingStatus, BookingType, UserRole } from '@entrip/shared';
 
 const prisma = new PrismaClient();
 
+// Outbox 패턴을 위한 유틸리티 함수
+const addToOutbox = async (tx: any, topic: string, payload: any) => {
+  await tx.outbox.create({
+    data: {
+      topic,
+      payload,
+      createdAt: new Date()
+    }
+  });
+};
+
+// 감사 로그 추가 유틸리티
+const addAuditLog = async (tx: any, actorId: string, action: string, entity: string, entityId?: string, detail?: any) => {
+  await tx.auditLog.create({
+    data: {
+      actorId,
+      action,
+      entity,
+      entityId,
+      detail,
+      createdAt: new Date()
+    }
+  });
+};
+
 // 등록
 export const createBooking = async (dto: any, companyCode?: string) => {
   // Generate booking number
@@ -54,7 +79,7 @@ export const createBooking = async (dto: any, companyCode?: string) => {
   // Extract related data
   const { flights, vehicles, hotels, settlements, ...bookingData } = mappedDto;
   
-  // Create booking with related data using transaction
+  // Create booking with related data using transaction with outbox pattern
   return prisma.$transaction(async (tx) => {
     // Create main booking
     const booking = await tx.booking.create({ 
@@ -84,6 +109,16 @@ export const createBooking = async (dto: any, companyCode?: string) => {
         companyCode: bookingData.companyCode
       }
     });
+    
+    // 감사 로그 추가
+    await addAuditLog(
+      tx, 
+      userId, 
+      'CREATE', 
+      'Booking', 
+      booking.id, 
+      { bookingNumber, customerName: bookingData.customerName, totalPrice: bookingData.totalPrice }
+    );
     
     // Create related flights
     if (flights && flights.length > 0) {
@@ -122,6 +157,28 @@ export const createBooking = async (dto: any, companyCode?: string) => {
           bookingId: booking.id,
           ...settlement
         }))
+      });
+    }
+    
+    // Outbox 메시지 추가 (WebSocket 브로드캐스트용)
+    await addToOutbox(tx, 'booking:created', {
+      bookingId: booking.id,
+      companyCode: bookingData.companyCode,
+      type: 'create',
+      data: booking
+    });
+    
+    // 이메일 알림용 메시지 (이메일이 있는 경우)
+    if (bookingData.email) {
+      await addToOutbox(tx, 'notification:email', {
+        to: bookingData.email,
+        template: 'booking_created',
+        data: {
+          bookingNumber,
+          customerName: bookingData.customerName,
+          destination: bookingData.destination,
+          startDate: bookingData.startDate
+        }
       });
     }
     
@@ -253,7 +310,7 @@ export const getBooking = async (id: string, companyCode?: string) => {
 };
 
 // 수정
-export const updateBooking = async (id: string, dto: any, companyCode?: string) => {
+export const updateBooking = async (id: string, dto: any, companyCode?: string, actorId?: string) => {
   // 회사 코드가 제공된 경우 해당 회사의 데이터만 수정 가능
   const where: any = { id };
   if (companyCode) {
@@ -284,11 +341,34 @@ export const updateBooking = async (id: string, dto: any, companyCode?: string) 
   
   // Update booking with related data using transaction
   return prisma.$transaction(async (tx) => {
+    // 기존 데이터 조회 (변경 사항 추적용)
+    const originalBooking = await tx.booking.findUnique({ where });
+    if (!originalBooking) {
+      throw new Error('Booking not found');
+    }
+    
     // Update main booking
     const booking = await tx.booking.update({ 
       where, 
       data: bookingData
     });
+    
+    // 감사 로그 추가
+    await addAuditLog(
+      tx, 
+      actorId || 'system', 
+      'UPDATE', 
+      'Booking', 
+      id, 
+      { 
+        changes: Object.keys(bookingData),
+        originalValues: Object.keys(bookingData).reduce((acc: any, key) => {
+          acc[key] = originalBooking[key];
+          return acc;
+        }, {}),
+        newValues: bookingData
+      }
+    );
     
     // Update related data - delete and recreate for simplicity
     if (flights !== undefined) {
@@ -339,6 +419,15 @@ export const updateBooking = async (id: string, dto: any, companyCode?: string) 
       }
     }
     
+    // Outbox 메시지 추가 (WebSocket 브로드캐스트용)
+    await addToOutbox(tx, 'booking:updated', {
+      bookingId: id,
+      companyCode: originalBooking.companyCode,
+      type: 'update',
+      data: booking,
+      changes: Object.keys(bookingData)
+    });
+    
     // Return updated booking with all related data
     const updatedBooking = await tx.booking.findUnique({
       where: { id },
@@ -362,12 +451,48 @@ export const updateBooking = async (id: string, dto: any, companyCode?: string) 
 };
 
 // 삭제 (ADMIN만 가능)
-export const deleteBooking = (id: string, companyCode?: string) => {
+export const deleteBooking = async (id: string, companyCode?: string, actorId?: string) => {
   const where: any = { id };
   if (companyCode) {
     where.companyCode = companyCode;
   }
-  return prisma.booking.delete({ where });
+  
+  return prisma.$transaction(async (tx) => {
+    // 삭제 전 데이터 조회
+    const bookingToDelete = await tx.booking.findUnique({ where });
+    if (!bookingToDelete) {
+      throw new Error('Booking not found');
+    }
+    
+    // 실제 삭제
+    const deleted = await tx.booking.delete({ where });
+    
+    // 감사 로그 추가
+    await addAuditLog(
+      tx, 
+      actorId || 'system', 
+      'DELETE', 
+      'Booking', 
+      id, 
+      { 
+        deletedData: {
+          bookingNumber: bookingToDelete.bookingNumber,
+          customerName: bookingToDelete.customerName,
+          totalPrice: bookingToDelete.totalPrice
+        }
+      }
+    );
+    
+    // Outbox 메시지 추가
+    await addToOutbox(tx, 'booking:deleted', {
+      bookingId: id,
+      companyCode: bookingToDelete.companyCode,
+      type: 'delete',
+      data: { bookingNumber: bookingToDelete.bookingNumber }
+    });
+    
+    return deleted;
+  });
 };
 
 // 상태변경
@@ -411,13 +536,15 @@ export const bulkDeleteBookings = async (ids: string[], companyCode?: string) =>
   return result.count;
 };
 
-// Bulk 생성
+// Bulk 생성 (트랜잭션으로 원자성 보장)
 export const bulkCreateBookings = async (bookings: any[], userId: string, companyCode?: string) => {
-  const createdBookings = await Promise.all(
-    bookings.map(async (booking) => {
+  return prisma.$transaction(async (tx) => {
+    const createdBookings = [];
+    
+    for (const booking of bookings) {
       const bookingNumber = `BK${Date.now()}${Math.floor(Math.random() * 1000)}`;
       
-      return prisma.booking.create({
+      const created = await tx.booking.create({
         data: {
           bookingNumber,
           customerName: booking.customerName,
@@ -437,8 +564,28 @@ export const bulkCreateBookings = async (bookings: any[], userId: string, compan
           companyCode: companyCode || 'COMPANY_A'
         }
       });
-    })
-  );
-  
-  return createdBookings;
+      
+      createdBookings.push(created);
+      
+      // 감사 로그 추가
+      await addAuditLog(
+        tx, 
+        userId, 
+        'BULK_CREATE', 
+        'Booking', 
+        created.id, 
+        { bookingNumber, customerName: booking.customerName }
+      );
+    }
+    
+    // Outbox 메시지 추가 (대량 생성 알림)
+    await addToOutbox(tx, 'booking:bulk_created', {
+      count: createdBookings.length,
+      companyCode: companyCode || 'COMPANY_A',
+      bookingIds: createdBookings.map(b => b.id),
+      actorId: userId
+    });
+    
+    return createdBookings;
+  });
 };

@@ -6,25 +6,43 @@ import { parseBookingQuery } from '../utils/query-parser';
 import { authenticate, requireRole, AuthRequest } from '../middleware/auth.middleware';
 import { UserRole } from '@entrip/shared';
 import { broadcastBookingUpdate, broadcastBulkOperation } from '../ws';
+import { IdempotencyManager } from '../lib/idempotency';
 
 const r: Router = Router();
 
 // POST는 ADMIN, MANAGER만 가능
-r.post('/', authenticate, requireRole([UserRole.ADMIN, UserRole.MANAGER]), validate(createBookingSchema), async (req: AuthRequest, res) => {
-  try {
-    const b = await svc.createBooking({
-      ...req.body,
-      createdBy: req.user!.userId  // 현재 사용자 ID 사용
-    }, req.user!.companyCode);  // 회사 코드 전달
+r.post('/', 
+  authenticate, 
+  requireRole([UserRole.ADMIN, UserRole.MANAGER]), 
+  IdempotencyManager.middleware({ ttlMinutes: 30 }),
+  validate(createBookingSchema), 
+  async (req: AuthRequest, res) => {
+    const idempotencyKey = (req as any).idempotencyKey;
     
-    // WebSocket으로 브로드캐스트
-    broadcastBookingUpdate('create', b.id, b);
-    
-    res.status(201).json(b);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    try {
+      const b = await svc.createBooking({
+        ...req.body,
+        createdBy: req.user!.userId  // 현재 사용자 ID 사용
+      }, req.user!.companyCode);  // 회사 코드 전달
+      
+      // WebSocket으로 브로드캐스트
+      broadcastBookingUpdate('create', b.id, b);
+      
+      // 성공 시 멱등성 응답 저장
+      if (idempotencyKey) {
+        await IdempotencyManager.saveResponse(idempotencyKey, b);
+      }
+      
+      res.status(201).json(b);
+    } catch (error: any) {
+      // 실패 시 멱등성 키 정리
+      if (idempotencyKey) {
+        await IdempotencyManager.cleanupFailedRequest(idempotencyKey);
+      }
+      res.status(400).json({ error: error.message });
+    }
   }
-});
+);
 
 // GET 엔드포인트는 인증 제거 (개발용)
 r.get('/', async (req: any, res) => {
@@ -50,18 +68,35 @@ r.get('/:id', async (req: any, res) => {
 });
 
 // PATCH도 ADMIN, MANAGER만 가능
-r.patch('/:id', authenticate, requireRole([UserRole.ADMIN, UserRole.MANAGER]), validate(updateBookingSchema), async (req: AuthRequest, res) => {
-  try {
-    const b = await svc.updateBooking(req.params.id, req.body, req.user!.companyCode);  // 회사별 필터링
+r.patch('/:id', 
+  authenticate, 
+  requireRole([UserRole.ADMIN, UserRole.MANAGER]), 
+  IdempotencyManager.middleware({ ttlMinutes: 15 }),
+  validate(updateBookingSchema), 
+  async (req: AuthRequest, res) => {
+    const idempotencyKey = (req as any).idempotencyKey;
     
-    // WebSocket으로 브로드캐스트
-    broadcastBookingUpdate('update', req.params.id, b);
-    
-    res.json(b);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    try {
+      const b = await svc.updateBooking(req.params.id, req.body, req.user!.companyCode, req.user!.userId);  // 회사별 필터링 + 액터 ID
+      
+      // WebSocket으로 브로드캐스트
+      broadcastBookingUpdate('update', req.params.id, b);
+      
+      // 성공 시 멱등성 응답 저장
+      if (idempotencyKey) {
+        await IdempotencyManager.saveResponse(idempotencyKey, b);
+      }
+      
+      res.json(b);
+    } catch (error: any) {
+      // 실패 시 멱등성 키 정리
+      if (idempotencyKey) {
+        await IdempotencyManager.cleanupFailedRequest(idempotencyKey);
+      }
+      res.status(400).json({ error: error.message });
+    }
   }
-});
+);
 
 // 상태 변경도 ADMIN, MANAGER만 가능
 r.patch('/:id/status', authenticate, requireRole([UserRole.ADMIN, UserRole.MANAGER]), validate(statusSchema), async (req: AuthRequest, res) => {
@@ -78,23 +113,41 @@ r.patch('/:id/status', authenticate, requireRole([UserRole.ADMIN, UserRole.MANAG
 });
 
 // Bulk Upload - ADMIN, MANAGER만 가능
-r.post('/bulk-upload', authenticate, requireRole([UserRole.ADMIN, UserRole.MANAGER]), async (req: AuthRequest, res) => {
-  try {
-    const { bookings } = req.body;
-    if (!bookings || !Array.isArray(bookings) || bookings.length === 0) {
-      return res.status(400).json({ error: 'bookings array is required' });
+r.post('/bulk-upload', 
+  authenticate, 
+  requireRole([UserRole.ADMIN, UserRole.MANAGER]), 
+  IdempotencyManager.middleware({ ttlMinutes: 60 }), // 대량 작업은 긴 TTL
+  async (req: AuthRequest, res) => {
+    const idempotencyKey = (req as any).idempotencyKey;
+    
+    try {
+      const { bookings } = req.body;
+      if (!bookings || !Array.isArray(bookings) || bookings.length === 0) {
+        return res.status(400).json({ error: 'bookings array is required' });
+      }
+      
+      const created = await svc.bulkCreateBookings(bookings, req.user!.userId, req.user!.companyCode);
+      
+      // WebSocket으로 브로드캐스트
+      broadcastBulkOperation('create', created.length, created.map(b => b.id));
+      
+      const response = { created: created.length, bookings: created };
+      
+      // 성공 시 멱등성 응답 저장
+      if (idempotencyKey) {
+        await IdempotencyManager.saveResponse(idempotencyKey, response);
+      }
+      
+      res.json(response);
+    } catch (error: any) {
+      // 실패 시 멱등성 키 정리
+      if (idempotencyKey) {
+        await IdempotencyManager.cleanupFailedRequest(idempotencyKey);
+      }
+      res.status(400).json({ error: error.message });
     }
-    
-    const created = await svc.bulkCreateBookings(bookings, req.user!.userId, req.user!.companyCode);
-    
-    // WebSocket으로 브로드캐스트
-    broadcastBulkOperation('create', created.length, created.map(b => b.id));
-    
-    res.json({ created: created.length, bookings: created });
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
   }
-});
+);
 
 // Bulk Restore - ADMIN, MANAGER만 가능 (삭제 취소)
 r.post('/bulk-restore', authenticate, requireRole([UserRole.ADMIN, UserRole.MANAGER]), async (req: AuthRequest, res) => {
@@ -129,7 +182,7 @@ r.delete('/bulk', authenticate, requireRole([UserRole.ADMIN]), async (req: AuthR
 // DELETE는 ADMIN만 가능
 r.delete('/:id', authenticate, requireRole([UserRole.ADMIN]), async (req: AuthRequest, res) => {
   try {
-    await svc.deleteBooking(req.params.id, req.user!.companyCode);
+    await svc.deleteBooking(req.params.id, req.user!.companyCode, req.user!.userId);
     res.status(204).send();
   } catch (error: any) {
     res.status(400).json({ error: error.message });

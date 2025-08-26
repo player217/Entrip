@@ -19,7 +19,7 @@ model User {
   password        String
   role            UserRole        @default(USER)
   department      String?
-  companyCode     String          // 회사 코드 - 회사별 사용자 구분용
+  companyCode     String          @default("ENTRIP_MAIN") // 회사 코드 - 회사별 사용자 구분용
   isActive        Boolean         @default(true)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -53,7 +53,7 @@ enum UserRole {
 model Booking {
   id              String          @id @default(cuid())
   bookingNumber   String          @unique
-  companyCode     String          // 회사 코드 - 회사별 데이터 구분용
+  companyCode     String          @default("ENTRIP_MAIN") // 회사 코드 - 회사별 데이터 구분용
   customerName    String
   teamName        String
   teamType        String          // 팀 타입 (필수) - 추가
@@ -108,7 +108,7 @@ model Booking {
   @@index([teamName])
   @@index([companyCode])
   @@index([manager])              // 추가
-  }
+}
 
 enum BookingType {
   PACKAGE
@@ -582,4 +582,49 @@ model Settlement {
   
   @@index([bookingId])
   @@index([type, currency])
+}
+
+// === 데이터 무결성 보장 모델들 ===
+
+// 중복 생성 방지용 멱등성 키 저장 테이블
+model IdempotencyKey {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  endpoint      String
+  requestHash   String
+  responseBody  Json?
+  createdAt     DateTime @default(now())
+  ttl           DateTime // 만료 시 정리
+  
+  @@index([endpoint, ttl])
+  @@index([createdAt])
+}
+
+// 소켓/외부연동 안전 전송을 위한 outbox
+model Outbox {
+  id          String   @id @default(cuid())
+  topic       String
+  payload     Json
+  createdAt   DateTime @default(now())
+  deliveredAt DateTime?
+  attempts    Int      @default(0)
+  
+  @@index([topic, deliveredAt])
+  @@index([createdAt])
+  @@index([attempts])
+}
+
+// 감사 로그
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  detail    Json?
+  createdAt DateTime @default(now())
+  
+  @@index([actorId, createdAt])
+  @@index([entity, entityId])
+  @@index([action, createdAt])
 }

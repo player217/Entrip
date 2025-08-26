@@ -10,11 +10,29 @@ import { bookingRouter } from './modules/booking';
 import { errorHandler } from './middleware/errorHandler';
 import { metricsMiddleware, metricsHandler } from './middleware/metrics';
 import { fallbackCacheMiddleware, errorFallbackHandler } from './middleware/fallback-cache';
+import { outboxDispatcher } from './lib/outbox-dispatcher';
 
 // 환경변수 로드
 dotenv.config();
 
 const app: express.Application = express();
+
+// Outbox dispatcher 시작 (개발/프로덕션 모두)
+if (process.env.NODE_ENV !== 'test') {
+  outboxDispatcher.start();
+  console.log('✅ Outbox dispatcher started for reliable message delivery');
+  
+  // Graceful shutdown 처리
+  process.on('SIGTERM', () => {
+    console.log('🛑 SIGTERM received, stopping outbox dispatcher...');
+    outboxDispatcher.stop();
+  });
+  
+  process.on('SIGINT', () => {
+    console.log('🛑 SIGINT received, stopping outbox dispatcher...');
+    outboxDispatcher.stop();
+  });
+}
 
 // 미들웨어
 app.use(cors({
