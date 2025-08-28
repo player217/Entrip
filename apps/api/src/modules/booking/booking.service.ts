@@ -15,7 +15,9 @@ export class BookingService {
         bookingNumber,
         customerName,
         teamName,
+        teamType: 'GROUP', // Default team type
         bookingType,
+        origin: 'Seoul', // Default origin
         destination,
         paxCount,
         nights,
@@ -23,6 +25,7 @@ export class BookingService {
         currency,
         notes,
         companyCode: 'COMPANY_A', // Default company code
+        manager: 'System', // Default manager
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         totalPrice: new Prisma.Decimal(totalPrice),
@@ -99,7 +102,7 @@ export class BookingService {
     });
   }
 
-  async update(id: string, data: UpdateBookingDto & { updatedBy: string }) {
+  async update(id: string, data: UpdateBookingDto & { updatedBy: string }, expectedVersion?: number) {
     const { flightInfo, hotelInfo, insuranceInfo, startDate, endDate, totalPrice, depositAmount, ...restData } = data;
     
     const updateData: Prisma.BookingUpdateInput = {
@@ -134,9 +137,37 @@ export class BookingService {
       updateData.insuranceInfo = insuranceInfo ? (insuranceInfo as Prisma.InputJsonValue) : Prisma.DbNull;
     }
     
+    // For atomic update with version check, use updateMany with where clause
+    if (expectedVersion !== undefined) {
+      const result = await this.prisma.booking.updateMany({
+        where: { 
+          id,
+          version: expectedVersion  // Atomic check - only update if version matches
+        },
+        data: {
+          ...updateData,
+          version: { increment: 1 }  // Increment version for optimistic locking
+        },
+      });
+      
+      if (result.count === 0) {
+        throw new Error('Booking not found or version mismatch');
+      }
+      
+      // Fetch and return the updated booking
+      return this.prisma.booking.findUnique({
+        where: { id },
+        include: { events: true }
+      });
+    }
+    
+    // Fallback for backward compatibility (no version check)
     return this.prisma.booking.update({
       where: { id },
-      data: updateData,
+      data: {
+        ...updateData,
+        version: { increment: 1 }
+      },
       include: {
         events: true,
       },

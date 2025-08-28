@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { BookingStatus, BookingType, UserRole } from '@entrip/shared';
+import { fromApiCreateRequest, fromApiUpdateRequest } from './booking.mapper';
 
 const prisma = new PrismaClient();
 
@@ -55,29 +56,15 @@ export const createBooking = async (dto: any, companyCode?: string) => {
     userId = defaultUser.id;
   }
   
-  // Map client to customerName for schema compatibility
-  const mappedDto = {
-    ...dto,
-    customerName: dto.client || dto.customerName,
-    teamName: dto.teamName || 'Default Team',
-    teamType: dto.teamType || 'GROUP',
-    origin: dto.origin || 'Seoul',
-    destination: dto.destination || 'TBD',
-    paxCount: dto.paxCount || dto.pax || 1,
-    nights: dto.nights || 1,
-    days: dto.days || 2,
-    totalPrice: dto.price || dto.totalPrice,
-    currency: dto.currency || 'KRW',
-    manager: dto.manager || 'System',
-    representative: dto.representative,
-    contact: dto.contact,
-    email: dto.email,
-    memo: dto.memo,
-    companyCode: companyCode || 'COMPANY_A'
-  };
+  // Convert API request to DB format
+  const dbData = fromApiCreateRequest(dto);
   
-  // Extract related data
-  const { flights, vehicles, hotels, settlements, ...bookingData } = mappedDto;
+  // Add system fields
+  const bookingData = {
+    ...dbData,
+    companyCode: companyCode || 'COMPANY_A',
+    memo: dto.memo
+  };
   
   // Create booking with related data using transaction with outbox pattern
   return prisma.$transaction(async (tx) => {
@@ -91,17 +78,18 @@ export const createBooking = async (dto: any, companyCode?: string) => {
         bookingType: bookingData.bookingType,
         origin: bookingData.origin,
         destination: bookingData.destination,
-        startDate: new Date(bookingData.startDate || bookingData.departureDate),
-        endDate: new Date(bookingData.endDate || bookingData.returnDate),
+        startDate: bookingData.startDate,
+        endDate: bookingData.endDate,
         paxCount: bookingData.paxCount,
         nights: bookingData.nights,
         days: bookingData.days,
-        status: bookingData.bookingStatus || bookingData.status || BookingStatus.PENDING,
+        status: BookingStatus.PENDING,
         manager: bookingData.manager,
         representative: bookingData.representative,
         contact: bookingData.contact,
         email: bookingData.email,
         totalPrice: bookingData.totalPrice,
+        depositAmount: bookingData.depositAmount,
         currency: bookingData.currency,
         notes: bookingData.notes,
         memo: bookingData.memo,
@@ -286,7 +274,7 @@ export const getBooking = async (id: string, companyCode?: string) => {
     where.companyCode = companyCode;
   }
   
-  const booking = await prisma.booking.findUnique({ 
+  const booking = await prisma.booking.findFirst({ 
     where,
     include: {
       user: {
@@ -317,39 +305,20 @@ export const updateBooking = async (id: string, dto: any, companyCode?: string, 
     where.companyCode = companyCode;
   }
   
-  // Map client to customerName if provided
-  const mappedDto = { ...dto };
-  if (dto.client) {
-    mappedDto.customerName = dto.client;
-    delete mappedDto.client;
-  }
-  if (dto.price) {
-    mappedDto.totalPrice = dto.price;
-    delete mappedDto.price;
-  }
-  if (dto.pax) {
-    mappedDto.paxCount = dto.pax;
-    delete mappedDto.pax;
-  }
-  if (dto.bookingStatus) {
-    mappedDto.status = dto.bookingStatus;
-    delete mappedDto.bookingStatus;
-  }
-  
-  // Extract related data
-  const { flights, vehicles, hotels, settlements, ...bookingData } = mappedDto;
+  // Convert API request to DB format
+  const bookingData = fromApiUpdateRequest(dto);
   
   // Update booking with related data using transaction
   return prisma.$transaction(async (tx) => {
     // 기존 데이터 조회 (변경 사항 추적용)
-    const originalBooking = await tx.booking.findUnique({ where });
+    const originalBooking = await tx.booking.findFirst({ where });
     if (!originalBooking) {
       throw new Error('Booking not found');
     }
     
-    // Update main booking
+    // Update main booking - use just the ID for update
     const booking = await tx.booking.update({ 
-      where, 
+      where: { id }, 
       data: bookingData
     });
     

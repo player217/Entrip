@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as svc from '../services/booking.service';
 import { validate } from '../middleware/validate';
 import { createBookingSchema, updateBookingSchema, statusSchema } from '../validators/booking.validator';
+import { toApiBooking } from '../services/booking.mapper';
 import { parseBookingQuery } from '../utils/query-parser';
 import { authenticate, requireRole, AuthRequest } from '../middleware/auth.middleware';
 import { UserRole } from '@entrip/shared';
@@ -15,7 +16,7 @@ r.post('/',
   authenticate, 
   requireRole([UserRole.ADMIN, UserRole.MANAGER]), 
   IdempotencyManager.middleware({ ttlMinutes: 30 }),
-  validate(createBookingSchema), 
+  validate({ body: createBookingSchema }),
   async (req: AuthRequest, res) => {
     const idempotencyKey = (req as any).idempotencyKey;
     
@@ -33,7 +34,10 @@ r.post('/',
         await IdempotencyManager.saveResponse(idempotencyKey, b);
       }
       
-      res.status(201).json(b);
+      // Convert to API format and set ETag
+      const apiBooking = toApiBooking(b);
+      res.set('ETag', `"${b.version}"`);
+      res.status(201).json(apiBooking);
     } catch (error: any) {
       // 실패 시 멱등성 키 정리
       if (idempotencyKey) {
@@ -51,7 +55,10 @@ r.get('/', async (req: any, res) => {
     const q = { ...parseBookingQuery(req.query), month: req.query.month };
     // 인증 없이 모든 데이터 반환 (개발용)
     const list = await svc.listBookings(q, 'ENTRIP_MAIN');  // ENTRIP_MAIN 회사 데이터 기본 사용
-    res.json(list);
+    
+    // Convert all bookings to API format
+    const apiBookings = list.map(toApiBooking);
+    res.json(apiBookings);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -61,7 +68,19 @@ r.get('/:id', async (req: any, res) => {
   try {
     const b = await svc.getBooking(req.params.id, 'ENTRIP_MAIN');  // ENTRIP_MAIN 회사 데이터 기본 사용
     if (!b) return res.status(404).json({ error: 'Booking not found' });
-    res.json(b);
+    
+    // Check If-None-Match header for 304 response
+    const ifNoneMatch = req.headers['if-none-match'];
+    const currentETag = `"${b.version}"`;
+    
+    if (ifNoneMatch && ifNoneMatch === currentETag) {
+      return res.status(304).send(); // Not Modified
+    }
+    
+    // Convert to API format and set ETag
+    const apiBooking = toApiBooking(b);
+    res.set('ETag', currentETag);
+    res.json(apiBooking);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -72,11 +91,35 @@ r.patch('/:id',
   authenticate, 
   requireRole([UserRole.ADMIN, UserRole.MANAGER]), 
   IdempotencyManager.middleware({ ttlMinutes: 15 }),
-  validate(updateBookingSchema), 
+  validate({ body: updateBookingSchema }),
   async (req: AuthRequest, res) => {
     const idempotencyKey = (req as any).idempotencyKey;
     
     try {
+      // Check If-Match header for optimistic locking
+      const ifMatch = req.headers['if-match'];
+      if (!ifMatch) {
+        return res.status(428).json({ 
+          error: 'Precondition Required',
+          message: 'If-Match header is required for updates'
+        });
+      }
+      
+      // Get current booking to check version
+      const currentBooking = await svc.getBooking(req.params.id, req.user!.companyCode);
+      if (!currentBooking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
+      
+      const currentETag = `"${currentBooking.version}"`;
+      if (ifMatch !== currentETag) {
+        return res.status(412).json({ 
+          error: 'Precondition Failed',
+          message: 'Resource has been modified',
+          currentVersion: currentBooking.version
+        });
+      }
+      
       const b = await svc.updateBooking(req.params.id, req.body, req.user!.companyCode, req.user!.userId);  // 회사별 필터링 + 액터 ID
       
       // WebSocket으로 브로드캐스트
@@ -87,7 +130,10 @@ r.patch('/:id',
         await IdempotencyManager.saveResponse(idempotencyKey, b);
       }
       
-      res.json(b);
+      // Convert to API format and set new ETag
+      const apiBooking = toApiBooking(b);
+      res.set('ETag', `"${b.version}"`);
+      res.json(apiBooking);
     } catch (error: any) {
       // 실패 시 멱등성 키 정리
       if (idempotencyKey) {
@@ -99,14 +145,18 @@ r.patch('/:id',
 );
 
 // 상태 변경도 ADMIN, MANAGER만 가능
-r.patch('/:id/status', authenticate, requireRole([UserRole.ADMIN, UserRole.MANAGER]), validate(statusSchema), async (req: AuthRequest, res) => {
+r.patch('/:id/status', authenticate, requireRole([UserRole.ADMIN, UserRole.MANAGER]), validate({ body: statusSchema }), async (req: AuthRequest, res) => {
   try {
     const { status } = req.body;
     if (!status) {
       return res.status(400).json({ error: 'Status is required' });
     }
     const b = await svc.changeStatus(req.params.id, status, req.user!.companyCode);  // 회사별 필터링
-    res.json(b);
+    
+    // Convert to API format and set ETag
+    const apiBooking = toApiBooking(b);
+    res.set('ETag', `"${b.version}"`);
+    res.json(apiBooking);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
@@ -131,7 +181,9 @@ r.post('/bulk-upload',
       // WebSocket으로 브로드캐스트
       broadcastBulkOperation('create', created.length, created.map(b => b.id));
       
-      const response = { created: created.length, bookings: created };
+      // Convert to API format
+      const apiBookings = created.map(toApiBooking);
+      const response = { created: created.length, bookings: apiBookings };
       
       // 성공 시 멱등성 응답 저장
       if (idempotencyKey) {
@@ -158,7 +210,8 @@ r.post('/bulk-restore', authenticate, requireRole([UserRole.ADMIN, UserRole.MANA
     }
     
     const restored = await svc.bulkCreateBookings(bookings, req.user!.userId, req.user!.companyCode);
-    res.json({ restored: restored.length, bookings: restored });
+    const apiBookings = restored.map(toApiBooking);
+    res.json({ restored: restored.length, bookings: apiBookings });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
