@@ -61,7 +61,8 @@ r.get('/',
     async (req: Request) => {
       const validQuery = (req as any).valid?.query || req.query;
       const q = { ...parseBookingQuery(validQuery), month: validQuery.month };
-      const list = await svc.listBookings(q, 'ENTRIP_MAIN');
+      const companyCode = (req as any).user?.companyCode;
+      const list = await svc.listBookings(q, companyCode);
       return createResponse(list.items || list, list.meta);
     }
   )
@@ -72,7 +73,8 @@ r.get('/:id',
   respondWithETag(
     BookingResponse,
     async (req: Request) => {
-      const b = await svc.getBooking(req.params.id, 'ENTRIP_MAIN');
+      const companyCode = (req as any).user?.companyCode;
+      const b = await svc.getBooking(req.params.id, companyCode);
       if (!b) {
         throw ApiError.notFound('Booking');
       }

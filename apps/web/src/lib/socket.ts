@@ -5,44 +5,22 @@ import { logger } from '@entrip/shared';
 let socket: Socket | null = null;
 
 export const initializeSocket = (): Socket | undefined => {
-  // For WebSocket, we need to explicitly pass the token since cookies aren't automatically sent
-  // We'll get it from a special endpoint that returns a token for WebSocket use
-  // This keeps the actual auth token in HttpOnly cookie secure
-  
-  // Check if user is authenticated by looking for auth state
-  const authState = typeof window !== 'undefined' 
-    ? localStorage.getItem('auth-state') 
-    : null;
-  
-  if (!authState) {
-    logger.warn('[Socket]', 'User not authenticated, WebSocket features disabled');
-    return;
+  // Server-side rendering check
+  if (typeof window === 'undefined') {
+    return; // Don't initialize socket on server-side
   }
   
-  // Parse auth state to check if authenticated
-  try {
-    const state = JSON.parse(authState);
-    if (!state?.state?.isAuthenticated) {
-      logger.warn('[Socket]', 'User not authenticated, WebSocket features disabled');
-      return;
-    }
-  } catch (e) {
-    logger.warn('[Socket]', 'Invalid auth state, WebSocket features disabled');
-    return;
-  }
-  
+  // Check if already connected
   if (socket?.connected) {
     logger.info('[Socket]', 'Already connected');
     return socket;
   }
   
-  // 서버/클라이언트 환경 구분
-  const isServer = typeof window === 'undefined';
-  const WS_URL = isServer 
-    ? (process.env.INTERNAL_WS_URL || 'ws://api:4000')
-    : (process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001');
+  // Use same URL as API client for consistency
+  const WS_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
   
-  // Connect without token - server will use session cookie for auth
+  // Connect with cookie-based authentication
+  // withCredentials: true ensures HttpOnly cookies are sent with WebSocket handshake
   socket = io(WS_URL, {
     withCredentials: true, // Send cookies with WebSocket handshake
     path: '/socket.io/',
@@ -50,7 +28,7 @@ export const initializeSocket = (): Socket | undefined => {
   });
   
   socket.on('connect', () => {
-    logger.info('[Socket]', 'Connected to server');
+    logger.info('[Socket]', 'Connected to server with cookie authentication');
   });
   
   socket.on('disconnect', () => {
@@ -59,6 +37,7 @@ export const initializeSocket = (): Socket | undefined => {
   
   socket.on('connect_error', (error) => {
     logger.error('[Socket]', `Connection error: ${error.message}`);
+    logger.error('[Socket]', 'Ensure you are logged in and have valid session cookie');
   });
   
   return socket;

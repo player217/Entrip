@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Authentication Test</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket Authentication Test</h1>
+    <div id="status">연결 중...</div>
+    <div id="logs"></div>
+    
+    <script>
+        const statusEl = document.getElementById('status');
+        const logsEl = document.getElementById('logs');
+        
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logsEl.innerHTML += `<div>[${time}] ${message}</div>`;
+        }
+        
+        // 먼저 로그인 API를 호출해서 쿠키를 설정
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                companyCode: 'J1',
+                username: 'admin', 
+                password: 'pass1234'
+            }),
+            credentials: 'include' // 쿠키 포함
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                log(`로그인 성공: ${data.user.name}`);
+                statusEl.textContent = '로그인 완료, WebSocket 연결 시도 중...';
+                
+                // 로그인 성공 후 WebSocket 연결
+                const socket = io('http://localhost:4001', {
+                    withCredentials: true,
+                    path: '/socket.io/',
+                    transports: ['websocket', 'polling']
+                });
+                
+                socket.on('connect', () => {
+                    statusEl.textContent = '✅ WebSocket 연결 성공!';
+                    log('WebSocket 연결 성공!');
+                });
+                
+                socket.on('disconnect', () => {
+                    statusEl.textContent = '❌ WebSocket 연결 해제됨';
+                    log('WebSocket 연결 해제됨');
+                });
+                
+                socket.on('connect_error', (error) => {
+                    statusEl.textContent = '❌ WebSocket 연결 실패';
+                    log(`연결 에러: ${error.message}`);
+                });
+                
+                // 예약 이벤트 리스너
+                socket.on('booking:create', (data) => {
+                    log(`예약 생성 이벤트: ${JSON.stringify(data)}`);
+                });
+                
+                socket.on('booking:update', (data) => {
+                    log(`예약 업데이트 이벤트: ${JSON.stringify(data)}`);
+                });
+                
+            } else {
+                statusEl.textContent = '❌ 로그인 실패';
+                log(`로그인 실패: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            statusEl.textContent = '❌ 로그인 에러';
+            log(`로그인 에러: ${error.message}`);
+        });
+    </script>
+</body>
+</html>

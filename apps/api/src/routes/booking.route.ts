@@ -53,8 +53,9 @@ r.get('/', async (req: any, res) => {
   try {
     // 원본 query를 전달하도록 수정 (month 파라미터 포함)
     const q = { ...parseBookingQuery(req.query), month: req.query.month };
-    // 인증 없이 모든 데이터 반환 (개발용)
-    const list = await svc.listBookings(q, 'ENTRIP_MAIN');  // ENTRIP_MAIN 회사 데이터 기본 사용
+    // 인증된 사용자의 회사 코드 사용 (인증 없으면 undefined)
+    const companyCode = (req as any).user?.companyCode;
+    const list = await svc.listBookings(q, companyCode);
     
     // Convert all bookings to API format
     const apiBookings = list.map(toApiBooking);
@@ -66,7 +67,8 @@ r.get('/', async (req: any, res) => {
 
 r.get('/:id', async (req: any, res) => {
   try {
-    const b = await svc.getBooking(req.params.id, 'ENTRIP_MAIN');  // ENTRIP_MAIN 회사 데이터 기본 사용
+    const companyCode = (req as any).user?.companyCode;
+    const b = await svc.getBooking(req.params.id, companyCode);
     if (!b) return res.status(404).json({ error: 'Booking not found' });
     
     // Check If-None-Match header for 304 response

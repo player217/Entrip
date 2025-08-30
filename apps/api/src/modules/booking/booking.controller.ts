@@ -15,7 +15,8 @@ const bookingService = new BookingService(prisma);
 
 // 버전 조회 헬퍼 (재사용)
 const getBookingVersion = async (req: Request): Promise<number | null> => {
-  const booking = await bookingService.findOne(req.params.id);
+  const companyCode = (req as any).user?.companyCode;
+  const booking = await bookingService.findOne(req.params.id, companyCode);
   return booking ? booking.version : null;
 };
 
@@ -68,7 +69,8 @@ const getBookingVersion = async (req: Request): Promise<number | null> => {
 router.get('/', async (req, res) => {
   try {
     const query = ListBookingsQueryDtoSchema.parse(req.query);
-    const result = await bookingService.findAll(query);
+    const companyCode = (req as any).user?.companyCode;
+    const result = await bookingService.findAll(query, companyCode);
     res.json(result);
   } catch (error) {
     if (error instanceof Error && error.name === 'ZodError') {
@@ -113,7 +115,8 @@ router.get('/:id',
   ifNoneMatch(getBookingVersion),
   async (req, res) => {
     try {
-      const booking = await bookingService.findOne(req.params.id);
+      const companyCode = (req as any).user?.companyCode;
+      const booking = await bookingService.findOne(req.params.id, companyCode);
       if (!booking) {
         return res.status(404).json({
           code: 404,
@@ -159,9 +162,11 @@ router.post('/', async (req, res) => {
   try {
     const data = CreateBookingDtoSchema.parse(req.body);
     // TODO: Get createdBy from auth middleware
+    const user = (req as any).user;
     const booking = await bookingService.create({
       ...data,
-      createdBy: 'system', // Replace with actual user ID from auth
+      createdBy: user?.userId || 'system',
+      companyCode: user?.companyCode
     });
     
     setEtag(res, booking.version);
@@ -218,13 +223,15 @@ router.patch('/:id',
       const expectedVersion = (res.locals as any).expectedVersion as number;
       const data = UpdateBookingDtoSchema.parse(req.body);
       
+      const user = (req as any).user;
       const booking = await bookingService.update(
         req.params.id, 
         {
           ...data,
-          updatedBy: 'system', // TODO: Get from auth
+          updatedBy: user?.userId || 'system',
         },
-        expectedVersion  // 미들웨어에서 검증된 버전
+        expectedVersion,  // 미들웨어에서 검증된 버전
+        user?.companyCode  // Pass company code for filtering
       );
       
       setEtag(res, booking.version);
@@ -276,7 +283,8 @@ router.patch('/:id',
  */
 router.delete('/:id', async (req, res) => {
   try {
-    await bookingService.delete(req.params.id);
+    const companyCode = (req as any).user?.companyCode;
+    await bookingService.delete(req.params.id, companyCode);
     res.status(204).send();
   } catch (error) {
     if (error instanceof Error && 'code' in error && (error as PrismaError).code === 'P2025') {

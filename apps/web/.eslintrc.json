@@ -5,6 +5,18 @@
     "@typescript-eslint/no-unused-vars": ["error", { 
       "argsIgnorePattern": "^_",
       "varsIgnorePattern": "^_"
+    }],
+    "no-restricted-imports": ["error", {
+      "paths": [
+        {
+          "name": "@entrip/shared/hooks/useBookings",
+          "message": "웹앱에서는 @/hooks/useBookings를 사용하세요"
+        },
+        {
+          "name": "@entrip/shared/lib/apiClient",
+          "message": "웹앱에서는 @/lib/api-client를 사용하세요"
+        }
+      ]
     }]
   },
   "ignorePatterns": [
