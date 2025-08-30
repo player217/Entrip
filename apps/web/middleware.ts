@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Public routes that don't require authentication
-const publicPaths = ['/login', '/api/auth/login', '/_next', '/favicon.ico']
+const publicPaths = ['/login', '/api/auth/login', '/_next/static', '/_next/image', '/favicon.ico']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Check for auth token in HttpOnly cookie
-  const token = request.cookies.get('auth-token')
+  const token = request.cookies.get('auth-token')?.value
   
   // If no token, redirect to login (SINGLE SOURCE OF REDIRECTS)
   if (!token) {
@@ -23,9 +23,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // TODO: Add token validation logic with API call
-  // For now, just check token existence
-  
+  // Token exists, allow access
+  // Note: Full token validation happens in API middleware for security
   return NextResponse.next()
 }
 
@@ -33,11 +32,12 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
+     * - _next (Next.js internal files)
      * - favicon.ico (favicon file)
+     * - api/auth (authentication endpoints only)
+     * - login (login page)
+     * - public (public assets)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next|favicon.ico|api/auth|login|public).*)',
   ],
 }

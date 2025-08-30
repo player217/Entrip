@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { CalendarMonth, DataGrid, StatusTag, Button } from '@entrip/ui'
 import type { ColumnDef } from '@tanstack/react-table'
 // import BookingModal from '@/components/BookingModal'
@@ -16,13 +17,14 @@ const BulkActionBar = (_props: { selectedCount: number; onAction: (action: strin
 import { clsx } from 'clsx'
 import type { BookingEvent } from '@entrip/shared'
 import { logger } from '@entrip/shared'
-// import { useBookings } from '@/hooks/useBookings'
+import { useBookings } from '../../hooks/useBookings'
+import { useToast } from '../../providers/ToastProvider'
 // import { exportToExcel, exportToPDF } from '@/utils/export'
 // import { parseCSV, downloadCSVTemplate } from '@/utils/csv-import'
 // import axiosInstance from '@/lib/axios'
 // Removed duplicate interface - using the one below
 
-const useBookings = () => ({ bookings: [] as Booking[], error: null, isLoading: false, mutate: () => {} })
+// Removed mock - using real useBookings hook
 const exportToExcel = (_data: Booking[], _filename: string) => {}
 const exportToPDF = (_data: Booking[], _filename: string) => {}
 const parseCSV = async (_file: File) => [] as Booking[]
@@ -61,12 +63,26 @@ interface Booking {
 }
 
 export default function ReservationsPageContent() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const monthParam = searchParams.get('month')
+  const { addToast } = useToast()
+  
   const [activeTab, setActiveTab] = useState<'calendar-month' | 'calendar-week' | 'list' | 'calendar-virtual'>('calendar-month')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
-  const [currentDate] = useState(new Date(2025, 5)) // 2025년 6월
+  
+  // Initialize date from URL parameter or default to current month
+  const initialDate = monthParam 
+    ? new Date(monthParam + '-01') 
+    : new Date(2025, 11); // 2025년 12월 (예약 데이터가 12월에 있음)
+  
+  const [currentDate, setCurrentDate] = useState(initialDate)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isMobile, setIsMobile] = useState(false)
+  
+  // Format current month for API call  
+  const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
   
   useEffect(() => {
     const checkMobile = () => {
@@ -77,8 +93,64 @@ export default function ReservationsPageContent() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // 실제 API에서 데이터 가져오기
-  const { bookings, isLoading, mutate } = useBookings()
+  // 실제 API에서 데이터 가져오기 - 현재 월 파라미터 포함
+  const { bookings, isLoading, mutate, isError, errorDetails } = useBookings(currentMonth)
+  
+  // 디버그 로깅: 데이터 로딩 상태 추적
+  useEffect(() => {
+    logger.info('[ReservationsPage]', `Data loading state:`, {
+      currentMonth,
+      currentDate: currentDate.toISOString().split('T')[0],
+      monthParam,
+      bookingsCount: bookings?.length || 0,
+      isLoading,
+      isError,
+      errorDetails: errorDetails ? String(errorDetails) : null
+    });
+  }, [currentMonth, currentDate, monthParam, bookings, isLoading, isError, errorDetails]);
+  
+  // Error handling and success notifications
+  useEffect(() => {
+    if (isError && errorDetails) {
+      logger.error('[ReservationsPage]', 'Failed to load bookings:', errorDetails);
+      addToast({
+        type: 'error',
+        title: '예약 데이터 로딩 실패',
+        message: typeof errorDetails === 'string' 
+          ? errorDetails 
+          : '예약 데이터를 불러오는 중 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.',
+        duration: 8000
+      });
+    } else if (!isLoading && bookings && bookings.length > 0) {
+      // Success notification on initial load or month change
+      logger.info('[ReservationsPage]', `Loaded ${bookings.length} bookings for ${currentMonth}`);
+      addToast({
+        type: 'success',
+        title: '예약 데이터 로딩 완료',
+        message: `${currentMonth} 기간에 ${bookings.length}개의 예약을 불러왔습니다.`,
+        duration: 3000
+      });
+    } else if (!isLoading && bookings && bookings.length === 0) {
+      // No data notification
+      addToast({
+        type: 'info',
+        title: '예약 데이터 없음',
+        message: `${currentMonth} 기간에 예약 데이터가 없습니다.`,
+        duration: 4000
+      });
+    }
+  }, [isError, errorDetails, isLoading, bookings, currentMonth, addToast]);
+
+  // URL ↔ 상태 동기화: URL이 바뀌면 상태도 바뀌어야 함
+  useEffect(() => {
+    if (!monthParam) return;
+    const next = new Date(`${monthParam}-01`);
+    // 같은 달이면 불필요한 setState 방지
+    if (next.getFullYear() === currentDate.getFullYear() &&
+        next.getMonth() === currentDate.getMonth()) return;
+    setCurrentDate(next);
+    logger.info('[ReservationsPage]', `URL month changed to: ${monthParam}, setting state`);
+  }, [monthParam, currentDate]); // ← URL 변경 반영
 
   // API 데이터를 CalendarEvent 형식으로 변환
   const _events: CalendarEvent[] = bookings.map(booking => ({
@@ -270,12 +342,23 @@ export default function ReservationsPageContent() {
       
       if (response.status === 200) {
         logger.info('Bookings created successfully', 'created:', response.data.created);
+        addToast({
+          type: 'success',
+          title: '일괄 업로드 성공',
+          message: `${response.data.created}개의 예약이 성공적으로 생성되었습니다.`,
+          duration: 5000
+        });
         // SWR 캐시 갱신
         mutate();
       }
     } catch (error) {
       logger.error('CSV Import failed:', error instanceof Error ? error.message : String(error));
-      alert('CSV 파일 업로드에 실패했습니다.');
+      addToast({
+        type: 'error',
+        title: 'CSV 업로드 실패',
+        message: error instanceof Error ? error.message : 'CSV 파일 업로드에 실패했습니다.',
+        duration: 8000
+      });
     }
     
     // 파일 입력 초기화
@@ -425,14 +508,20 @@ export default function ReservationsPageContent() {
         {activeTab === 'calendar-month' ? (
           <div>
             <CalendarMonth
-              month={currentDate}
+              month={currentDate}               // ← 완전 제어형: 현재 월을 prop으로 전달
+              key={currentMonth}                // ← 월 바뀔 때 내부 상태 초기화 강제
               bookings={{}}
               onAddBooking={(_date: Date) => {
                 // TODO: Open booking modal for date
               }}
               onBookingClick={handleBookingEventClick}
-              onMonthChange={(_month: Date) => {
-                // TODO: Handle month change
+              onMonthChange={(month: Date) => {
+                setCurrentDate(month);
+                // Update URL parameter to maintain state
+                const newMonth = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
+                const params = new URLSearchParams(searchParams.toString());
+                params.set('month', newMonth);
+                router.push(`?${params.toString()}`, { scroll: false });
               }}
               className=""
             />

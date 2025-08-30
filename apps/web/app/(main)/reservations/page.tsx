@@ -82,7 +82,7 @@ export default function ReservationsPage() {
   const { bookings, isLoading, mutate } = useBookings()
 
   // API 데이터를 CalendarEvent 형식으로 변환
-  const _events: CalendarEvent[] = bookings.map(booking => ({
+  const _events: CalendarEvent[] = (Array.isArray(bookings) ? bookings : []).map(booking => ({
     id: booking.id || '',
     date: booking.departureDate || '',
     title: booking.customerName || '',
@@ -96,7 +96,7 @@ export default function ReservationsPage() {
   const calendarBookings = useMemo(() => {
     const bookingsMap: Record<string, BookingEvent[]> = {};
     
-    bookings.forEach((booking: any) => {
+    (Array.isArray(bookings) ? bookings : []).forEach((booking: any) => {
       if (booking.startDate || booking.departureDate || booking.date) {
         const dateStr = format(new Date(booking.startDate || booking.departureDate || booking.date), 'yyyy-MM-dd');
         
@@ -121,7 +121,7 @@ export default function ReservationsPage() {
   }, [bookings]);
 
   // API 데이터를 리스트 형식으로 변환
-  const displayBookings: Booking[] = bookings.map((booking, index) => ({
+  const displayBookings: Booking[] = (Array.isArray(bookings) ? bookings : []).map((booking, index) => ({
     id: booking.id || '',
     bookingNumber: `B2025-${String(index + 1).padStart(3, '0')}`,
     customerName: booking.customerName || '',
@@ -262,7 +262,7 @@ export default function ReservationsPage() {
   }
 
   const handleExport = (type: 'excel' | 'pdf') => {
-    const exportData = bookings.map((booking) => ({
+    const exportData = (Array.isArray(bookings) ? bookings : []).map((booking) => ({
       id: booking.id || '',
       bookingNumber: booking.bookingNumber || '',
       customerName: booking.customerName || '',
@@ -293,7 +293,7 @@ export default function ReservationsPage() {
       logger.info('CSV data imported', 'count:', csvBookings.length);
       
       // API로 bulk upload
-      const response = await axiosInstance.post('/api/bookings/bulk-upload', {
+      const response = await apiClient.post('/api/bookings/bulk-upload', {
         bookings: csvBookings
       });
       
@@ -475,9 +475,9 @@ export default function ReservationsPage() {
               }}
               className=""
               monthlySummary={{
-                totalBookings: bookings?.length || 0,
-                totalRevenue: bookings?.reduce((sum, b) => sum + (Number(b.totalPrice) || 0), 0) || 0,
-                confirmedBookings: bookings?.filter(b => b.status === 'CONFIRMED').length || 0
+                totalBookings: Array.isArray(bookings) ? bookings.length : 0,
+                totalRevenue: Array.isArray(bookings) ? bookings.reduce((sum, b) => sum + (Number(b.totalPrice) || 0), 0) : 0,
+                confirmedBookings: Array.isArray(bookings) ? bookings.filter(b => b.status === 'CONFIRMED').length : 0
               }}
             />
           </div>
@@ -493,7 +493,7 @@ export default function ReservationsPage() {
           <div>
             <CalendarVirtual
               currentDate={currentDate}
-              bookings={bookings}
+              bookings={Array.isArray(bookings) ? bookings : []}
               onDayClick={(date: Date) => {
                 logger.info('Day clicked', date.toISOString());
                 // 날짜 클릭 시 새 예약 생성 가능

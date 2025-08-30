@@ -7,15 +7,19 @@ export async function GET(request: NextRequest) {
     
     // Docker 내부에서는 service name으로 접근, 개발 환경에서는 localhost
     const apiUrl = process.env.INTERNAL_API_URL || 'http://api:4000';
-    const url = `${apiUrl}/api/bookings${queryString ? `?${queryString}` : ''}`;
+    const url = `${apiUrl}/api/v1/bookings${queryString ? `?${queryString}` : ''}`;
     
     console.log('[Bookings API Proxy] Requesting:', url);
+    
+    // Forward cookies from the incoming request
+    const cookieHeader = request.headers.get('cookie') || '';
     
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Authorization': request.headers.get('authorization') || '',
         'Content-Type': 'application/json',
+        'Cookie': cookieHeader, // Forward cookies for authentication
       },
       // timeout 설정
       signal: AbortSignal.timeout(10000), // 10초 타임아웃
@@ -46,15 +50,19 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const apiUrl = process.env.INTERNAL_API_URL || 'http://api:4000';
-    const url = `${apiUrl}/api/bookings`;
+    const url = `${apiUrl}/api/v1/bookings`;
     
     console.log('[Bookings API Proxy] POST Request:', url);
+    
+    // Forward cookies from the incoming request
+    const cookieHeader = request.headers.get('cookie') || '';
     
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Authorization': request.headers.get('authorization') || '',
         'Content-Type': 'application/json',
+        'Cookie': cookieHeader, // Forward cookies for authentication
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(10000),

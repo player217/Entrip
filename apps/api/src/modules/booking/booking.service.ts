@@ -4,25 +4,33 @@ import { CreateBookingDto, UpdateBookingDto, ListBookingsQueryDto } from './book
 export class BookingService {
   constructor(private prisma: PrismaClient) {}
 
-  async create(data: CreateBookingDto & { createdBy: string }) {
+  async create(data: CreateBookingDto & { createdBy: string; companyCode: string }) {
     // Generate booking number
     const bookingNumber = await this.generateBookingNumber();
     
-    const { flightInfo, hotelInfo, insuranceInfo, startDate, endDate, totalPrice, depositAmount, createdBy, customerName, teamName, bookingType, destination, paxCount, nights, days, currency, notes } = data;
+    const { flightInfo, hotelInfo, insuranceInfo, startDate, endDate, totalPrice, depositAmount, createdBy, customerName, teamName, bookingType, destination, paxCount, nights, days, currency, notes, companyCode } = data;
+    
+    // Company code is now required - should come from authenticated user context
+    if (!companyCode) {
+      throw new Error('Company code is required for creating bookings');
+    }
     
     return this.prisma.booking.create({
       data: {
         bookingNumber,
         customerName,
         teamName,
+        teamType: 'GROUP', // Default team type
         bookingType,
+        origin: 'Seoul', // Default origin
         destination,
         paxCount,
         nights,
         days,
         currency,
         notes,
-        companyCode: 'COMPANY_A', // Default company code
+        companyCode, // Use company code from authenticated user
+        manager: 'System', // Default manager
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         totalPrice: new Prisma.Decimal(totalPrice),
@@ -40,10 +48,15 @@ export class BookingService {
     });
   }
 
-  async findAll(query: ListBookingsQueryDto) {
+  async findAll(query: ListBookingsQueryDto, companyCode?: string) {
     const { status, dateFrom, dateTo, page, limit } = query;
     
     const where: Prisma.BookingWhereInput = {};
+    
+    // Filter by company code if provided
+    if (companyCode) {
+      where.companyCode = companyCode;
+    }
     
     if (status) {
       where.status = status;
@@ -83,7 +96,30 @@ export class BookingService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, companyCode?: string) {
+    const where: any = { id };
+    
+    // If company code is provided, ensure booking belongs to that company
+    if (companyCode) {
+      return this.prisma.booking.findFirst({
+        where: {
+          id,
+          companyCode
+        },
+        include: {
+          events: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+    }
+    
+    // Fallback to original behavior
     return this.prisma.booking.findUnique({
       where: { id },
       include: {
@@ -99,7 +135,7 @@ export class BookingService {
     });
   }
 
-  async update(id: string, data: UpdateBookingDto & { updatedBy: string }) {
+  async update(id: string, data: UpdateBookingDto & { updatedBy: string }, expectedVersion?: number, companyCode?: string) {
     const { flightInfo, hotelInfo, insuranceInfo, startDate, endDate, totalPrice, depositAmount, ...restData } = data;
     
     const updateData: Prisma.BookingUpdateInput = {
@@ -134,16 +170,73 @@ export class BookingService {
       updateData.insuranceInfo = insuranceInfo ? (insuranceInfo as Prisma.InputJsonValue) : Prisma.DbNull;
     }
     
+    // For atomic update with version check, use updateMany with where clause
+    if (expectedVersion !== undefined) {
+      const whereClause: any = { 
+        id,
+        version: expectedVersion  // Atomic check - only update if version matches
+      };
+      
+      // Add company code filter if provided
+      if (companyCode) {
+        whereClause.companyCode = companyCode;
+      }
+      
+      const result = await this.prisma.booking.updateMany({
+        where: whereClause,
+        data: {
+          ...updateData,
+          version: { increment: 1 }  // Increment version for optimistic locking
+        },
+      });
+      
+      if (result.count === 0) {
+        throw new Error('Booking not found or version mismatch');
+      }
+      
+      // Fetch and return the updated booking
+      return this.prisma.booking.findUnique({
+        where: { id },
+        include: { events: true }
+      });
+    }
+    
+    // Fallback for backward compatibility (no version check)
+    // Still verify company code if provided
+    if (companyCode) {
+      const booking = await this.prisma.booking.findFirst({
+        where: { id, companyCode }
+      });
+      
+      if (!booking) {
+        throw new Error('Booking not found or does not belong to this company');
+      }
+    }
+    
     return this.prisma.booking.update({
       where: { id },
-      data: updateData,
+      data: {
+        ...updateData,
+        version: { increment: 1 }
+      },
       include: {
         events: true,
       },
     });
   }
 
-  async delete(id: string) {
+  async delete(id: string, companyCode?: string) {
+    // If company code is provided, verify booking belongs to that company
+    if (companyCode) {
+      const booking = await this.prisma.booking.findFirst({
+        where: { id, companyCode }
+      });
+      
+      if (!booking) {
+        throw new Error('Booking not found or does not belong to this company');
+      }
+    }
+    
     // First delete related events
     await this.prisma.bookingEvent.deleteMany({
       where: { bookingId: id },

@@ -20,7 +20,7 @@ FROM base AS deps
 # Copy prisma schema file for generation
 COPY apps/api/prisma ./apps/api/prisma
 # Install all dependencies (including dev dependencies for build)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Build stage - build all required packages
 FROM deps AS build
@@ -44,7 +44,7 @@ RUN pnpm run build
 # Production dependencies stage
 FROM base AS prod-deps
 # Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --no-frozen-lockfile
 
 # Production stage - minimal runtime
 FROM node:${NODE_VER} AS production

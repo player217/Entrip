@@ -1,3 +1,6 @@
+// Load environment variables first
+import 'dotenv/config';
+
 // Initialize OpenTelemetry first (before any other imports)
 // import './otel';
 

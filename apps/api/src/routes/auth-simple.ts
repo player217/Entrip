@@ -52,8 +52,11 @@ router.post('/login', async (req, res) => {
 
     const mockData = loadMockData();
     
-    // Find company
-    const company = mockData.companies.find((c: Company) => c.code === companyCode);
+    // Normalize company code to lowercase for consistent lookups
+    const normalizedCompanyCode = companyCode.toLowerCase();
+    
+    // Find company (case-insensitive)
+    const company = mockData.companies.find((c: Company) => c.code.toLowerCase() === normalizedCompanyCode);
     if (!company || !company.isActive) {
       return res.status(401).json({ 
         success: false,
@@ -61,9 +64,9 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Find user
+    // Find user (case-insensitive for company code)
     const user = mockData.users.find((u: any) => 
-      u.companyCode === companyCode && u.username === username
+      u.companyCode.toLowerCase() === normalizedCompanyCode && u.username === username
     );
     
     if (!user || !user.isActive) {
@@ -85,13 +88,13 @@ router.post('/login', async (req, res) => {
     // Create JWT token
     const payload: JWTPayload = {
       userId: user.id,
-      companyCode: user.companyCode,
+      companyCode: (user.companyCode || '').toLowerCase(), // Normalize to lowercase for consistency
       username: user.username,
       role: user.role,
       iat: Math.floor(Date.now() / 1000)
     };
 
-    const token = jwt.sign(payload, JWT_SECRET as string, { expiresIn: JWT_EXPIRES_IN as string });
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
     // Update last login time (in real app, this would update the database)
     user.lastLoginAt = new Date().toISOString();
@@ -163,7 +166,7 @@ router.post('/refresh', (req, res) => {
         iat: Math.floor(Date.now() / 1000)
       };
       
-      const newToken = jwt.sign(newPayload, JWT_SECRET as string, { expiresIn: JWT_EXPIRES_IN as string });
+      const newToken = jwt.sign(newPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
       
       // Set new HttpOnly cookie
       res.cookie('auth-token', newToken, {

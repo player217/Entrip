@@ -1,0 +1,141 @@
+# ================================================
+# Phase 2A Optimistic Locking - Environment Template
+# ================================================
+# Copy this file to apps/api/.env and adjust values as needed
+
+# Database Configuration
+# ----------------------
+# For WSL/Linux: Use 'localhost'
+# For Windows Docker Desktop: Use 'host.docker.internal'
+# For Container-to-Container: Use 'postgres'
+
+DATABASE_URL="postgresql://entrip:entrip@localhost:5432/entrip?schema=public"
+
+# Alternative configurations (uncomment as needed):
+# DATABASE_URL="postgresql://entrip:entrip@host.docker.internal:5432/entrip?schema=public"  # Windows
+# DATABASE_URL="postgresql://entrip:entrip@postgres:5432/entrip?schema=public"              # Docker
+
+# API Server Configuration
+# ------------------------
+PORT=4001
+NODE_ENV=development
+API_VERSION=2.0.0
+
+# CORS Configuration
+# ------------------
+CORS_ORIGIN=http://localhost:3000
+CORS_CREDENTIALS=true
+
+# JWT Authentication
+# ------------------
+JWT_SECRET=your-secret-key-here-change-in-production
+JWT_EXPIRES_IN=7d
+JWT_REFRESH_SECRET=your-refresh-secret-here-change-in-production
+JWT_REFRESH_EXPIRES_IN=30d
+
+# WebSocket Configuration
+# -----------------------
+WS_URL=ws://localhost:4001
+WS_ENABLED=true
+
+# Redis Configuration (Optional)
+# ------------------------------
+REDIS_URL=redis://localhost:6379
+REDIS_TTL=3600
+
+# Logging Configuration
+# --------------------
+LOG_LEVEL=info
+LOG_FORMAT=json
+LOG_DIR=./logs
+
+# Optimistic Locking Configuration
+# --------------------------------
+ENABLE_OPTIMISTIC_LOCKING=true
+VERSION_FIELD_NAME=version
+ETAG_HEADER_ENABLED=true
+
+# Test Routes Configuration
+# ------------------------
+# IMPORTANT: Set to false in production!
+ENABLE_TEST_ROUTES=true
+TEST_ROUTE_PREFIX=/api/test-db
+
+# Performance Configuration
+# ------------------------
+REQUEST_TIMEOUT=10000
+MAX_REQUEST_SIZE=10mb
+RATE_LIMIT_WINDOW=15m
+RATE_LIMIT_MAX=100
+
+# Monitoring Configuration
+# -----------------------
+ENABLE_METRICS=true
+METRICS_PORT=9090
+HEALTH_CHECK_PATH=/healthz
+
+# External Services
+# ----------------
+CRAWLER_API_URL=http://localhost:8001
+
+# Feature Flags
+# ------------
+FEATURE_OUTBOX_PATTERN=true
+FEATURE_FLIGHT_WATCHER=true
+FEATURE_BULK_OPERATIONS=true
+
+# Development Tools
+# ----------------
+SWAGGER_ENABLED=true
+SWAGGER_PATH=/docs
+
+# ================================================
+# Environment-Specific Overrides
+# ================================================
+
+# Production (uncomment for production)
+# ------------------------------------
+# NODE_ENV=production
+# ENABLE_TEST_ROUTES=false
+# LOG_LEVEL=error
+# SWAGGER_ENABLED=false
+
+# Staging (uncomment for staging)
+# -------------------------------
+# NODE_ENV=staging
+# ENABLE_TEST_ROUTES=true
+# LOG_LEVEL=debug
+
+# Testing (uncomment for testing)
+# -------------------------------
+# NODE_ENV=test
+# DATABASE_URL="postgresql://entrip:entrip@localhost:5432/entrip_test?schema=public"
+# ENABLE_TEST_ROUTES=true
+# LOG_LEVEL=debug
+
+# ================================================
+# Notes for WSL/Docker Users
+# ================================================
+#
+# 1. WSL2 Users:
+#    - Use 'localhost' instead of 'host.docker.internal'
+#    - Ensure Docker Desktop WSL integration is enabled
+#
+# 2. Windows Docker Desktop Users:
+#    - Use 'host.docker.internal' for host machine access
+#    - Check Docker context: docker context ls
+#
+# 3. Database Connection Issues:
+#    - Run: scripts/auto-fix.sh
+#    - Check: docker compose -f docker-compose.local.yml ps
+#
+# 4. Port Conflicts:
+#    - PostgreSQL: 5432
+#    - Redis: 6379
+#    - API: 4001
+#    - Crawler: 8001
+#
+# 5. Quick Test:
+#    curl http://localhost:4001/healthz
+#
+# ================================================

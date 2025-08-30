@@ -2,11 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './swagger';
 import healthRouter from './routes/health';
 import sampleBookingRouter from './routes/sampleBooking';
 import { bookingRouter } from './modules/booking';
+import docsRouter from './routes/docs.route';
+import { requestId } from './middleware/request-id';
 import { errorHandler } from './middleware/errorHandler';
 import { metricsMiddleware, metricsHandler } from './middleware/metrics';
 import { fallbackCacheMiddleware, errorFallbackHandler } from './middleware/fallback-cache';
@@ -33,6 +37,12 @@ if (process.env.NODE_ENV !== 'test') {
     outboxDispatcher.stop();
   });
 }
+
+// Trust proxy 설정 (Docker 환경)
+app.set('trust proxy', true);
+
+// Request ID를 가장 먼저 적용 (모든 요청 추적)
+app.use(requestId());
 
 // 미들웨어
 app.use(cors({
@@ -97,11 +107,33 @@ app.get('/healthz', (req, res) => res.json({ status: 'ok', timestamp: new Date()
 // Metrics endpoint for Prometheus
 app.get('/metrics', metricsHandler);
 
+// Documentation routes (schema-based OpenAPI)
+app.use('/api/docs', docsRouter);
+
+// Backward compatibility alias for OpenAPI JSON
+app.get('/api/openapi.json', (_req, res) => {
+  try {
+    const specPath = path.join(process.cwd(), 'openapi', 'openapi.json');
+    const spec = fs.readFileSync(specPath, 'utf-8');
+    res.type('application/json').send(spec);
+  } catch (error) {
+    console.error('Failed to load OpenAPI spec for alias:', error);
+    res.status(500).json({
+      error: {
+        code: 'OPENAPI_LOAD_ERROR',
+        message: 'Failed to load OpenAPI specification',
+        details: null,
+        traceId: null
+      }
+    });
+  }
+});
+
 // API 라우트
 app.use('/api/v1', healthRouter);
-app.use('/api/v1', sampleBookingRouter);
-app.use('/api/v1/bookings', bookingRouter);
-app.use('/api/bookings', require('./routes/booking.route').default);
+app.use('/api/v1/bookings', bookingRouter);  // 메인 예약 라우트
+app.use('/api/v1', sampleBookingRouter);      // 샘플 라우트 (나중에 이동)
+// booking-2a.route는 이미 v1으로 통합됨 - 제거
 app.use('/api/auth', require('./routes/auth-simple').default);
 app.use('/auth', require('./routes/auth-simple').default);
 app.use('/api', require('./routes/export.route').default);
@@ -115,6 +147,17 @@ app.use('/api/data', require('./routes/data-health.route').default);
 // Integration resilience routes
 app.use('/api/integration', require('./routes/integration-example').default);
 app.use('/api/health', require('./routes/health.route').default);
+
+// Test routes - controlled by environment variable
+if (process.env.ENABLE_TEST_ROUTES === 'true') {
+  app.use('/api/test-respond', require('./routes/test-respond.route').default);
+  app.use('/api/test-db', require('./routes/test-database.route').default);
+  
+  console.log('⚠️  Test routes enabled (ENABLE_TEST_ROUTES=true):', [
+    '/api/test-respond',
+    '/api/test-db'
+  ]);
+}
 
 // 404 핸들러
 app.use((req, res) => {

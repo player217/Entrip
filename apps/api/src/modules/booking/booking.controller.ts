@@ -1,9 +1,10 @@
-import { Router } from 'express';
+import { Router, Request } from 'express';
 import { BookingService } from './booking.service';
 import { CreateBookingDtoSchema, UpdateBookingDtoSchema, ListBookingsQueryDtoSchema } from './booking.dto';
 import prisma from '../../lib/prisma';
 import { ZodError } from 'zod';
 import { logger } from '../../lib/logger';
+import { ifNoneMatch, requireIfMatch, setEtag } from '../../middleware/preconditions';
 
 interface PrismaError extends Error {
   code?: string;
@@ -11,6 +12,13 @@ interface PrismaError extends Error {
 
 const router: Router = Router();
 const bookingService = new BookingService(prisma);
+
+// 버전 조회 헬퍼 (재사용)
+const getBookingVersion = async (req: Request): Promise<number | null> => {
+  const companyCode = (req as any).user?.companyCode;
+  const booking = await bookingService.findOne(req.params.id, companyCode);
+  return booking ? booking.version : null;
+};
 
 /**
  * @openapi
@@ -61,7 +69,8 @@ const bookingService = new BookingService(prisma);
 router.get('/', async (req, res) => {
   try {
     const query = ListBookingsQueryDtoSchema.parse(req.query);
-    const result = await bookingService.findAll(query);
+    const companyCode = (req as any).user?.companyCode;
+    const result = await bookingService.findAll(query, companyCode);
     res.json(result);
   } catch (error) {
     if (error instanceof Error && error.name === 'ZodError') {
@@ -102,24 +111,30 @@ router.get('/', async (req, res) => {
  *       404:
  *         description: 예약을 찾을 수 없음
  */
-router.get('/:id', async (req, res) => {
-  try {
-    const booking = await bookingService.findOne(req.params.id);
-    if (!booking) {
-      return res.status(404).json({
-        code: 404,
-        message: '예약을 찾을 수 없습니다',
+router.get('/:id',
+  ifNoneMatch(getBookingVersion),
+  async (req, res) => {
+    try {
+      const companyCode = (req as any).user?.companyCode;
+      const booking = await bookingService.findOne(req.params.id, companyCode);
+      if (!booking) {
+        return res.status(404).json({
+          code: 404,
+          message: '예약을 찾을 수 없습니다',
+        });
+      }
+      
+      setEtag(res, booking.version);
+      res.json(booking);
+    } catch (error) {
+      logger.error('Error getting booking:', error);
+      res.status(500).json({
+        code: 500,
+        message: '예약을 조회하는 중 오류가 발생했습니다',
       });
     }
-    res.json(booking);
-  } catch (error) {
-    logger.error('Error getting booking:', error);
-    res.status(500).json({
-      code: 500,
-      message: '예약을 조회하는 중 오류가 발생했습니다',
-    });
   }
-});
+);
 
 /**
  * @openapi
@@ -147,10 +162,14 @@ router.post('/', async (req, res) => {
   try {
     const data = CreateBookingDtoSchema.parse(req.body);
     // TODO: Get createdBy from auth middleware
+    const user = (req as any).user;
     const booking = await bookingService.create({
       ...data,
-      createdBy: 'system', // Replace with actual user ID from auth
+      createdBy: user?.userId || 'system',
+      companyCode: user?.companyCode
     });
+    
+    setEtag(res, booking.version);
     res.status(201).json(booking);
   } catch (error) {
     if (error instanceof Error && error.name === 'ZodError') {
@@ -197,15 +216,26 @@ router.post('/', async (req, res) => {
  *       404:
  *         description: 예약을 찾을 수 없음
  */
-router.patch('/:id', async (req, res) => {
-  try {
-    const data = UpdateBookingDtoSchema.parse(req.body);
-    // TODO: Get updatedBy from auth middleware
-    const booking = await bookingService.update(req.params.id, {
-      ...data,
-      updatedBy: 'system', // Replace with actual user ID from auth
-    });
-    res.json(booking);
+router.patch('/:id',
+  requireIfMatch(getBookingVersion),
+  async (req, res) => {
+    try {
+      const expectedVersion = (res.locals as any).expectedVersion as number;
+      const data = UpdateBookingDtoSchema.parse(req.body);
+      
+      const user = (req as any).user;
+      const booking = await bookingService.update(
+        req.params.id, 
+        {
+          ...data,
+          updatedBy: user?.userId || 'system',
+        },
+        expectedVersion,  // 미들웨어에서 검증된 버전
+        user?.companyCode  // Pass company code for filtering
+      );
+      
+      setEtag(res, booking.version);
+      res.json(booking);
   } catch (error) {
     if (error instanceof Error && error.name === 'ZodError') {
       return res.status(400).json({
@@ -253,7 +283,8 @@ router.patch('/:id', async (req, res) => {
  */
 router.delete('/:id', async (req, res) => {
   try {
-    await bookingService.delete(req.params.id);
+    const companyCode = (req as any).user?.companyCode;
+    await bookingService.delete(req.params.id, companyCode);
     res.status(204).send();
   } catch (error) {
     if (error instanceof Error && 'code' in error && (error as PrismaError).code === 'P2025') {

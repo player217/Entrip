@@ -34,27 +34,36 @@ interface BookingListParams {
   page?: number;
   limit?: number;
   status?: 'pending' | 'confirmed' | 'cancelled';
+  month?: string; // Add month parameter for consistency
 }
 
 // Hooks
 export function useBookings(params: BookingListParams = {}) {
   const queryParams = new URLSearchParams();
   if (params.page) queryParams.append('page', params.page.toString());
-  if (params.limit) queryParams.append('limit', params.limit.toString());
+  if (params.limit) queryParams.append('take', params.limit.toString()); // Use 'take' to match SWR version
+  else queryParams.append('take', '1000'); // Default to match SWR version
   if (params.status) queryParams.append('status', params.status);
+  if (params.month) queryParams.append('month', params.month);
 
   return useQuery({
     queryKey: bookingKeys.list(params),
     queryFn: () => api.get<BookingListResponse>(
-      `/api/v1/bookings${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+      `/api/bookings${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     ),
+    // 응답 스키마 통일: SWR과 동일한 형태로 변환
+    select: (response) => ({
+      bookings: response.data?.data ?? [],         // ← 응답 스키마 통일
+      pagination: response.data?.pagination || { page: 1, limit: 1000, total: 0, totalPages: 0 },
+      rawData: response.data,
+    }),
   });
 }
 
 export function useBooking(id: string) {
   return useQuery({
     queryKey: bookingKeys.detail(id),
-    queryFn: () => api.get<Booking>(`/api/v1/bookings/${id}`),
+    queryFn: () => api.get<Booking>(`/api/bookings/${id}`),
     enabled: !!id,
   });
 }
@@ -64,7 +73,7 @@ export function useCreateBooking() {
 
   return useMutation({
     mutationFn: (newBooking: NewBooking) => 
-      api.post<Booking>('/api/v1/bookings', newBooking),
+      api.post<Booking>('/api/bookings', newBooking),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
     },
@@ -76,7 +85,7 @@ export function useUpdateBooking() {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Booking> }) =>
-      api.patch<Booking>(`/api/v1/bookings/${id}`, data),
+      api.patch<Booking>(`/api/bookings/${id}`, data),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: bookingKeys.detail(variables.id) });
@@ -89,7 +98,7 @@ export function useDeleteBooking() {
 
   return useMutation({
     mutationFn: (id: string) => 
-      api.delete(`/api/v1/bookings/${id}`),
+      api.delete(`/api/bookings/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
     },
@@ -102,7 +111,7 @@ export function useUpdateBookingStatus() {
 
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: Booking['status'] }) =>
-      api.patch<Booking>(`/api/v1/bookings/${id}`, { status }),
+      api.patch<Booking>(`/api/bookings/${id}`, { status }),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: bookingKeys.detail(variables.id) });

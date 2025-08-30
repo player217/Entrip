@@ -83,6 +83,16 @@ const nextConfig = {
     ];
   },
   
+  // API Proxy Routes
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:4001/api/:path*',
+      },
+    ];
+  },
+
   // Redirects
   async redirects() {
     return [];

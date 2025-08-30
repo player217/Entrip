@@ -1,0 +1,612 @@
+/**
+ * Simple OpenAPI Generator
+ * Manual OpenAPI specification generation to avoid zod-to-openapi issues
+ */
+
+const openApiSpec = {
+  openapi: '3.0.3',
+  info: {
+    title: 'Entrip API',
+    version: '2.0.0',
+    description: `
+# Entrip API v2
+
+Enhanced API with schema-based validation and automatic OpenAPI generation.
+
+## Features
+- **Schema-driven**: All requests and responses validated with Zod
+- **Optimistic Locking**: ETag/If-Match support for data consistency
+- **Caching**: If-None-Match support for efficient data transfer
+- **Standard Errors**: Consistent error format with trace IDs
+- **Type Safety**: Full TypeScript support with generated types
+
+## Authentication
+Most endpoints require Bearer token authentication. Include the token in the Authorization header:
+
+\`\`\`
+Authorization: Bearer <your-token>
+\`\`\`
+
+## Caching & Optimistic Locking
+- **GET requests**: Include If-None-Match header for 304 responses
+- **PUT/PATCH/DELETE**: Include If-Match header for optimistic locking
+- **ETag**: All mutable resources return ETag headers
+
+## Error Handling
+All errors follow the standard format with:
+- \`code\`: Error type identifier
+- \`message\`: Human-readable description
+- \`details\`: Additional error context (optional)
+- \`traceId\`: Request trace identifier for debugging
+    `.trim(),
+    contact: {
+      name: 'Entrip Development Team',
+      email: 'dev@entrip.io',
+      url: 'https://github.com/entrip/api'
+    },
+    license: {
+      name: 'MIT',
+      url: 'https://opensource.org/licenses/MIT'
+    }
+  },
+  servers: [
+    {
+      url: 'http://localhost:4001',
+      description: 'Development server'
+    },
+    {
+      url: 'https://api-dev.entrip.io',
+      description: 'Development environment'
+    },
+    {
+      url: 'https://api-staging.entrip.io',
+      description: 'Staging environment'
+    },
+    {
+      url: 'https://api.entrip.io',
+      description: 'Production environment'
+    }
+  ],
+  tags: [
+    {
+      name: 'Bookings',
+      description: 'Booking management operations'
+    }
+  ],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'JWT Bearer token authentication'
+      }
+    },
+    schemas: {
+      ErrorResponse: {
+        type: 'object',
+        properties: {
+          error: {
+            type: 'object',
+            properties: {
+              code: {
+                type: 'string',
+                description: 'Error code identifier'
+              },
+              message: {
+                type: 'string',
+                description: 'Human-readable error message'
+              },
+              details: {
+                description: 'Additional error context (array of validation errors or other details)',
+                nullable: true,
+                oneOf: [
+                  {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        field: { type: 'string' },
+                        message: { type: 'string' },
+                        code: { type: 'string' }
+                      }
+                    }
+                  },
+                  {
+                    type: 'object',
+                    additionalProperties: true
+                  }
+                ]
+              },
+              traceId: {
+                type: 'string',
+                nullable: true,
+                description: 'Request trace identifier'
+              }
+            },
+            required: ['code', 'message'],
+            additionalProperties: false
+          }
+        },
+        required: ['error'],
+        additionalProperties: false
+      },
+      Currency: {
+        type: 'string',
+        enum: ['KRW', 'USD', 'EUR', 'JPY', 'CNY', 'GBP'],
+        description: 'Supported currencies'
+      },
+      BookingStatus: {
+        type: 'string',
+        enum: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'REFUNDED'],
+        description: 'Booking status values'
+      },
+      Booking: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Unique booking identifier'
+          },
+          code: {
+            type: 'string',
+            description: 'Human-readable booking code'
+          },
+          amount: {
+            type: 'string',
+            pattern: '^\\d+(\\.\\d{1,2})?$',
+            description: 'Booking amount as decimal string'
+          },
+          currency: {
+            '$ref': '#/components/schemas/Currency'
+          },
+          status: {
+            '$ref': '#/components/schemas/BookingStatus'
+          },
+          customerName: {
+            type: 'string',
+            description: 'Customer full name'
+          },
+          customerPhone: {
+            type: 'string',
+            pattern: '^01[0-9]-?\\d{3,4}-?\\d{4}$',
+            description: 'Korean phone number'
+          },
+          customerEmail: {
+            type: 'string',
+            format: 'email',
+            nullable: true,
+            description: 'Customer email address'
+          },
+          itineraryFrom: {
+            type: 'string',
+            pattern: '^[A-Z]{3}$',
+            description: 'Departure airport code (IATA)'
+          },
+          itineraryTo: {
+            type: 'string',
+            pattern: '^[A-Z]{3}$',
+            description: 'Arrival airport code (IATA)'
+          },
+          departAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Departure datetime (ISO 8601)'
+          },
+          arriveAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Arrival datetime (ISO 8601)'
+          },
+          managerId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Manager user identifier'
+          },
+          companyCode: {
+            type: 'string',
+            description: 'Company identifier code'
+          },
+          notes: {
+            type: 'string',
+            nullable: true,
+            description: 'Additional booking notes'
+          },
+          version: {
+            type: 'number',
+            description: 'Version for optimistic locking'
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Creation timestamp'
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Last update timestamp'
+          }
+        },
+        required: ['id', 'code', 'amount', 'currency', 'status', 'customerName', 'customerPhone', 'itineraryFrom', 'itineraryTo', 'departAt', 'arriveAt', 'companyCode', 'version', 'createdAt', 'updatedAt'],
+        additionalProperties: false
+      },
+      BookingListItem: {
+        type: 'object',
+        properties: {
+          id: { '$ref': '#/components/schemas/Booking/properties/id' },
+          code: { '$ref': '#/components/schemas/Booking/properties/code' },
+          amount: { '$ref': '#/components/schemas/Booking/properties/amount' },
+          currency: { '$ref': '#/components/schemas/Booking/properties/currency' },
+          status: { '$ref': '#/components/schemas/Booking/properties/status' },
+          customerName: { '$ref': '#/components/schemas/Booking/properties/customerName' },
+          itineraryFrom: { '$ref': '#/components/schemas/Booking/properties/itineraryFrom' },
+          itineraryTo: { '$ref': '#/components/schemas/Booking/properties/itineraryTo' },
+          departAt: { '$ref': '#/components/schemas/Booking/properties/departAt' },
+          arriveAt: { '$ref': '#/components/schemas/Booking/properties/arriveAt' },
+          createdAt: { '$ref': '#/components/schemas/Booking/properties/createdAt' },
+          version: { '$ref': '#/components/schemas/Booking/properties/version' }
+        },
+        required: ['id', 'code', 'amount', 'currency', 'status', 'customerName', 'itineraryFrom', 'itineraryTo', 'departAt', 'arriveAt', 'createdAt', 'version'],
+        additionalProperties: false
+      },
+      BookingResponse: {
+        type: 'object',
+        properties: {
+          data: {
+            '$ref': '#/components/schemas/Booking'
+          }
+        },
+        required: ['data'],
+        additionalProperties: false
+      },
+      BookingListResponse: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'array',
+            items: {
+              '$ref': '#/components/schemas/BookingListItem'
+            }
+          },
+          meta: {
+            type: 'object',
+            properties: {
+              nextCursor: {
+                type: 'string',
+                nullable: true,
+                description: 'Cursor for next page'
+              },
+              previousCursor: {
+                type: 'string',
+                nullable: true,
+                description: 'Cursor for previous page'
+              },
+              limit: {
+                type: 'number',
+                description: 'Items per page'
+              },
+              total: {
+                type: 'number',
+                description: 'Total items count'
+              },
+              page: {
+                type: 'number',
+                description: 'Current page number'
+              },
+              totalPages: {
+                type: 'number',
+                description: 'Total pages count'
+              }
+            }
+          }
+        },
+        required: ['data'],
+        additionalProperties: false
+      }
+    }
+  },
+  paths: {
+    '/api/v1/bookings': {
+      get: {
+        tags: ['Bookings'],
+        summary: 'List bookings',
+        description: 'Get paginated list of bookings with filtering options',
+        parameters: [
+          {
+            name: 'limit',
+            in: 'query',
+            description: 'Maximum number of items to return',
+            schema: {
+              type: 'number',
+              minimum: 1,
+              maximum: 100,
+              default: 20
+            }
+          },
+          {
+            name: 'offset',
+            in: 'query',
+            description: 'Number of items to skip',
+            schema: {
+              type: 'number',
+              minimum: 0,
+              default: 0
+            }
+          },
+          {
+            name: 'cursor',
+            in: 'query',
+            description: 'Cursor for pagination',
+            schema: {
+              type: 'string'
+            }
+          },
+          {
+            name: 'status',
+            in: 'query',
+            description: 'Filter by booking status',
+            schema: {
+              '$ref': '#/components/schemas/BookingStatus'
+            }
+          },
+          {
+            name: 'companyCode',
+            in: 'query',
+            description: 'Filter by company code',
+            schema: {
+              type: 'string'
+            }
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'Successfully retrieved bookings',
+            content: {
+              'application/json': {
+                schema: {
+                  '$ref': '#/components/schemas/BookingListResponse'
+                }
+              }
+            }
+          },
+          '400': {
+            description: 'Invalid query parameters',
+            content: {
+              'application/json': {
+                schema: {
+                  '$ref': '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          },
+          '500': {
+            description: 'Internal server error',
+            content: {
+              'application/json': {
+                schema: {
+                  '$ref': '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        tags: ['Bookings'],
+        summary: 'Create booking',
+        description: 'Create a new booking',
+        security: [
+          {
+            bearerAuth: []
+          }
+        ],
+        requestBody: {
+          description: 'Booking creation data',
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  code: {
+                    type: 'string',
+                    minLength: 3,
+                    maxLength: 20,
+                    pattern: '^[A-Z0-9-]+$',
+                    description: 'Booking code'
+                  },
+                  customerName: {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 100,
+                    description: 'Customer name'
+                  },
+                  customerPhone: {
+                    type: 'string',
+                    pattern: '^01[0-9]-?\\d{3,4}-?\\d{4}$',
+                    description: 'Korean phone number'
+                  },
+                  customerEmail: {
+                    type: 'string',
+                    format: 'email',
+                    description: 'Customer email'
+                  },
+                  itineraryFrom: {
+                    type: 'string',
+                    pattern: '^[A-Z]{3}$',
+                    description: 'Departure airport code'
+                  },
+                  itineraryTo: {
+                    type: 'string',
+                    pattern: '^[A-Z]{3}$',
+                    description: 'Arrival airport code'
+                  },
+                  departAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    description: 'Departure datetime'
+                  },
+                  arriveAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    description: 'Arrival datetime'
+                  },
+                  amount: {
+                    type: 'string',
+                    pattern: '^\\d+(\\.\\d{1,2})?$',
+                    description: 'Booking amount'
+                  },
+                  currency: {
+                    '$ref': '#/components/schemas/Currency'
+                  }
+                },
+                required: ['code', 'customerName', 'customerPhone', 'itineraryFrom', 'itineraryTo', 'departAt', 'arriveAt', 'amount']
+              }
+            }
+          }
+        },
+        responses: {
+          '201': {
+            description: 'Booking created successfully',
+            headers: {
+              'ETag': {
+                description: 'Entity tag for the created resource',
+                schema: {
+                  type: 'string'
+                }
+              }
+            },
+            content: {
+              'application/json': {
+                schema: {
+                  '$ref': '#/components/schemas/BookingResponse'
+                }
+              }
+            }
+          },
+          '400': {
+            description: 'Invalid request data',
+            content: {
+              'application/json': {
+                schema: {
+                  '$ref': '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': {
+                schema: {
+                  '$ref': '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          },
+          '409': {
+            description: 'Booking code already exists',
+            content: {
+              'application/json': {
+                schema: {
+                  '$ref': '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          },
+          '500': {
+            description: 'Internal server error',
+            content: {
+              'application/json': {
+                schema: {
+                  '$ref': '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/bookings/{id}': {
+      get: {
+        tags: ['Bookings'],
+        summary: 'Get booking',
+        description: 'Get a single booking by ID',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'Booking ID',
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          },
+          {
+            name: 'If-None-Match',
+            in: 'header',
+            description: 'Conditional request header for caching',
+            schema: {
+              type: 'string'
+            }
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'Successfully retrieved booking',
+            headers: {
+              'ETag': {
+                description: 'Entity tag for caching',
+                schema: {
+                  type: 'string'
+                }
+              },
+              'Cache-Control': {
+                description: 'Cache control header',
+                schema: {
+                  type: 'string'
+                }
+              }
+            },
+            content: {
+              'application/json': {
+                schema: {
+                  '$ref': '#/components/schemas/BookingResponse'
+                }
+              }
+            }
+          },
+          '304': {
+            description: 'Not modified (cached version is current)'
+          },
+          '404': {
+            description: 'Booking not found',
+            content: {
+              'application/json': {
+                schema: {
+                  '$ref': '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          },
+          '500': {
+            description: 'Internal server error',
+            content: {
+              'application/json': {
+                schema: {
+                  '$ref': '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+// Output the JSON document
+console.log(JSON.stringify(openApiSpec, null, 2));
