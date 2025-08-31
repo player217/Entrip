@@ -5,14 +5,16 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@entrip/ui', '@entrip/shared', '@entrip/design-tokens', 'date-fns', 'debug', 'supports-color'],
   
-  // Temporarily ignore ESLint during builds to allow Docker build to succeed
+  // Environment-conditional type checking
   eslint: {
-    ignoreDuringBuilds: true,
+    // Production과 CI에서는 에러 무시 불가 (0 에러 강제)
+    ignoreDuringBuilds: process.env.NODE_ENV === 'development' && !process.env.CI,
   },
   
-  // Temporarily ignore TypeScript errors to allow build
+  // Environment-conditional TypeScript error handling
   typescript: {
-    ignoreBuildErrors: true,
+    // Production과 CI에서는 에러 무시 불가 (0 에러 강제)
+    ignoreBuildErrors: process.env.NODE_ENV === 'development' && !process.env.CI,
   },
   
   
@@ -95,7 +97,18 @@ const nextConfig = {
 
   // Redirects
   async redirects() {
-    return [];
+    return [
+      {
+        source: '/reservations',
+        destination: '/workspace?content=monthlyCalendar',
+        permanent: false,
+      },
+      {
+        source: '/reservations/:path*',
+        destination: '/workspace?content=monthlyCalendar',
+        permanent: false,
+      },
+    ];
   },
 };
 

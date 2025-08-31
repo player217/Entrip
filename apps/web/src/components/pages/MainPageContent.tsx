@@ -2,11 +2,12 @@
 
 import { useState, useMemo } from 'react'
 import { Icon, Button } from '@entrip/ui'
-import { logger } from '@entrip/shared'
+import { Booking, logger } from '@entrip/shared'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { NewTeamModal } from '@entrip/ui'
-import { useBookings } from '@/hooks/useBookings'
+import { useBookings } from '../../hooks/useBookings'
+import { getBookingDate, priceOf, getPaxCount, getCustomerName } from '@/utils/booking-helpers'
 
 export default function MainPageContent() {
   const [showEventModal, setShowEventModal] = useState(false)
@@ -19,9 +20,9 @@ export default function MainPageContent() {
   // Calculate real summary data from bookings
   const summaryData = useMemo(() => {
     // Filter bookings for current month
-    const currentMonthBookings = bookings.filter(booking => {
-      const bookingDate = new Date(booking.startDate || booking.departureDate || booking.date || '')
-      return bookingDate.getMonth() === currentDate.getMonth() && 
+    const currentMonthBookings = bookings.filter((booking: Booking) => {
+      const bookingDate = getBookingDate(booking)
+      return bookingDate && bookingDate.getMonth() === currentDate.getMonth() && 
              bookingDate.getFullYear() === currentDate.getFullYear()
     })
     
@@ -30,16 +31,15 @@ export default function MainPageContent() {
     const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay())
     const endOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay() + 6)
     
-    const currentWeekBookings = bookings.filter(booking => {
-      const bookingDate = new Date(booking.startDate || booking.departureDate || booking.date || '')
-      return bookingDate >= startOfWeek && bookingDate <= endOfWeek
+    const currentWeekBookings = bookings.filter((booking: Booking) => {
+      const bookingDate = getBookingDate(booking)
+      return bookingDate && bookingDate >= startOfWeek && bookingDate <= endOfWeek
     })
     
     const totalBookings = currentMonthBookings.length
     const weeklyBookings = currentWeekBookings.length
-    const totalRevenue = currentMonthBookings.reduce((sum, booking) => {
-      const price = Number(booking.totalPrice) || Number(booking.price) || 0
-      return sum + price
+    const totalRevenue = currentMonthBookings.reduce((sum: number, booking: Booking) => {
+      return sum + priceOf(booking)
     }, 0)
     const avgRevenue = totalBookings > 0 ? Math.round(totalRevenue / totalBookings) : 0
     
@@ -150,7 +150,7 @@ export default function MainPageContent() {
           <div className="p-6">
             {bookings.length > 0 ? (
               <div className="space-y-4">
-                {bookings.slice(0, 10).map((booking: any) => (
+                {bookings.slice(0, 10).map((booking: Booking) => (
                   <div key={booking.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
@@ -163,16 +163,19 @@ export default function MainPageContent() {
                           {booking.customerName || booking.teamName || 'Unknown'}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {booking.destination} • {booking.paxCount || booking.numberOfPeople || 0}명
+                          {booking.destination} • {getPaxCount(booking)}명
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">
-                        ₩{(Number(booking.totalPrice) || Number(booking.price) || 0).toLocaleString('ko-KR')}
+                        ₩{priceOf(booking).toLocaleString('ko-KR')}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {format(new Date(booking.startDate || booking.departureDate || booking.date), 'M/d', { locale: ko })}
+                        {(() => {
+                          const bookingDate = getBookingDate(booking);
+                          return bookingDate ? format(bookingDate, 'M/d', { locale: ko }) : '-';
+                        })()}
                       </p>
                     </div>
                   </div>
