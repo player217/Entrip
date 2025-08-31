@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { User, LoginRequest, LoginResponse, AuthState } from '@entrip/shared';
+import { LoginRequest, LoginResponse, AuthState } from '@entrip/shared';
 
 interface AuthStore extends AuthState {
   login: (credentials: LoginRequest) => Promise<boolean>;
@@ -15,7 +15,7 @@ interface AuthStore extends AuthState {
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       // Initial state
       isAuthenticated: false,
       user: null,

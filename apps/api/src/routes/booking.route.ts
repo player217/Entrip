@@ -48,45 +48,66 @@ r.post('/',
   }
 );
 
-// GET 엔드포인트는 인증 제거 (개발용)
-r.get('/', async (req: any, res) => {
-  try {
-    // 원본 query를 전달하도록 수정 (month 파라미터 포함)
-    const q = { ...parseBookingQuery(req.query), month: req.query.month };
-    // 인증된 사용자의 회사 코드 사용 (인증 없으면 undefined)
-    const companyCode = (req as any).user?.companyCode;
-    const list = await svc.listBookings(q, companyCode);
-    
-    // Convert all bookings to API format
-    const apiBookings = list.map(toApiBooking);
-    res.json(apiBookings);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-r.get('/:id', async (req: any, res) => {
-  try {
-    const companyCode = (req as any).user?.companyCode;
-    const b = await svc.getBooking(req.params.id, companyCode);
-    if (!b) return res.status(404).json({ error: 'Booking not found' });
-    
-    // Check If-None-Match header for 304 response
-    const ifNoneMatch = req.headers['if-none-match'];
-    const currentETag = `"${b.version}"`;
-    
-    if (ifNoneMatch && ifNoneMatch === currentETag) {
-      return res.status(304).send(); // Not Modified
+// GET 엔드포인트 - 인증 필수 (보안 강화)
+r.get('/', 
+  authenticate,  // 🔒 인증 미들웨어 추가 - 회사별 데이터 격리 보장
+  async (req: AuthRequest, res) => {
+    try {
+      // 원본 query를 전달하도록 수정 (month 파라미터 포함)
+      const q = { ...parseBookingQuery(req.query), month: req.query.month };
+      
+      // 인증된 사용자의 회사 코드 사용 (필수값)
+      const companyCode = req.user!.companyCode;
+      
+      // 회사 코드가 없으면 에러 (추가 보안)
+      if (!companyCode) {
+        return res.status(403).json({ 
+          error: 'Company code is required for data access' 
+        });
+      }
+      
+      const list = await svc.listBookings(q, companyCode);
+      
+      // Convert all bookings to API format
+      const apiBookings = list.map(toApiBooking);
+      res.json(apiBookings);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
-    
-    // Convert to API format and set ETag
-    const apiBooking = toApiBooking(b);
-    res.set('ETag', currentETag);
-    res.json(apiBooking);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
+  });
+
+r.get('/:id', 
+  authenticate,  // 🔒 인증 미들웨어 추가 - 개별 예약 조회도 보호
+  async (req: AuthRequest, res) => {
+    try {
+      const companyCode = req.user!.companyCode;
+      
+      // 회사 코드가 없으면 에러
+      if (!companyCode) {
+        return res.status(403).json({ 
+          error: 'Company code is required for data access' 
+        });
+      }
+      
+      const b = await svc.getBooking(req.params.id, companyCode);
+      if (!b) return res.status(404).json({ error: 'Booking not found' });
+      
+      // Check If-None-Match header for 304 response
+      const ifNoneMatch = req.headers['if-none-match'];
+      const currentETag = `"${b.version}"`;
+      
+      if (ifNoneMatch && ifNoneMatch === currentETag) {
+        return res.status(304).send(); // Not Modified
+      }
+      
+      // Convert to API format and set ETag
+      const apiBooking = toApiBooking(b);
+      res.set('ETag', currentETag);
+      res.json(apiBooking);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
 
 // PATCH도 ADMIN, MANAGER만 가능
 r.patch('/:id', 

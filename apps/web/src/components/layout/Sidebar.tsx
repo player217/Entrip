@@ -6,18 +6,19 @@ import { clsx } from 'clsx'
 import { Icon } from '@entrip/ui'
 import { useWorkspaceStore } from '@entrip/shared/client'
 import { useTabRouter } from '../../hooks/useTabRouter'
+import { routes } from '@/lib/navigation'
 
 interface NavItem {
   name: string
   href?: string
   icon: string
   badge?: string
-  workspaceAction?: 'flow' | 'calendar' | 'list' | 'monthlyCalendar'
+  workspaceAction?: 'flow' | 'calendar' | 'list' | 'monthlyCalendar' | 'monthlyList'
   children?: {
     name: string
     href?: string
     icon?: string
-    workspaceAction?: 'flow' | 'calendar' | 'list' | 'monthlyCalendar'
+    workspaceAction?: 'flow' | 'calendar' | 'list' | 'monthlyCalendar' | 'monthlyList'
   }[]
 }
 
@@ -33,7 +34,7 @@ const navigation: NavItem[] = [
     children: [
       { name: '월별 캘린더', workspaceAction: 'monthlyCalendar', icon: 'ph:calendar-blank-bold' },
       { name: '주별 캘린더', workspaceAction: 'calendar', icon: 'ph:calendar-bold' },
-      { name: '월별 리스트', workspaceAction: 'list', icon: 'ph:list-checks-bold' },
+      { name: '월별 리스트', workspaceAction: 'monthlyList', icon: 'ph:list-checks-bold' },
       { name: '주별 리스트', workspaceAction: 'list', icon: 'ph:list-bold' },
     ]
   },
@@ -149,22 +150,26 @@ export function Sidebar({ className = '' }: SidebarProps) {
   }
 
   // workspace 페이지에서 특정 콘텐츠를 로드하는 헬퍼 함수
-  const handleWorkspaceAction = (contentType: 'flow' | 'calendar' | 'monthlyCalendar' | 'list') => {
-    if (pathname === '/workspace') {
-      // 이미 workspace 페이지에 있다면 활성 탭의 콘텐츠를 변경
-      updateActiveTabContent(contentType)
+  const handleWorkspaceAction = (contentType: 'flow' | 'calendar' | 'monthlyCalendar' | 'monthlyList' | 'list') => {
+    // URL과 상태를 동시에 업데이트하는 새로운 방식
+    const targetUrl = routes.workspace(contentType as any);
+    
+    if (activeTabKey) {
+      // 탭 시스템 사용 중이면 탭 업데이트
+      updateTab(activeTabKey, { 
+        label: '예약관리', 
+        icon: 'ph:calendar-bold', 
+        route: targetUrl, 
+        contentType 
+      })
+      navigateInTab(targetUrl)
     } else {
-      // workspace 페이지가 아니면 이동 후 콘텐츠 변경
-      if (activeTabKey) {
-        navigateInTab('/workspace')
-      } else {
-        router.push('/workspace')
-      }
-      // 페이지 전환 후 콘텐츠 변경을 위한 약간의 지연
-      setTimeout(() => {
-        updateActiveTabContent(contentType)
-      }, 100)
+      // 직접 이동
+      router.push(targetUrl)
     }
+    
+    // 상태도 함께 업데이트
+    updateActiveTabContent(contentType)
   }
 
   const toggleExpanded = (itemName: string) => {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { Booking, BookingStatus } from '@entrip/shared'
 import { ChartCard } from '@entrip/ui'
 import { useBookings } from '../../hooks/useBookings'
 import { format, isToday, startOfMonth, endOfMonth, subDays } from 'date-fns'
@@ -31,22 +32,22 @@ export default function DashboardPageContent() {
     const yesterdayStr = format(yesterday, 'yyyy-MM-dd')
 
     // 금일 예약 수
-    const todayBookings = apiBookings.filter((booking: any) => 
+    const todayBookings = apiBookings.filter((booking: Booking) => 
       booking.startDate === todayStr
     ).length
 
     // 전일 예약 수
-    const yesterdayBookings = apiBookings.filter((booking: any) => 
+    const yesterdayBookings = apiBookings.filter((booking: Booking) => 
       booking.startDate === yesterdayStr
     ).length
 
     // 상태별 집계
-    const confirmedBookings = apiBookings.filter((booking: any) => 
-      booking.status === 'confirmed'
+    const confirmedBookings = apiBookings.filter((booking: Booking) => 
+      booking.status === BookingStatus.CONFIRMED
     ).length
 
-    const pendingBookings = apiBookings.filter((booking: any) => 
-      booking.status === 'pending'
+    const pendingBookings = apiBookings.filter((booking: Booking) => 
+      booking.status === BookingStatus.PENDING
     ).length
 
     // 월별 매출 데이터 생성 (최근 4개월)
@@ -58,12 +59,12 @@ export default function DashboardPageContent() {
       const monthEnd = endOfMonth(targetDate)
       const monthName = format(targetDate, 'M월', { locale: ko })
 
-      const monthlyBookings = apiBookings.filter((booking: any) => {
+      const monthlyBookings = apiBookings.filter((booking: Booking) => {
         const bookingDate = new Date(booking.startDate)
         return bookingDate >= monthStart && bookingDate <= monthEnd
       })
 
-      const totalRevenue = monthlyBookings.reduce((sum: number, booking: any) => 
+      const totalRevenue = monthlyBookings.reduce((sum: number, booking: Booking) => 
         sum + Number(booking.totalPrice || 0), 0
       )
 
@@ -78,7 +79,7 @@ export default function DashboardPageContent() {
       '에어텔': 0
     }
 
-    apiBookings.forEach((booking: any) => {
+    apiBookings.forEach((booking: Booking) => {
       const destination = booking.destination || ''
       if (destination.includes('골프') || destination.includes('Golf')) {
         typeMapping['골프']++

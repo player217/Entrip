@@ -3,14 +3,15 @@
 import { useState, useMemo } from 'react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { useModalStore } from '@entrip/shared/client';
-import { BookingEvent, BookingStatus, MonthlySummary } from '@entrip/shared';
+import { Booking, BookingEvent, BookingStatus, MonthlySummary } from '@entrip/shared';
 import { CalendarWeek, QuickBookingModal, EditBookingModal, WeeklySummaryFooter } from '@entrip/ui';
 import type { QuickBookingFormData } from '@entrip/ui';
 import { useBookings } from '../../../hooks/useBookings';
 import { useMainContentHeight } from '../../../hooks/useViewportHeight';
+import { getBookingDate, priceOf, getPaxCount, getCustomerName } from '@/utils/booking-helpers';
 
 // 실제 API 데이터를 BookingEvent 형식으로 변환 (WeeklyListPage의 고도화된 버전)
-const convertToBookingEvent = (booking: any): BookingEvent => {
+const convertToBookingEvent = (booking: Booking): BookingEvent => {
   // 디버깅용 로그
   console.log('[CalendarWeekPage] Raw booking data:', booking);
 
@@ -30,22 +31,22 @@ const convertToBookingEvent = (booking: any): BookingEvent => {
   const managers = ['김민수', '이지영', '박준혁', '최서연', '정태호'];
   const manager = managers[Math.floor(Math.random() * managers.length)];
 
-  // 필드 안전하게 추출 (API 응답 형식에 맞게)
-  const customerName = booking.customerName || booking.client || '미정';
+  // 필드 안전하게 추출 (헬퍼 함수 사용)
+  const customerName = getCustomerName(booking);
   const destination = booking.destination || '미정';
   const teamName = booking.teamName || customerName;
-  const totalPrice = Number(booking.totalPrice || booking.price || 0);
-  const paxCount = Number(booking.paxCount || booking.numberOfPeople || 0);
+  const totalPrice = priceOf(booking);
+  const paxCount = getPaxCount(booking);
   
-  // 날짜 처리 (안전하게)
+  // 날짜 처리 (헬퍼 함수 사용)
   let dateStr = 'invalid-date';
-  try {
-    const dateObj = new Date(booking.startDate || booking.departureDate || booking.date);
-    if (!isNaN(dateObj.getTime())) {
+  const dateObj = getBookingDate(booking);
+  if (dateObj) {
+    try {
       dateStr = format(dateObj, 'yyyy-MM-dd');
+    } catch (e) {
+      console.error('[CalendarWeekPage] Date formatting error:', e, booking);
     }
-  } catch (e) {
-    console.error('[CalendarWeekPage] Date parsing error:', e, booking);
   }
 
   // 원가 계산
@@ -73,8 +74,8 @@ const convertToBookingEvent = (booking: any): BookingEvent => {
     manager,
     paxCount,
     date: dateStr,
-    departureDate: booking.startDate || booking.departureDate,
-    returnDate: booking.endDate || booking.returnDate,
+    departureDate: booking.startDate,
+    returnDate: booking.endDate,
     revenue: totalPrice,
     totalPrice: totalPrice,
     cost
@@ -133,9 +134,10 @@ export default function CalendarWeekPage() {
     
     // API 데이터를 주간별로 필터링하고 변환
     const weeklyBookings = apiBookings
-      .filter((booking: any) => {
+      .filter((booking: Booking) => {
         try {
-          const bookingDate = new Date(booking.startDate || booking.departureDate || booking.date);
+          const bookingDate = getBookingDate(booking);
+          if (!bookingDate) return false;
           const isInRange = bookingDate >= weekStart && bookingDate <= weekEnd;
           
           if (isInRange) {
@@ -157,7 +159,7 @@ export default function CalendarWeekPage() {
     console.log('[CalendarWeekPage] Filtered bookings count:', weeklyBookings.length);
     
     // 날짜별로 그룹화 (중복 체크 포함)
-    weeklyBookings.forEach(booking => {
+    weeklyBookings.forEach((booking: BookingEvent) => {
       const dateKey = booking.date;
       
       if (dateKey === 'invalid-date') {

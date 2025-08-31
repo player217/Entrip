@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@entrip/ui';
 import { LoginRequest } from '@entrip/shared';
 import { useAuthStore } from '@/lib/auth-store';
-import { api } from '../../src/lib/api';
+import { api } from '@/lib/api';
 
 interface LoginFormData {
   companyCode: string;
@@ -15,21 +15,24 @@ interface LoginFormData {
 }
 
 // Demo accounts for quick testing - 원클릭 자동 로그인
+const DEMO_DEFAULT_PASSWORD = process.env.DEMO_DEFAULT_PASSWORD || 'pass1234';
+const DEMO_DEFAULT_COMPANY = process.env.DEMO_DEFAULT_COMPANY || 'ENTRIP_MAIN';
+
 const DEMO_ACCOUNTS = [
-  { label: '관리자', companyCode: 'ENTRIP_MAIN', username: 'admin', password: 'pass1234', role: 'ADMIN' },
-  { label: '매니저1', companyCode: 'ENTRIP_MAIN', username: 'manager1', password: 'pass1234', role: 'MANAGER' },
-  { label: '매니저2', companyCode: 'ENTRIP_MAIN', username: 'manager2', password: 'pass1234', role: 'MANAGER' },
-  { label: '직원1', companyCode: 'ENTRIP_MAIN', username: 'user1', password: 'pass1234', role: 'USER' },
-  { label: '직원2', companyCode: 'ENTRIP_MAIN', username: 'user2', password: 'pass1234', role: 'USER' },
-  { label: '직원3', companyCode: 'ENTRIP_MAIN', username: 'user3', password: 'pass1234', role: 'USER' },
-  { label: '직원4', companyCode: 'ENTRIP_MAIN', username: 'user4', password: 'pass1234', role: 'USER' },
-  { label: '직원5', companyCode: 'ENTRIP_MAIN', username: 'user5', password: 'pass1234', role: 'USER' },
-  { label: '게스트1', companyCode: 'ENTRIP_MAIN', username: 'guest1', password: 'pass1234', role: 'GUEST' },
-  { label: '게스트2', companyCode: 'ENTRIP_MAIN', username: 'guest2', password: 'pass1234', role: 'GUEST' },
+  { label: '관리자', companyCode: DEMO_DEFAULT_COMPANY, username: 'admin', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: '매니저1', companyCode: DEMO_DEFAULT_COMPANY, username: 'manager1', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: '매니저2', companyCode: DEMO_DEFAULT_COMPANY, username: 'manager2', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: '직원1', companyCode: DEMO_DEFAULT_COMPANY, username: 'user1', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  { label: '직원2', companyCode: DEMO_DEFAULT_COMPANY, username: 'user2', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  { label: '직원3', companyCode: DEMO_DEFAULT_COMPANY, username: 'user3', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  { label: '직원4', companyCode: DEMO_DEFAULT_COMPANY, username: 'user4', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  { label: '직원5', companyCode: DEMO_DEFAULT_COMPANY, username: 'user5', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  { label: '게스트1', companyCode: DEMO_DEFAULT_COMPANY, username: 'guest1', password: DEMO_DEFAULT_PASSWORD, role: 'GUEST' },
+  { label: '게스트2', companyCode: DEMO_DEFAULT_COMPANY, username: 'guest2', password: DEMO_DEFAULT_PASSWORD, role: 'GUEST' },
   // J1 여행사 계정들
-  { label: 'J1관리자', companyCode: 'j1', username: 'admin', password: 'pass1234', role: 'ADMIN' },
-  { label: 'J1매니저', companyCode: 'j1', username: 'manager1', password: 'pass1234', role: 'MANAGER' },
-  { label: 'J1직원', companyCode: 'j1', username: 'user1', password: 'pass1234', role: 'USER' },
+  { label: 'J1관리자', companyCode: 'j1', username: 'admin', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: 'J1매니저', companyCode: 'j1', username: 'manager1', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: 'J1직원', companyCode: 'j1', username: 'user1', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
 ];
 
 console.log('🔍 DEMO_ACCOUNTS length:', DEMO_ACCOUNTS.length, 'accounts loaded');
@@ -40,7 +43,7 @@ export default function LoginPage() {
   const [formData, setFormData] = useState<LoginFormData>({
     companyCode: 'j1',
     username: 'admin',
-    password: 'pass1234'
+    password: DEMO_DEFAULT_PASSWORD
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +61,8 @@ export default function LoginPage() {
 
   const selectDemoAccount = async (index: number) => {
     const account = DEMO_ACCOUNTS[index];
+    if (!account) return;
+    
     setSelectedDemo(index);
     if (error) setError(null);
     setIsLoading(true);

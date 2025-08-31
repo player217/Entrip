@@ -11,9 +11,10 @@ import { clsx } from 'clsx'
 interface AppFrameProps {
   children: React.ReactNode
   useTabSystem?: boolean // 탭 시스템 사용 여부
+  user?: any // 사용자 정보
 }
 
-export default function AppFrame({ children, useTabSystem = false }: AppFrameProps) {
+export default function AppFrame({ children, useTabSystem = false, user }: AppFrameProps) {
   const { sidebarCollapsed } = useWorkspaceStore()
   
   return (

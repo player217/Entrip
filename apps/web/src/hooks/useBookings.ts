@@ -6,7 +6,7 @@
  */
 
 import useSWR from 'swr';
-import type { Booking } from '@entrip/shared/types/booking';
+import type { Booking } from '@entrip/shared';
 import apiClient from '../lib/api-client';
 import { initializeSocket } from '../lib/socket';
 import { useEffect } from 'react';

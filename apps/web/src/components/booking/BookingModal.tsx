@@ -15,6 +15,9 @@ interface BookingFormData {
   coordinator: string
   revenue: number
   notes?: string
+  // 📈 누락 필드 추가
+  phoneNumber?: string
+  email?: string
 }
 
 interface BookingModalProps {
@@ -37,6 +40,9 @@ export function BookingModal({ isOpen, onClose, booking, onSave }: BookingModalP
     coordinator: booking?.coordinator || '',
     revenue: booking?.revenue || 0,
     notes: booking?.notes || '',
+    // 📈 누락 필드 초기화
+    phoneNumber: booking?.phoneNumber || '',
+    email: booking?.email || '',
   })
 
   if (!isOpen) return null

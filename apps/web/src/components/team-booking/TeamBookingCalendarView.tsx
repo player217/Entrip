@@ -5,7 +5,7 @@ import { Icon } from '@entrip/ui'
 import { useTeamBookingCalendar } from '@entrip/shared/hooks/useTeamBooking'
 import { NewTeamModal } from '@entrip/ui'
 import type { TeamBooking } from '@entrip/shared/types/team-booking'
-import { logger } from '@entrip/shared'
+import { logger, BookingStatus } from '@entrip/shared'
 import { createBooking } from '../../hooks/useBookings'
 
 export function TeamBookingCalendarView() {
@@ -236,7 +236,7 @@ export function TeamBookingCalendarView() {
             const bookingData = {
               teamCode: data.teamCode,
               teamName: data.teamName,
-              tourName: data.tourName || data.teamName,
+              tourName: data.teamName, // Using teamName as tourName since tourName doesn't exist on NewTeamPayload
               destination: data.destination,
               departureDate: data.departureDate,
               returnDate: data.returnDate,
@@ -252,8 +252,8 @@ export function TeamBookingCalendarView() {
               days: data.days || 2,
               totalPrice: (data.adultPrice || 0) * (data.adultCount || 0) + 
                          (data.childPrice || 0) * (data.childCount || 0) + 
-                         (data.infantPrice || 0) * (data.infantCount || 0),
-              status: 'confirmed',
+                         0, // infantPrice doesn't exist on NewTeamPayload
+              status: BookingStatus.CONFIRMED,
               paxCount: (data.adultCount || 0) + (data.childCount || 0) + (data.infantCount || 0),
               currency: 'KRW'
             };

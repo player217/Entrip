@@ -65,8 +65,21 @@ export function toApiBooking(booking: DbBooking & { user?: any; flights?: any[];
 
 /**
  * Convert API request to DB format for creation
+ * Handles both legacy API format and new QuickBookingModal format
  */
 export function fromApiCreateRequest(data: any) {
+  // QuickBookingModal에서 오는 필드명 변환
+  const startDate = data.startDate || data.departureDate;
+  const endDate = data.endDate || data.returnDate;
+  const paxCount = data.paxCount || data.pax;
+  
+  // 날짜 차이 계산 (nights, days 자동 계산)
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const diffTime = Math.abs(end.getTime() - start.getTime());
+  const calculatedNights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const calculatedDays = calculatedNights + 1;
+  
   return {
     customerName: data.customerName,
     teamName: data.teamName,
@@ -74,19 +87,24 @@ export function fromApiCreateRequest(data: any) {
     bookingType: data.bookingType,
     origin: data.origin || data.itineraryFrom || 'Seoul', 
     destination: data.destination || data.itineraryTo || 'Busan',
-    startDate: new Date(data.startDate),
-    endDate: new Date(data.endDate),
-    paxCount: data.paxCount,
-    nights: data.nights,
-    days: data.days,
-    manager: data.manager || 'System',
+    startDate: new Date(startDate),
+    endDate: new Date(endDate),
+    paxCount: paxCount,
+    nights: data.nights || calculatedNights,
+    days: data.days || calculatedDays,
+    manager: data.manager || data.coordinator || 'System',
     totalPrice: data.totalPrice,
     depositAmount: data.depositAmount || null,
     currency: data.currency || 'KRW',
     representative: data.representative || null,
     contact: data.contact || data.customerPhone || null,
     email: data.email || data.customerEmail || null,
-    notes: data.notes || null
+    notes: data.notes || data.memo || null,
+    // 복잡한 구조 필드 (별도 처리 필요)
+    flights: data.flights || [],
+    vehicles: data.vehicles || [],
+    hotels: data.hotels || [],
+    settlements: data.settlements || []
   };
 }
 

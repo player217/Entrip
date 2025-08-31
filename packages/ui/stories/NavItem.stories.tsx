@@ -68,7 +68,7 @@ export const Active: Story = {
 
 export const Inactive: Story = {
   args: {
-    href: '/reservations',
+    href: '/workspace?content=monthlyCalendar',
     name: '예약 관리',
     icon: '📅',
     isCollapsed: false,

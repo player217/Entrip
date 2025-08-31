@@ -30,7 +30,12 @@ const addAuditLog = async (tx: any, actorId: string, action: string, entity: str
 };
 
 // 등록
-export const createBooking = async (dto: any, companyCode?: string) => {
+export const createBooking = async (dto: any, companyCode: string) => {
+  // companyCode 필수 체크
+  if (!companyCode) {
+    throw new Error('Company code is required for creating bookings');
+  }
+  
   // Generate booking number
   const bookingNumber = `BK${Date.now()}`;
   
@@ -59,8 +64,8 @@ export const createBooking = async (dto: any, companyCode?: string) => {
   // Convert API request to DB format
   const dbData = fromApiCreateRequest(dto);
   
-  // Add system fields
-  const bookingData = {
+  // Extract complex fields
+  const { flights, vehicles, hotels, settlements, ...bookingData } = {
     ...dbData,
     companyCode: companyCode || 'COMPANY_A',
     memo: dto.memo
@@ -185,13 +190,16 @@ export const createBooking = async (dto: any, companyCode?: string) => {
 };
 
 // 목록
-export const listBookings = async (query: any, companyCode?: string) => {
+export const listBookings = async (query: any, companyCode: string) => {
+  // companyCode 필수 체크
+  if (!companyCode) {
+    throw new Error('Company code is required for listing bookings');
+  }
+  
   const where: any = {};
   
-  // 회사 코드 필터 - 가장 중요한 필터
-  if (companyCode) {
-    where.companyCode = companyCode;
-  }
+  // 회사 코드 필터 - 가장 중요한 필터 (필수)
+  where.companyCode = companyCode;
   
   // 기존 필터
   if (query.type) where.bookingType = query.type.toUpperCase();
@@ -266,13 +274,16 @@ export const listBookings = async (query: any, companyCode?: string) => {
 };
 
 // 상세
-export const getBooking = async (id: string, companyCode?: string) => {
-  const where: any = { id };
-  
-  // 회사 코드가 제공된 경우 필터 추가
-  if (companyCode) {
-    where.companyCode = companyCode;
+export const getBooking = async (id: string, companyCode: string) => {
+  // companyCode 필수 체크
+  if (!companyCode) {
+    throw new Error('Company code is required for retrieving bookings');
   }
+  
+  const where: any = { 
+    id,
+    companyCode  // 필수 조건
+  };
   
   const booking = await prisma.booking.findFirst({ 
     where,
@@ -298,12 +309,17 @@ export const getBooking = async (id: string, companyCode?: string) => {
 };
 
 // 수정
-export const updateBooking = async (id: string, dto: any, companyCode?: string, actorId?: string) => {
-  // 회사 코드가 제공된 경우 해당 회사의 데이터만 수정 가능
-  const where: any = { id };
-  if (companyCode) {
-    where.companyCode = companyCode;
+export const updateBooking = async (id: string, dto: any, companyCode: string, actorId?: string) => {
+  // companyCode 필수 체크
+  if (!companyCode) {
+    throw new Error('Company code is required for updating bookings');
   }
+  
+  // 해당 회사의 데이터만 수정 가능
+  const where: any = { 
+    id,
+    companyCode  // 필수 조건
+  };
   
   // Convert API request to DB format
   const bookingData = fromApiUpdateRequest(dto);
@@ -420,11 +436,16 @@ export const updateBooking = async (id: string, dto: any, companyCode?: string, 
 };
 
 // 삭제 (ADMIN만 가능)
-export const deleteBooking = async (id: string, companyCode?: string, actorId?: string) => {
-  const where: any = { id };
-  if (companyCode) {
-    where.companyCode = companyCode;
+export const deleteBooking = async (id: string, companyCode: string, actorId?: string) => {
+  // companyCode 필수 체크
+  if (!companyCode) {
+    throw new Error('Company code is required for deleting bookings');
   }
+  
+  const where: any = { 
+    id,
+    companyCode  // 필수 조건
+  };
   
   return prisma.$transaction(async (tx) => {
     // 삭제 전 데이터 조회
@@ -465,11 +486,16 @@ export const deleteBooking = async (id: string, companyCode?: string, actorId?: 
 };
 
 // 상태변경
-export const changeStatus = async (id: string, status: BookingStatus, companyCode?: string) => {
-  const where: any = { id };
-  if (companyCode) {
-    where.companyCode = companyCode;
+export const changeStatus = async (id: string, status: BookingStatus, companyCode: string) => {
+  // companyCode 필수 체크
+  if (!companyCode) {
+    throw new Error('Company code is required for changing booking status');
   }
+  
+  const where: any = { 
+    id,
+    companyCode  // 필수 조건
+  };
   
   const booking = await prisma.booking.update({ 
     where, 
@@ -489,16 +515,18 @@ export const changeStatus = async (id: string, status: BookingStatus, companyCod
 };
 
 // Bulk 삭제
-export const bulkDeleteBookings = async (ids: string[], companyCode?: string) => {
+export const bulkDeleteBookings = async (ids: string[], companyCode: string) => {
+  // companyCode 필수 체크
+  if (!companyCode) {
+    throw new Error('Company code is required for bulk deleting bookings');
+  }
+  
   const where: any = {
     id: {
       in: ids
-    }
+    },
+    companyCode  // 필수 조건 - 해당 회사의 예약만 삭제 가능
   };
-  
-  if (companyCode) {
-    where.companyCode = companyCode;
-  }
   
   const result = await prisma.booking.deleteMany({ where });
   
@@ -506,7 +534,11 @@ export const bulkDeleteBookings = async (ids: string[], companyCode?: string) =>
 };
 
 // Bulk 생성 (트랜잭션으로 원자성 보장)
-export const bulkCreateBookings = async (bookings: any[], userId: string, companyCode?: string) => {
+export const bulkCreateBookings = async (bookings: any[], userId: string, companyCode: string) => {
+  // companyCode 필수 체크
+  if (!companyCode) {
+    throw new Error('Company code is required for bulk creating bookings');
+  }
   return prisma.$transaction(async (tx) => {
     const createdBookings = [];
     

@@ -42,7 +42,9 @@ export function MessageThread() {
       // Load more messages when scrolled to top
       if (scrollTop === 0 && conversationMessages.length > 0) {
         const firstMessage = conversationMessages[0];
-        useMessengerStore.getState().loadMoreMessages(firstMessage.id);
+        if (firstMessage) {
+          useMessengerStore.getState().loadMoreMessages(firstMessage.id);
+        }
       }
     }
   };

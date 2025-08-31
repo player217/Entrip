@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth-store';
 import { AuthContextValue } from '@entrip/shared';
-import { api } from '../../lib/api-client';
+import { api, apiClient } from '@/lib/api-client';
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         if (storedToken) {
           // Set token in API client for requests (HEADER MANAGEMENT ONLY - NO REDIRECTS)
-          api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+          apiClient.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
           
           // Verify token with server
           await checkAuth();

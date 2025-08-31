@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { logger } from '../lib/logger';
 
 // 탭이 표시할 콘텐츠 타입을 정의
-export type WorkspaceContentType = 'flow' | 'calendar' | 'monthlyCalendar' | 'list' | 'empty';
+export type WorkspaceContentType = 'flow' | 'calendar' | 'monthlyCalendar' | 'monthlyList' | 'list' | 'empty';
 
 export interface WorkspaceTab {
   key: string;
@@ -182,6 +182,7 @@ function getDefaultLabel(contentType: WorkspaceContentType): string {
     flow: 'Flow Editor',
     calendar: '주별 캘린더',
     monthlyCalendar: '월별 캘린더',
+    monthlyList: '월별 목록',
     list: '예약 목록',
     empty: 'New Tab'
   };
@@ -194,6 +195,7 @@ function getDefaultIcon(contentType: WorkspaceContentType): string {
     flow: 'ph:flow-arrow-bold',
     calendar: 'ph:calendar-bold',
     monthlyCalendar: 'ph:calendar-blank-bold',
+    monthlyList: 'ph:list-checks-bold',
     list: 'ph:list-bold',
     empty: 'ph:globe-bold'
   };

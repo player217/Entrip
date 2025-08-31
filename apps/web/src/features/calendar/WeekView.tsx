@@ -6,7 +6,7 @@ import { format, addDays, startOfWeek } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useBookings, updateBooking } from '../../hooks/useBookings';
 import StatusTag from '../../components/StatusTag';
-import { logger, BookingStatus } from '@entrip/shared';
+import { logger, BookingStatus, type Booking } from '@entrip/shared';
 
 // BookingStatus enum을 StatusTag의 StatusType으로 변환
 const convertBookingStatus = (status: BookingStatus): 'pending' | 'confirmed' | 'cancelled' | 'completed' => {
@@ -37,7 +37,7 @@ export default function WeekView({ currentDate }: WeekViewProps) {
   // 날짜별로 예약 그룹화
   const bookingsByDate = weekDays.reduce((acc, date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    acc[dateStr] = bookings.filter(booking => 
+    acc[dateStr] = bookings.filter((booking: Booking) => 
       booking.startDate === dateStr
     );
     return acc;
@@ -51,7 +51,7 @@ export default function WeekView({ currentDate }: WeekViewProps) {
     const bookingId = result.draggableId;
     const newDate = result.destination.droppableId;
     
-    const booking = bookings.find(b => b.id === bookingId);
+    const booking = bookings.find((b: Booking) => b.id === bookingId);
     if (!booking) return;
     
     // 날짜가 변경된 경우에만 업데이트
@@ -60,7 +60,7 @@ export default function WeekView({ currentDate }: WeekViewProps) {
         // Optimistic update
         await mutate(
           async (currentData: typeof bookings | undefined) => {
-            return currentData?.map((b) =>
+            return currentData?.map((b: Booking) =>
               b.id === bookingId ? { ...b, startDate: newDate } : b
             );
           },
@@ -109,7 +109,7 @@ export default function WeekView({ currentDate }: WeekViewProps) {
                       snapshot.isDraggingOver ? 'bg-blue-50' : ''
                     }`}
                   >
-                    {bookingsByDate[dateStr]?.map((booking, _index) => (
+                    {bookingsByDate[dateStr]?.map((booking: Booking, _index: number) => (
                       <Draggable
                         key={booking.id}
                         draggableId={booking.id}

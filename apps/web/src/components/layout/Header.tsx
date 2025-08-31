@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 
 interface HeaderProps {
   className?: string
+  useTabSystem?: boolean
 }
 
 export function Header({ className = '' }: HeaderProps) {

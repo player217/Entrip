@@ -6,7 +6,7 @@ import apiClient from '../lib/api-client';
 import { useBookings } from '../hooks/useBookings';
 import { useBulkUndo } from '../hooks/useBulkUndo';
 import { toast } from 'react-toastify';
-import { logger } from '@entrip/shared';
+import { Booking, logger } from '@entrip/shared';
 
 interface BulkActionBarProps {
   selectedIds: string[];
@@ -25,12 +25,12 @@ export default function BulkActionBar({ selectedIds, onClearSelection }: BulkAct
     
     try {
       // 삭제될 예약 데이터를 저장
-      const deletedBookings = bookings.filter(booking => selectedIds.includes(booking.id));
+      const deletedBookings = bookings.filter((booking: Booking) => selectedIds.includes(booking.id));
       
       // Optimistic update - 선택된 항목들을 즉시 제거
       await mutate(
         async (currentData: typeof bookings | undefined) => {
-          return currentData?.filter((booking) => 
+          return currentData?.filter((booking: Booking) => 
             !selectedIds.includes(booking.id)
           );
         },

@@ -4,10 +4,10 @@ import React from 'react'
 import { Inter } from 'next/font/google'
 import { redirect } from 'next/navigation'
 import useSWR from 'swr'
-import AppFrame from '../../src/components/layout/AppFrame'
-import { LogViewer } from '../../src/components/debug/LogViewer'
-import { ToastProvider } from '../../src/providers/ToastProvider'
-import { MessengerContainer } from '../../src/components/messenger/MessengerContainer'
+import AppFrame from '@/components/layout/AppFrame'
+import { LogViewer } from '@/components/debug/LogViewer'
+import { ToastProvider } from '@/providers/ToastProvider'
+import { MessengerContainer } from '@/components/messenger/MessengerContainer'
 
 const inter = Inter({ subsets: ['latin'] })
 

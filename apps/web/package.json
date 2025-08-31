@@ -11,7 +11,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "type-check:strict": "cross-env CI_TYPE_CHECK=strict tsc --noEmit",
+    "build:strict": "cross-env CI_TYPE_CHECK=strict next build",
+    "ci:type-check": "cross-env CI_TYPE_CHECK=strict tsc --noEmit"
   },
   "dependencies": {
     "@entrip/design-tokens": "workspace:*",

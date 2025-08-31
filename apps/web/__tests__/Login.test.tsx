@@ -22,7 +22,7 @@ describe('Login success', () => {
     expect(localStorage.setItem).toHaveBeenCalledWith('auth-token', 'test-jwt-token');
     
     // Mock navigation
-    mockPush('/reservations');
-    expect(mockPush).toHaveBeenCalledWith('/reservations');
+    mockPush('/workspace?content=monthlyCalendar');
+    expect(mockPush).toHaveBeenCalledWith('/workspace?content=monthlyCalendar');
   });
 });

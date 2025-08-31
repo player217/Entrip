@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import ReservationsPage from '../app/(main)/reservations/page';
+import ReservationListView from '../src/features/calendar/ReservationListView';
 
 // Mock the required modules
 vi.mock('@/hooks/useBookings', () => ({
@@ -37,7 +37,7 @@ vi.mock('next/navigation', () => ({
 
 describe('Calendar renders', () => {
   it('should render calendar components and reservation data', () => {
-    render(<ReservationsPage />);
+    render(<ReservationListView />);
     
     // Check if title is rendered
     expect(screen.getByText('예약 관리')).toBeInTheDocument();
