@@ -30,6 +30,7 @@ export * from './components/compounds/TabContainer';
 export * from './components/compounds/ChromeTabContainer';
 export * from './components/compounds/BookingModal';
 export * from './components/compounds/QuickBookingModal';
+export type { QuickBookingFormData } from './components/compounds/QuickBookingModal';
 export * from './components/compounds/EditBookingModal';
 export * from './components/compounds/BookingList'; // Phase 2 components
 export * from './components/compounds/BookingFilters';

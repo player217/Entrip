@@ -80,10 +80,15 @@ export const useReservationViewStore = create<ReservationViewState>()(
       name: 'reservation-view-store',
       partialize: (state) => ({
         activeView: state.activeView,
-        currentMonth: state.currentMonth,
+        currentMonth: state.currentMonth?.toISOString ? state.currentMonth.toISOString() : state.currentMonth,
         searchQuery: state.searchQuery,
         statusFilter: state.statusFilter,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.currentMonth && typeof state.currentMonth === 'string') {
+          state.currentMonth = new Date(state.currentMonth);
+        }
+      },
     }
   )
 );

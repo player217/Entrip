@@ -85,11 +85,28 @@ export default function ReservationListView({
     setStatusFilter
   } = useReservationViewStore();
   
-  // Use store's currentMonth or fallback to prop
-  const currentDate = storeCurrentMonth || currentMonth;
+  // Use store's currentMonth or fallback to prop with type safety
+  const currentDate = useMemo(() => {
+    const dateCandidate = storeCurrentMonth || currentMonth;
+    // Ensure we have a valid Date object
+    if (dateCandidate instanceof Date && !isNaN(dateCandidate.getTime())) {
+      return dateCandidate;
+    }
+    // If stored date is a string, convert it
+    if (typeof dateCandidate === 'string') {
+      const parsedDate = new Date(dateCandidate);
+      if (!isNaN(parsedDate.getTime())) {
+        return parsedDate;
+      }
+    }
+    // Fallback to current date
+    return new Date();
+  }, [storeCurrentMonth, currentMonth]);
   
-  // Format current month for API call  
-  const currentMonthParam = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+  // Format current month for API call with safe date access
+  const currentMonthParam = useMemo(() => {
+    return `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+  }, [currentDate]);
   
   // Sync with external viewType prop
   useEffect(() => {
