@@ -30,13 +30,8 @@ const navigation: NavItem[] = [
   },
   { 
     name: '예약관리', 
-    icon: 'ph:calendar-bold',
-    children: [
-      { name: '월별 캘린더', workspaceAction: 'monthlyCalendar', icon: 'ph:calendar-blank-bold' },
-      { name: '주별 캘린더', workspaceAction: 'calendar', icon: 'ph:calendar-bold' },
-      { name: '월별 리스트', workspaceAction: 'monthlyList', icon: 'ph:list-checks-bold' },
-      { name: '주별 리스트', workspaceAction: 'list', icon: 'ph:list-bold' },
-    ]
+    href: '/reservations',
+    icon: 'ph:calendar-bold'
   },
   { 
     name: '운영현황', 

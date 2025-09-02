@@ -15,8 +15,8 @@ import { useToast } from '@/providers/ToastProvider';
 import { format } from 'date-fns';
 import { useReservationViewStore } from '@/stores/reservationViewStore';
 
-// Stub components for incomplete features
-const WeekView = (_props: { currentDate: Date }) => null;
+// Import working WeekView
+import WeekView from './WeekView';
 const WeekViewMobile = (_props: { events: CalendarEvent[]; currentDate: Date }) => null;
 const CalendarVirtual = (_props: { currentDate: Date; bookings: Booking[]; onDayClick: (date: Date) => void; onBookingClick: (booking: Booking) => void }) => null;
 const BulkActionBar = (_props: { selectedCount: number; onAction: (action: string) => void; onClose: () => void }) => null;
@@ -115,12 +115,12 @@ export default function ReservationListView({
     }
   }, [viewType, activeView, setActiveView]);
 
-  // Initialize current month from prop
+  // Initialize current month from prop only once on mount
   useEffect(() => {
-    if (currentMonth && currentMonth !== storeCurrentMonth) {
+    if (currentMonth) {
       setCurrentMonth(currentMonth);
     }
-  }, [currentMonth, storeCurrentMonth, setCurrentMonth]);
+  }, []); // Run only once on mount
 
   // 실제 API에서 데이터 가져오기 - 현재 월 파라미터 포함
   const { bookings, isLoading } = useBookings(currentMonthParam);
