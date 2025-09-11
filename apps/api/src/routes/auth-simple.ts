@@ -1,44 +1,25 @@
 import { Router } from 'express';
 import type { Router as ExpressRouter } from 'express';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import fs from 'fs';
-import path from 'path';
-import { LoginRequest, LoginResponse, JWTPayload, User, Company } from '@entrip/shared';
+import * as jwt from 'jsonwebtoken';
+import type { SignOptions } from 'jsonwebtoken';
+import * as bcrypt from 'bcryptjs';
+import { LoginRequest, LoginResponse, JWTPayload, User } from '@entrip/shared';
+import { authRateLimiter } from '../middleware/security.middleware';
+import prisma from '../lib/prisma';
 
 const router: ExpressRouter = Router();
 
-// JWT Secret - in production this should be from environment variables
+// JWT configuration
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
-// Load mock data
-const loadMockData = () => {
-  const dataPath = path.join(__dirname, '../data/mock-users.json');
-  try {
-    const rawData = fs.readFileSync(dataPath, 'utf8');
-    return JSON.parse(rawData);
-  } catch (error) {
-    console.error('Failed to load mock data:', error);
-    return { companies: [], users: [] };
-  }
-};
-
-// Hash password utility (for reference - actual hashing would be done during user creation)
-const hashPassword = async (password: string): Promise<string> => {
-  const saltRounds = 10;
-  return bcrypt.hash(password, saltRounds);
-};
-
-// Verify password
+// Verify password using bcrypt
 const verifyPassword = async (password: string, hashedPassword: string): Promise<boolean> => {
-  // For demo purposes, we'll accept 'pass1234' for all accounts
-  // In real implementation, use bcrypt.compare(password, hashedPassword)
-  return password === 'pass1234';
+  return bcrypt.compare(password, hashedPassword);
 };
 
-// Login endpoint
-router.post('/login', async (req, res) => {
+// Login endpoint with real database authentication
+router.post('/login', authRateLimiter, async (req, res) => {
   try {
     const { companyCode, username, password }: LoginRequest = req.body;
     
@@ -50,26 +31,19 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    const mockData = loadMockData();
+    console.log('Auth attempt:', { companyCode, username });
     
-    // Normalize company code to lowercase for consistent lookups
-    const normalizedCompanyCode = companyCode.toLowerCase();
+    // Find user in database (using email as username)
+    const user = await prisma.user.findFirst({
+      where: {
+        companyCode: companyCode,
+        email: username, // username is actually email
+        isActive: true
+      }
+    });
     
-    // Find company (case-insensitive)
-    const company = mockData.companies.find((c: Company) => c.code.toLowerCase() === normalizedCompanyCode);
-    if (!company || !company.isActive) {
-      return res.status(401).json({ 
-        success: false,
-        message: '존재하지 않거나 비활성화된 회사코드입니다.' 
-      });
-    }
-
-    // Find user (case-insensitive for company code)
-    const user = mockData.users.find((u: any) => 
-      u.companyCode.toLowerCase() === normalizedCompanyCode && u.username === username
-    );
-    
-    if (!user || !user.isActive) {
+    if (!user) {
+      console.log('User not found:', { companyCode, username });
       return res.status(401).json({ 
         success: false,
         message: '존재하지 않거나 비활성화된 계정입니다.' 
@@ -77,8 +51,9 @@ router.post('/login', async (req, res) => {
     }
 
     // Verify password
-    const isPasswordValid = await verifyPassword(password, user.passwordHash);
+    const isPasswordValid = await verifyPassword(password, user.password);
     if (!isPasswordValid) {
+      console.log('Invalid password for user:', username);
       return res.status(401).json({ 
         success: false,
         message: '잘못된 비밀번호입니다.' 
@@ -88,48 +63,48 @@ router.post('/login', async (req, res) => {
     // Create JWT token
     const payload: JWTPayload = {
       userId: user.id,
-      companyCode: (user.companyCode || '').toLowerCase(), // Normalize to lowercase for consistency
-      username: user.username,
-      role: user.role,
-      iat: Math.floor(Date.now() / 1000)
+      companyCode: user.companyCode,
+      username: user.email, // use email as username
+      role: user.role
     };
 
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN };
+    const token = jwt.sign(payload, JWT_SECRET, signOptions);
 
-    // Update last login time (in real app, this would update the database)
-    user.lastLoginAt = new Date().toISOString();
+    // Update last login time (User model doesn't have lastLoginAt field, skip for now)
 
     // Prepare user response (exclude sensitive data)
     const userResponse: User = {
       id: user.id,
       companyCode: user.companyCode,
-      username: user.username,
+      username: user.email, // use email as username
       email: user.email,
       name: user.name,
       role: user.role,
-      department: user.department,
+      department: user.department || undefined,
       isActive: user.isActive,
-      createdAt: user.createdAt,
-      lastLoginAt: user.lastLoginAt
+      createdAt: user.createdAt.toISOString(),
+      lastLoginAt: new Date().toISOString()
     };
 
     // Set HttpOnly cookie for SSOT authentication
     res.cookie('auth-token', token, {
       httpOnly: true,
-      secure: false, // Set to false for local development
-      sameSite: 'lax', // Changed from 'strict' to 'lax' for local development
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      path: '/' // Ensure cookie is available for all paths
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
+      path: '/'
     });
 
-    // Don't send token in response for security - only use HttpOnly cookie
+    // Success response
     const response: LoginResponse = {
       success: true,
-      token: undefined, // Don't expose token to client
+      token: undefined,
       user: userResponse,
       message: '로그인 성공'
     };
 
+    console.log('Login successful:', { userId: user.id, companyCode: user.companyCode });
     res.json(response);
 
   } catch (error) {
@@ -141,8 +116,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Token refresh endpoint
-router.post('/refresh', (req, res) => {
+// Refresh token endpoint
+router.post('/refresh', authRateLimiter, async (req, res) => {
   try {
     // Check for token in HttpOnly cookie
     const token = req.cookies?.['auth-token'];
@@ -157,23 +132,35 @@ router.post('/refresh', (req, res) => {
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
       
+      // Verify user still exists and is active
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId }
+      });
+      
+      if (!user || !user.isActive) {
+        return res.status(401).json({ 
+          success: false,
+          message: '유효하지 않은 사용자입니다.' 
+        });
+      }
+      
       // Generate new token with extended expiry
       const newPayload: JWTPayload = {
         userId: decoded.userId,
         companyCode: decoded.companyCode,
         username: decoded.username,
-        role: decoded.role,
-        iat: Math.floor(Date.now() / 1000)
+        role: decoded.role
       };
       
-      const newToken = jwt.sign(newPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+      const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN };
+      const newToken = jwt.sign(newPayload, JWT_SECRET, signOptions);
       
       // Set new HttpOnly cookie
       res.cookie('auth-token', newToken, {
         httpOnly: true,
-        secure: false, // Set to false for local development
+        secure: false,
         sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        maxAge: 24 * 60 * 60 * 1000,
         path: '/'
       });
       
@@ -193,8 +180,8 @@ router.post('/refresh', (req, res) => {
   }
 });
 
-// Token verification endpoint
-router.get('/verify', (req, res) => {
+// Token verification endpoint with real database
+router.get('/verify', async (req, res) => {
   try {
     // Check for token in HttpOnly cookie first (SSOT), then fallback to Authorization header
     const token = req.cookies?.['auth-token'] || req.headers.authorization?.replace('Bearer ', '');
@@ -207,12 +194,13 @@ router.get('/verify', (req, res) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-    const mockData = loadMockData();
     
-    // Find user
-    const user = mockData.users.find((u: any) => 
-      u.id === decoded.userId && u.companyCode === decoded.companyCode
-    );
+    // Find user in database
+    const user = await prisma.user.findUnique({
+      where: {
+        id: decoded.userId
+      }
+    });
 
     if (!user || !user.isActive) {
       return res.status(401).json({ 
@@ -225,14 +213,14 @@ router.get('/verify', (req, res) => {
     const userResponse: User = {
       id: user.id,
       companyCode: user.companyCode,
-      username: user.username,
+      username: user.email, // use email as username
       email: user.email,
       name: user.name,
       role: user.role,
-      department: user.department,
+      department: user.department || undefined,
       isActive: user.isActive,
-      createdAt: user.createdAt,
-      lastLoginAt: user.lastLoginAt
+      createdAt: user.createdAt.toISOString(),
+      lastLoginAt: user.createdAt.toISOString() // Use createdAt since lastLoginAt doesn't exist
     };
 
     res.json({ 
