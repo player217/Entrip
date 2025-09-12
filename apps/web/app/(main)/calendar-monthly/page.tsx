@@ -209,8 +209,8 @@ export default function CalendarMonthlyPage() {
       const createdBooking = await createBooking({
         teamName: data.teamName,
         customerName: data.customerName || data.teamName,
-        bookingType: 'TEAM_PACKAGE',
-        status: 'PENDING',
+        bookingType: 'TEAM_PACKAGE' as any,
+        status: 'PENDING' as any,
         startDate: data.departureDate,
         endDate: data.departureDate,
         destination: data.destination || '미정',
@@ -223,7 +223,7 @@ export default function CalendarMonthlyPage() {
         accommodation: '호텔',
         purpose: '워크샵',
         paymentMethod: '계좌이체',
-        paymentStatus: 'PENDING'
+        paymentStatus: 'PENDING' as any
       });
 
       if (createdBooking) {
@@ -250,8 +250,8 @@ export default function CalendarMonthlyPage() {
         await updateBooking(selectedBooking.id, {
           teamName: data.teamName,
           customerName: data.customerName || data.teamName,
-          startDate: new Date(data.departureDate),
-          endDate: new Date(data.departureDate),
+          startDate: data.departureDate,
+          endDate: data.departureDate,
           destination: data.destination || '미정',
           teamSize: data.pax,
           estimatedTotalCost: data.pax * 500000
