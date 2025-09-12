@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import CalendarProfiler from '../../../src/components/CalendarProfiler';
+import CalendarProfiler from '@/components/CalendarProfiler';
 import { addDays, format } from 'date-fns';
 import { logger, BookingType, BookingStatus } from '@entrip/shared';
 

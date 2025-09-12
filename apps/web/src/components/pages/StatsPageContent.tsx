@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { DualChartCard, Card, CardHeader, CardTitle, CardContent } from '@entrip/ui'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
-import { api } from '../../lib/api-client'
+import { api } from '@/lib/api-client'
 
 export default function StatsPageContent() {
   const [selectedMetric, setSelectedMetric] = useState<'revenue' | 'count' | 'profit'>('revenue')
@@ -22,8 +22,8 @@ export default function StatsPageContent() {
           api.get(`/stats/period/${selectedPeriod}`)
         ])
         
-        setStatsData(overviewData)
-        setPeriodData(periodData)
+        setStatsData(overviewData.data || overviewData)
+        setPeriodData(periodData.data || periodData)
       } catch (error) {
         console.error('Stats data fetch error:', error)
         // 에러 시 더미 데이터 사용

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { User, LoginRequest, LoginResponse, AuthState } from '@entrip/shared';
+import { LoginRequest, LoginResponse, AuthState } from '@entrip/shared';
 
 interface AuthStore extends AuthState {
   login: (credentials: LoginRequest) => Promise<boolean>;
@@ -15,7 +15,7 @@ interface AuthStore extends AuthState {
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       // Initial state
       isAuthenticated: false,
       user: null,
@@ -74,21 +74,43 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       logout: () => {
-        // Call logout API to clear HttpOnly cookie
-        fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include', // Important for cookies
-        }).catch(console.error);
+        // ENHANCED: Improve logout error handling without preventing logout
+        const performLogout = async () => {
+          try {
+            // Call logout API to clear HttpOnly cookie
+            const response = await fetch('/api/auth/logout', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include', // Important for cookies
+            });
 
-        // Clear any legacy localStorage items
-        localStorage.removeItem('auth-token');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+            if (!response.ok) {
+              console.warn('Logout API call failed but proceeding with client cleanup:', response.status);
+            } else {
+              console.log('✅ Logout API call successful');
+            }
+          } catch (error) {
+            // Don't prevent logout even if API call fails
+            console.warn('Logout API call error but proceeding with client cleanup:', error);
+          }
+        };
 
-        // Clear state
+        // Perform async logout call but don't wait for it
+        performLogout();
+
+        // Clear any legacy localStorage items immediately
+        try {
+          localStorage.removeItem('auth-token');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('userId'); // Added messenger userId cleanup
+        } catch (error) {
+          console.warn('LocalStorage cleanup error:', error);
+        }
+
+        // Clear state immediately
         set({
           isAuthenticated: false,
           user: null,
@@ -97,12 +119,11 @@ export const useAuthStore = create<AuthStore>()(
           error: null,
         });
 
-        // TEMPORARY: Skip redirect for development
-        console.warn('Logout - Skipping redirect for development');
         // Redirect to login page
-        // if (typeof window !== 'undefined') {
-        //   window.location.href = '/login';
-        // }
+        if (typeof window !== 'undefined') {
+          console.log('🔄 Redirecting to login page after logout');
+          window.location.href = '/login';
+        }
       },
 
       clearError: () => {

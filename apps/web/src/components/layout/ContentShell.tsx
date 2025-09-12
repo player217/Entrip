@@ -21,7 +21,7 @@ export function ContentShell({
   return (
     <main
       className={clsx(
-        'relative bg-white flex-1 min-w-0 transition-all duration-300',
+        'relative bg-white flex-1 min-h-0 overflow-auto transition-all duration-300',
         'shadow-lg',
         className
       )}
@@ -42,7 +42,7 @@ export function ContentShell({
         }}
         aria-hidden="true"
       />
-      <div className="w-full h-full overflow-auto p-6">
+      <div className="p-6">
         {children}
       </div>
     </main>

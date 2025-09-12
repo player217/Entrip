@@ -1,6 +1,22 @@
 import { z } from 'zod';
 
 /**
+ * 공통 응답 스키마 헬퍼
+ */
+export const responseOf = <T extends z.ZodTypeAny>(dataSchema: T) =>
+  z.object({
+    data: dataSchema,   // required
+    meta: z.object({
+      nextCursor: z.string().nullable().optional(),
+      previousCursor: z.string().nullable().optional(),
+      limit: z.number().int().positive().optional(),
+      total: z.number().int().nonnegative().optional(),
+      page: z.number().int().positive().optional(),
+      totalPages: z.number().int().positive().optional(),
+    }).optional()
+  });
+
+/**
  * 공통 상태 스키마
  */
 export const StatusSchema = z.enum([

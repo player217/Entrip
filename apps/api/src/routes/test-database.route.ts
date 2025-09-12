@@ -1,11 +1,12 @@
 import { Router, Request } from 'express';
+import type { Router as ExpressRouter } from 'express';
 import { respond, respondCreated, createResponse } from '../middleware/respond';
 import { BookingResponse, BookingCreateResponse } from '../schemas/booking.schema';
 import { respondWithETag } from '../middleware/respond';
 import { z } from 'zod';
 import { ApiError, ErrorCode } from '../middleware/api-error';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 // In-memory test database for Phase 2A testing
 let testBookings: any[] = [];
@@ -102,7 +103,7 @@ router.patch('/bookings/:id',
 // Clear test data
 router.delete('/bookings',
   respond(
-    z.object({ data: z.object({ cleared: z.number() }) }),
+    z.object({ data: z.object({ cleared: z.number() }), meta: z.any().optional() }),
     async (req: Request) => {
       const count = testBookings.length;
       testBookings = [];

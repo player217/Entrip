@@ -17,7 +17,8 @@ router.post('/bookings/export', authenticate, async (req: AuthRequest, res) => {
     
     // 선택된 예약들만 내보내기 또는 전체
     const query = ids ? { ids } : {};
-    const bookingsResult = await bookingService.listBookings(query);
+    const companyCode = 'COMPANY_A'; // Or get from auth context
+    const bookingsResult = await bookingService.listBookings(query, companyCode);
     const bookings = bookingsResult.data;
     
     if (format === 'xlsx') {

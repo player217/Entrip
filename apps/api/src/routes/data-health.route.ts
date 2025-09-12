@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import express, { Router, Request, Response } from 'express';
 import {
   checkDatabaseHealth,
   validateDataIntegrity,
@@ -12,8 +12,9 @@ import {
   getArchiveStatistics
 } from '../lib/data-archiving';
 import prisma from '../lib/prisma';
+import { authenticate } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: express.Router = Router();
 
 /**
  * Enhanced database health check with detailed metrics
@@ -334,11 +335,11 @@ router.get('/archives/stats', async (req: Request, res: Response) => {
 });
 
 /**
- * Manual data cleanup endpoint (protected - should require admin auth)
+ * Manual data cleanup endpoint (protected - requires admin auth)
  */
-router.post('/maintenance/cleanup', async (req: Request, res: Response) => {
+router.post('/maintenance/cleanup', authenticate, async (req: Request, res: Response) => {
   try {
-    // TODO: Add authentication check here
+    // Authentication now handled by middleware
     
     const results = await cleanupOldData({
       auditLog: 90,
@@ -371,11 +372,11 @@ router.post('/maintenance/cleanup', async (req: Request, res: Response) => {
 });
 
 /**
- * Manual archive endpoint (protected - should require admin auth)
+ * Manual archive endpoint (protected - requires admin auth)
  */
-router.post('/maintenance/archive', async (req: Request, res: Response) => {
+router.post('/maintenance/archive', authenticate, async (req: Request, res: Response) => {
   try {
-    // TODO: Add authentication check here
+    // Authentication now handled by middleware
     
     const { target = 'all', retentionMonths } = req.body;
     const results = [];

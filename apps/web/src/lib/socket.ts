@@ -1,5 +1,4 @@
 import { io, Socket } from 'socket.io-client';
-import Cookies from 'js-cookie';
 import { logger } from '@entrip/shared';
 
 let socket: Socket | null = null;
@@ -10,21 +9,28 @@ export const initializeSocket = (): Socket | undefined => {
     return; // Don't initialize socket on server-side
   }
   
-  // Check if already connected
-  if (socket?.connected) {
-    logger.info('[Socket]', 'Already connected');
+  // Check if socket already exists (connected or connecting)
+  if (socket) {
     return socket;
   }
   
   // Use same URL as API client for consistency
   const WS_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
   
-  // Connect with cookie-based authentication
-  // withCredentials: true ensures HttpOnly cookies are sent with WebSocket handshake
+  // Get authentication token from localStorage as fallback
+  const authToken = localStorage.getItem('authToken');
+  
+  // Connect with both cookie and token authentication
   socket = io(WS_URL, {
     withCredentials: true, // Send cookies with WebSocket handshake
     path: '/socket.io/',
     transports: ['websocket', 'polling'],
+    auth: {
+      token: authToken, // Send token as backup authentication
+    },
+    extraHeaders: authToken ? {
+      'Authorization': `Bearer ${authToken}`
+    } : {},
   });
   
   socket.on('connect', () => {

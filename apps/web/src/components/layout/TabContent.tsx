@@ -16,6 +16,7 @@ interface TabContentProps {
 const routeComponents: Record<string, React.ComponentType<any>> = {
   '/': dynamic(() => import('../pages/DashboardPageContent'), { ssr: false }),
   '/dashboard': dynamic(() => import('../pages/DashboardPageContent'), { ssr: false }),
+  '/reservations': dynamic(() => import('../pages/ReservationsPageContent'), { ssr: false }),
   '/calendar-performance': dynamic(() => import('../pages/CalendarPerformancePageContent'), { ssr: false }),
   '/approval': dynamic(() => import('../pages/ApprovalPageContent'), { ssr: false }),
   '/accounts': dynamic(() => import('../pages/AccountsPageContent'), { ssr: false }),
@@ -24,9 +25,8 @@ const routeComponents: Record<string, React.ComponentType<any>> = {
   '/mail': dynamic(() => import('../pages/MailPageContent'), { ssr: false }),
   '/chat': dynamic(() => import('../pages/ChatPageContent'), { ssr: false }),
   '/flow': dynamic(() => import('../pages/FlowPageContent'), { ssr: false }),
-  '/workspace': dynamic(() => import('../pages/WorkspacePageContent'), { ssr: false }),
+  '/workspace': dynamic(() => import('../pages/WorkspacePageWrapper'), { ssr: false }),
   '/flight-schedule': dynamic(() => import('../pages/FlightSchedulePageContent'), { ssr: false }),
-  '/reservations': dynamic(() => import('../pages/ReservationsPageContent'), { ssr: false }),
 }
 
 export function TabContent({ 
@@ -89,7 +89,7 @@ export function TabContent({
       data-tab-key={tabKey}
     >
       {/* 한 번 로드된 컴포넌트는 계속 유지 */}
-      {(isLoaded || visible) && (
+      {(isLoaded || visible) && Component && (
         <div className="tab-content-wrapper">
           <Component />
         </div>

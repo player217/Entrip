@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import path from 'path';
 import fs from 'fs';
 
-const router = Router();
+const router: express.Router = Router();
 
 /**
  * Documentation route for serving OpenAPI specification

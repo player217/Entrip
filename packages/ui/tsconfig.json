@@ -8,9 +8,11 @@
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "types": ["jest", "node"],
     "exactOptionalPropertyTypes": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "jsx": "react-jsx"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": [
     "node_modules",
     "dist",

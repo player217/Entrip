@@ -58,6 +58,17 @@
       "env": {
         "MCP_EDIT_STATE_TTL": "300000"
       }
+    },
+    "shrimp-task-manager": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\PC\\Documents\\project\\Entrip\\mcp-shrimp-task-manager\\dist\\index.js"
+      ],
+      "env": {
+        "DATA_DIR": "C:\\Users\\PC\\Documents\\project\\Entrip\\shrimp_data",
+        "TEMPLATES_USE": "en",
+        "ENABLE_GUI": "false"
+      }
     }
   }
 }

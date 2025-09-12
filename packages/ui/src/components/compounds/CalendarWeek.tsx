@@ -33,6 +33,21 @@ export interface CalendarWeekProps<T extends BookingEntry = BookingEntry> {
   };
 }
 
+// Date validation helper
+const ensureValidDate = (date: any): Date => {
+  if (date instanceof Date && !isNaN(date.getTime())) {
+    return date;
+  }
+  if (typeof date === 'string' || typeof date === 'number') {
+    const parsed = new Date(date);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+  console.warn('Invalid date provided to CalendarWeek, using current date:', date);
+  return new Date();
+};
+
 export const CalendarWeek = <T extends BookingEntry = BookingEntry>({
   week: initialWeek = new Date(),
   bookings = {},
@@ -42,10 +57,10 @@ export const CalendarWeek = <T extends BookingEntry = BookingEntry>({
   className,
   weeklySummary
 }: CalendarWeekProps<T>) => {
-  const [currentWeek, setCurrentWeek] = useState(initialWeek);
+  const [currentWeek, setCurrentWeek] = useState(() => ensureValidDate(initialWeek));
   
   useEffect(() => {
-    setCurrentWeek(initialWeek);
+    setCurrentWeek(ensureValidDate(initialWeek));
   }, [initialWeek]);
   
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 0 });

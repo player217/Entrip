@@ -1,0 +1,74 @@
+/* 모달 배경 애니메이션 */
+.modal-backdrop {
+  animation: fadeIn 300ms ease-out;
+}
+
+.modal-backdrop-exit {
+  animation: fadeOut 200ms ease-in;
+}
+
+/* 모달 컨텐츠 애니메이션 */
+.modal-content {
+  animation: modalZoomIn 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-content-exit {
+  animation: modalZoomOut 200ms ease-in;
+}
+
+/* 애니메이션 정의 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modalZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalZoomOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+}
+
+/* 태블릿 뷰 최적화 */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .modal-content-wrapper {
+    max-width: 90vw;
+    max-height: 85vh;
+  }
+}
+
+/* 모바일 가로 모드 */
+@media (max-height: 600px) and (orientation: landscape) {
+  .modal-content-wrapper {
+    max-height: 90vh;
+    margin: 0.5rem;
+  }
+}

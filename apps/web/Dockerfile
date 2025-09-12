@@ -69,6 +69,16 @@ COPY --from=builder /app/apps/web/package.json ./apps/web/
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/web/node_modules ./apps/web/node_modules
 
+# Copy packages dependencies for monorepo
+COPY --from=builder /app/packages/ui/node_modules ./packages/ui/node_modules
+COPY --from=builder /app/packages/shared/node_modules ./packages/shared/node_modules
+COPY --from=builder /app/packages/design-tokens/node_modules ./packages/design-tokens/node_modules
+
+# Copy built packages
+COPY --from=builder /app/packages/ui/dist ./packages/ui/dist
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/design-tokens/dist ./packages/design-tokens/dist
+
 # Set environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
+import { ZodSchema, ZodError, z } from 'zod';
 
 // Response wrapper interface
 export interface ApiResponse<T = any> {
@@ -26,7 +26,7 @@ export const createResponse = <T>(data: T, meta?: ApiResponse<T>['meta']): ApiRe
 
 // Standard response middleware with schema validation
 export const respond = <T>(
-  responseSchema: ZodSchema<ApiResponse<T>>,
+  responseSchema: ZodSchema<any>, // Accept any ZodSchema, we'll handle the ApiResponse wrapper
   handler: (req: Request) => Promise<ApiResponse<T>>,
   generateEtag?: (result: ApiResponse<T>) => string | number
 ) => {
@@ -59,7 +59,7 @@ export const respond = <T>(
 
 // Response middleware with ETag support for caching
 export const respondWithETag = <T>(
-  responseSchema: ZodSchema<ApiResponse<T>>,
+  responseSchema: ZodSchema<any>, // Accept any ZodSchema, we'll handle the ApiResponse wrapper
   handler: (req: Request) => Promise<ApiResponse<T>>,
   generateEtag: (result: ApiResponse<T>) => string | number
 ) => {
@@ -111,7 +111,7 @@ export const respondNoContent = (
 
 // Response middleware for created resources (201)
 export const respondCreated = <T>(
-  responseSchema: ZodSchema<ApiResponse<T>>,
+  responseSchema: ZodSchema<any>, // Accept any ZodSchema, we'll handle the ApiResponse wrapper
   handler: (req: Request) => Promise<ApiResponse<T>>,
   generateEtag?: (result: ApiResponse<T>) => string | number
 ) => {

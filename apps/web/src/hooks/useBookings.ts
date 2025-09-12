@@ -6,7 +6,7 @@
  */
 
 import useSWR from 'swr';
-import type { Booking } from '@entrip/shared/types/booking';
+import type { Booking } from '@entrip/shared';
 import apiClient from '../lib/api-client';
 import { initializeSocket } from '../lib/socket';
 import { useEffect } from 'react';
@@ -33,9 +33,8 @@ export function useBookings(month?: string) {
   });
   
   // Initialize WebSocket for real-time updates
-  const socket = initializeSocket();
-  
   useEffect(() => {
+    const socket = initializeSocket();
     if (!socket) return;
     
     // Listen for booking events
@@ -57,12 +56,12 @@ export function useBookings(month?: string) {
       socket.off('booking:bulk-create', handleBookingUpdate);
       socket.off('booking:bulk-delete', handleBookingUpdate);
     };
-  }, [socket, mutate]);
+  }, [mutate]);
   
   // Return with unified response schema
   return {
     bookings: data?.data ?? [],             // ← 응답 스키마 통일: 항상 배열 반환 (?? 사용)
-    pagination: data?.pagination || { page: 1, limit: 1000, total: 0, totalPages: 0 },
+    pagination: data?.meta || { page: 1, limit: 1000, total: 0, totalPages: 0 },  // ← meta로 수정
     isLoading,
     isError: Boolean(error),               // ← Boolean으로 명시적 변환
     mutate,

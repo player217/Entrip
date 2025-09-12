@@ -8,6 +8,7 @@ import { CalendarMonth, QuickBookingModal, EditBookingModal, MonthlySummaryFoote
 import type { QuickBookingFormData } from '@entrip/ui';
 import { useBookings } from '../../hooks/useBookings';
 import { useMainContentHeight } from '../../hooks/useViewportHeight';
+import { ensureValidDate } from '../../utils/dateValidation';
 
 // 실제 API 데이터를 BookingEvent 형식으로 변환
 const convertToBookingEvent = (booking: any): BookingEvent => {
@@ -41,7 +42,7 @@ const convertToBookingEvent = (booking: any): BookingEvent => {
             BookingStatus.CONFIRMED,
     manager,
     paxCount: booking.paxCount || booking.numberOfPeople || 0,
-    date: format(new Date(booking.startDate || booking.departureDate || booking.date), 'yyyy-MM-dd'),
+    date: format(new Date(booking.startDate || booking.departureDate || booking.date || new Date()), 'yyyy-MM-dd'),
     departureDate: booking.startDate || booking.departureDate,  // 출발일
     returnDate: booking.endDate || booking.returnDate,           // 귀국일
     revenue: Number(booking.totalPrice) || Number(booking.price) || 0,
@@ -50,9 +51,18 @@ const convertToBookingEvent = (booking: any): BookingEvent => {
   };
 };
 
-export function MonthlyCalendarView() {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const { cssHeight } = useMainContentHeight(50); // 푸터 높이 50px 고려
+interface MonthlyCalendarViewProps {
+  currentMonth?: Date;
+  bookings?: Record<string, BookingEvent[]>;
+  onAddBooking?: (date: Date) => void;
+  onBookingClick?: (booking: BookingEvent) => void;
+  onMonthChange?: (month: Date) => void;
+  monthlySummary?: MonthlySummary;
+}
+
+export function MonthlyCalendarView(props: MonthlyCalendarViewProps = {}) {
+  const [currentMonth, setCurrentMonth] = useState<Date>(() => ensureValidDate(props.currentMonth || new Date()));
+  const { cssHeight } = useMainContentHeight(40); // 푸터 높이 40px 고려 (h-10)
   const { 
     isQuickAddModalOpen, 
     selectedDate, 
@@ -66,11 +76,17 @@ export function MonthlyCalendarView() {
   const [bookingData, setBookingData] = useState<Record<string, BookingEvent[]>>({});
   
   // 현재 월에 대한 month 파라미터 생성 (YYYY-MM 형식)
-  const monthParam = format(currentMonth, 'yyyy-MM');
+  const validMonth = ensureValidDate(currentMonth);
+  const monthParam = format(validMonth, 'yyyy-MM');
   const { bookings: apiBookings, isLoading, isError } = useBookings(monthParam);
   
   // 실제 API 데이터를 월별로 필터링하고 날짜별로 그룹화
   const bookings = useMemo(() => {
+    // props.bookings가 제공되면 우선 사용
+    if (props.bookings) {
+      return props.bookings;
+    }
+    
     const combinedBookings: Record<string, BookingEvent[]> = { ...bookingData };
     
     if (!apiBookings || apiBookings.length === 0) {
@@ -83,24 +99,28 @@ export function MonthlyCalendarView() {
     // API 데이터를 월별로 필터링하고 변환
     const monthlyBookings = apiBookings
       .filter((booking: any) => {
-        const bookingDate = new Date(booking.startDate || booking.departureDate || booking.date);
+        const bookingDate = new Date(booking.startDate || booking.departureDate || booking.date || new Date());
         return bookingDate >= monthStart && bookingDate <= monthEnd;
       })
       .map(convertToBookingEvent);
     
     // 날짜별로 그룹화
-    monthlyBookings.forEach(booking => {
+    monthlyBookings.forEach((booking: BookingEvent) => {
       if (!combinedBookings[booking.date]) {
         combinedBookings[booking.date] = [];
       }
-      combinedBookings[booking.date].push(booking);
+      combinedBookings[booking.date]!.push(booking);
     });
     
     return combinedBookings;
-  }, [apiBookings, currentMonth, bookingData]);
+  }, [apiBookings, currentMonth, bookingData, props.bookings]);
   
-  // 월간 합계 계산
+  // 월간 합계 계산 (props에서 제공되면 사용)
   const monthlySummary = useMemo((): MonthlySummary => {
+    if (props.monthlySummary) {
+      return props.monthlySummary;
+    }
+    
     let teamCount = 0;
     let paxCount = 0;
     let revenue = 0;
@@ -123,10 +143,14 @@ export function MonthlyCalendarView() {
       revenue,
       profit: revenue - cost
     };
-  }, [bookings]);
+  }, [bookings, props.monthlySummary]);
 
   const handleAddBooking = (date: Date) => {
-    openQuickAddModal(date);
+    if (props.onAddBooking) {
+      props.onAddBooking(date);
+    } else {
+      openQuickAddModal(date);
+    }
   };
   
   const handleQuickAddSubmit = async (data: QuickBookingFormData) => {
@@ -153,7 +177,11 @@ export function MonthlyCalendarView() {
   };
 
   const handleBookingClick = (booking: BookingEvent) => {
-    openEditModal(booking);
+    if (props.onBookingClick) {
+      props.onBookingClick(booking);
+    } else {
+      openEditModal(booking);
+    }
   };
   
   const handleEditSubmit = async (data: QuickBookingFormData) => {
@@ -199,23 +227,24 @@ export function MonthlyCalendarView() {
 
   return (
     <>
-      <div 
-        className="flex flex-col h-full overflow-hidden"
-        style={{ height: cssHeight, maxHeight: cssHeight, minHeight: cssHeight }}
-      >
-        {/* 캘린더 본체 - 스크롤 가능 */}
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <div className="pb-4">
-            <CalendarMonth
-              month={currentMonth}
-              bookings={bookings}
-              onAddBooking={handleAddBooking}
-              onBookingClick={handleBookingClick}
-              onMonthChange={setCurrentMonth}
-              className=""
-              monthlySummary={monthlySummary}
-            />
-          </div>
+      <div className="h-full flex flex-col">
+        {/* 캘린더 본체 */}
+        <div className="flex-1 min-h-0 overflow-auto">
+          <CalendarMonth
+            month={currentMonth}
+            bookings={bookings}
+            onAddBooking={handleAddBooking}
+            onBookingClick={handleBookingClick}
+            onMonthChange={(newMonth: Date) => {
+              const validMonth = ensureValidDate(newMonth);
+              setCurrentMonth(validMonth);
+              if (props.onMonthChange) {
+                props.onMonthChange(validMonth);
+              }
+            }}
+            className=""
+            monthlySummary={monthlySummary}
+          />
         </div>
         
         {/* 월간 합계 푸터 - 하단 고정 */}

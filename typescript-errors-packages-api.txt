@@ -1,0 +1,38 @@
+src/services/account.service.ts(1,24): error TS2305: Module '"@prisma/client"' has no exported member 'Account'.
+src/services/account.service.ts(1,33): error TS2305: Module '"@prisma/client"' has no exported member 'AccountRole'.
+src/services/account.service.ts(1,46): error TS2305: Module '"@prisma/client"' has no exported member 'AccountStatus'.
+src/services/account.service.ts(97,24): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/services/account.service.ts(128,11): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/services/account.service.ts(152,11): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/services/account.service.ts(267,11): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/services/account.service.ts(306,28): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/services/account.service.ts(306,33): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/services/account.service.ts(310,32): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/services/account.service.ts(310,37): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/services/account.service.ts(345,11): error TS7006: Parameter 'accounts' implicitly has an 'any' type.
+src/services/account.service.ts(345,36): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/services/account.service.ts(371,11): error TS7006: Parameter 'accounts' implicitly has an 'any' type.
+src/services/account.service.ts(371,36): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/services/approval.service.ts(1,24): error TS2305: Module '"@prisma/client"' has no exported member 'Approval'.
+src/services/approval.service.ts(1,34): error TS2305: Module '"@prisma/client"' has no exported member 'ApprovalStep'.
+src/services/approval.service.ts(1,48): error TS2305: Module '"@prisma/client"' has no exported member 'ApprovalStatus'.
+src/services/approval.service.ts(1,64): error TS2305: Module '"@prisma/client"' has no exported member 'ApprovalTargetType'.
+src/services/approval.service.ts(1,84): error TS2305: Module '"@prisma/client"' has no exported member 'ApprovalAction'.
+src/services/approval.service.ts(206,16): error TS2339: Property 'status' does not exist on type 'ApprovalWithSteps'.
+src/services/approval.service.ts(207,54): error TS2339: Property 'status' does not exist on type 'ApprovalWithSteps'.
+src/services/approval.service.ts(211,47): error TS2339: Property 'currentStep' does not exist on type 'ApprovalWithSteps'.
+src/services/approval.service.ts(237,44): error TS2339: Property 'status' does not exist on type 'ApprovalWithSteps'.
+src/services/approval.service.ts(238,33): error TS2339: Property 'currentStep' does not exist on type 'ApprovalWithSteps'.
+src/services/approval.service.ts(335,32): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/services/approval.service.ts(335,37): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/services/approval.service.ts(363,47): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+src/services/approval.service.ts(363,52): error TS7006: Parameter 'approval' implicitly has an 'any' type.
+src/services/booking.service.ts(1,24): error TS2305: Module '"@prisma/client"' has no exported member 'Booking'.
+src/services/booking.service.ts(1,33): error TS2305: Module '"@prisma/client"' has no exported member 'BookingStatus'.
+src/services/booking.service.ts(1,48): error TS2305: Module '"@prisma/client"' has no exported member 'BookingType'.
+src/services/booking.service.ts(166,32): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/services/booking.service.ts(166,37): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/services/calendar.service.ts(1,24): error TS2305: Module '"@prisma/client"' has no exported member 'CalendarEvent'.
+src/services/calendar.service.ts(1,39): error TS2305: Module '"@prisma/client"' has no exported member 'CalendarEventStatus'.
+src/services/calendar.service.ts(191,32): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/services/calendar.service.ts(191,37): error TS7006: Parameter 'item' implicitly has an 'any' type.

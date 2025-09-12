@@ -286,7 +286,9 @@ router.post('/bookings', async (req, res) => {
         bookingNumber: `BK${Date.now()}`,
         customerName,
         teamName: `${destination} 여행`,
+        teamType: 'LEISURE',
         bookingType: 'PACKAGE',
+        origin: '서울',
         destination,
         startDate: startDateObj,
         endDate: endDateObj,
@@ -294,10 +296,13 @@ router.post('/bookings', async (req, res) => {
         nights: Math.max(1, days - 1),
         days: Math.max(1, days),
         status: 'PENDING',
+        manager: '담당자',
         totalPrice: totalPrice || 0,
         currency: 'KRW',
         companyCode: 'COMPANY_A',
-        createdBy: defaultUser.id
+        user: {
+          connect: { id: defaultUser.id }
+        }
       },
       select: {
         id: true,

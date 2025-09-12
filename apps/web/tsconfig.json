@@ -3,9 +3,9 @@
   "compilerOptions": {
     "composite": true,
     "declaration": true,
-    "rootDir": ".",
     "outDir": "dist",
     "tsBuildInfoFile": "dist/.tsbuildinfo",
+    "baseUrl": ".",
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -20,7 +20,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*", "./*"]
+      "@/*": ["./src/*"],
+      "@entrip/ui/*": ["../../packages/ui/src/*"],
+      "@entrip/shared/*": ["../../packages/shared/src/*"]
     },
     "types": ["jest", "node"]
   },

@@ -1,0 +1,29 @@
+{
+  "source": ["src/tokens.json"],
+  "platforms": {
+    "css": {
+      "transformGroup": "css",
+      "buildPath": "build/",
+      "files": [{
+        "destination": "variables.css",
+        "format": "css/variables"
+      }]
+    },
+    "js": {
+      "transformGroup": "js",
+      "buildPath": "build/",
+      "files": [{
+        "destination": "tailwind.js",
+        "format": "javascript/module"
+      }]
+    },
+    "ts": {
+      "transformGroup": "js",
+      "buildPath": "build/",
+      "files": [{
+        "destination": "tokens.ts",
+        "format": "typescript/module-declarations"
+      }]
+    }
+  }
+}

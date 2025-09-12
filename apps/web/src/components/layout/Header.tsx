@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState } from 'react'
 import { Icon } from '@entrip/ui'
 import Image from 'next/image'
 import HeaderExchange from './HeaderExchange'
+import { UserMenu } from './UserMenu'
 import { useWorkspaceStore } from '@entrip/shared/client'
 import { clsx } from 'clsx'
 import { useTabRouter } from '../../hooks/useTabRouter'
@@ -12,6 +13,7 @@ import { useRouter } from 'next/navigation'
 
 interface HeaderProps {
   className?: string
+  useTabSystem?: boolean
 }
 
 export function Header({ className = '' }: HeaderProps) {
@@ -90,7 +92,7 @@ export function Header({ className = '' }: HeaderProps) {
   }, [tabs, activeTabKey, addTab, closeTab, onTabClick])
 
   return (
-    <header className={clsx('flex flex-col h-[70px] bg-[#016B9F] text-white relative overflow-hidden', className)}>
+    <header className={clsx('flex flex-col h-[70px] bg-[#016B9F] text-white relative', className)}>
       
       {/* Top Section - Exchange Rate */}
       <div className="flex justify-end py-1 mt-[3px]" style={{ paddingRight: `${rightEdge}px` }}>
@@ -204,7 +206,7 @@ export function Header({ className = '' }: HeaderProps) {
           </div>
         </nav>
         
-        {/* Right - Icons (positioned at top with tighter spacing) */}
+        {/* Right - Icons and User Menu (positioned at top with tighter spacing) */}
         <div ref={iconsRef} className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-1">
           <IconButton 
             icon="ph:map-trifold-bold" 
@@ -226,6 +228,11 @@ export function Header({ className = '' }: HeaderProps) {
           <IconButton icon="ph:envelope-bold" title="메일" />
           <IconButton icon="ph:chat-circle-bold" title="메신저" />
           <IconButton icon="ph:gear-bold" title="설정" />
+          
+          {/* User Menu with Logout */}
+          <div className="ml-2 border-l border-white/20 pl-2">
+            <UserMenu />
+          </div>
         </div>
       </div>
     </header>

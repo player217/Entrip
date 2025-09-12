@@ -1,157 +1,152 @@
 import { PrismaClient } from '@prisma/client';
 import { UserRole, BookingType, BookingStatus } from '@entrip/shared';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// Demo password for all accounts
+const DEMO_PASSWORD = 'pass1234';
+
+// Company definitions
+const COMPANIES = [
+  { code: 'ENTRIP_MAIN', name: '엔트립 본사' },
+  { code: 'j1', name: 'J1 여행사' },
+  { code: 'star', name: '스타투어' },
+  { code: 'happy', name: '해피트래블' }
+];
+
 async function main() {
-  console.log('🌱 Starting comprehensive database seeding...');
+  console.log('🌱 Starting comprehensive multi-tenant database seeding...');
 
   // Clear existing data in proper order
+  console.log('🗑️ Clearing existing data...');
   await prisma.bookingHistory.deleteMany();
   await prisma.transaction.deleteMany();
   await prisma.booking.deleteMany();
   await prisma.account.deleteMany();
   await prisma.user.deleteMany();
 
-  // 1. 사용자 데이터 생성
-  console.log('👥 Creating users...');
+  // Hash the demo password once
+  const hashedPassword = await bcrypt.hash(DEMO_PASSWORD, 10);
+
+  // 1. 사용자 데이터 생성 (회사별)
+  console.log('👥 Creating users for multiple companies...');
   
-  const users = await Promise.all([
-    // 관리자 계정
-    prisma.user.create({
+  const users = [];
+  const usersByCompany = {};
+  
+  for (const company of COMPANIES) {
+    console.log(`  Creating users for ${company.name} (${company.code})...`);
+    usersByCompany[company.code] = [];
+    
+    // Admin account for each company
+    const admin = await prisma.user.create({
       data: {
-        email: 'admin@entrip.com',
-        name: '관리자',
-        password: 'hashed_admin_password',
+        email: `admin@${company.code === 'ENTRIP_MAIN' ? 'entrip' : company.code}.com`,
+        name: `${company.name} 관리자`,
+        password: hashedPassword,
         role: UserRole.ADMIN,
         department: '경영지원팀',
+        companyCode: company.code,
         isActive: true
       }
-    }),
-    // 매니저 계정들
-    prisma.user.create({
+    });
+    users.push(admin);
+    usersByCompany[company.code].push(admin);
+    
+    // Managers for each company
+    const manager1 = await prisma.user.create({
       data: {
-        email: 'manager1@entrip.com',
-        name: '김민수',
-        password: 'hashed_manager_password',
+        email: `manager1@${company.code === 'ENTRIP_MAIN' ? 'entrip' : company.code}.com`,
+        name: `${company.name} 김민수`,
+        password: hashedPassword,
         role: UserRole.MANAGER,
         department: '영업1팀',
+        companyCode: company.code,
         isActive: true
       }
-    }),
-    prisma.user.create({
+    });
+    users.push(manager1);
+    usersByCompany[company.code].push(manager1);
+    
+    const manager2 = await prisma.user.create({
       data: {
-        email: 'manager2@entrip.com',
-        name: '이지영',
-        password: 'hashed_manager_password',
+        email: `manager2@${company.code === 'ENTRIP_MAIN' ? 'entrip' : company.code}.com`,
+        name: `${company.name} 이지영`,
+        password: hashedPassword,
         role: UserRole.MANAGER,
         department: '영업2팀',
+        companyCode: company.code,
         isActive: true
       }
-    }),
-    // 일반 직원 계정들
-    prisma.user.create({
-      data: {
-        email: 'user1@entrip.com',
-        name: '박준혁',
-        password: 'hashed_user_password',
-        role: UserRole.USER,
-        department: '영업1팀',
-        isActive: true
-      }
-    }),
-    prisma.user.create({
-      data: {
-        email: 'user2@entrip.com',
-        name: '최서연',
-        password: 'hashed_user_password',
-        role: UserRole.USER,
-        department: '영업2팀',
-        isActive: true
-      }
-    }),
-    prisma.user.create({
-      data: {
-        email: 'user3@entrip.com',
-        name: '정태호',
-        password: 'hashed_user_password',
-        role: UserRole.USER,
-        department: '마케팅팀',
-        isActive: true
-      }
-    }),
-    prisma.user.create({
-      data: {
-        email: 'user4@entrip.com',
-        name: '한은영',
-        password: 'hashed_user_password',
-        role: UserRole.USER,
-        department: '기획팀',
-        isActive: true
-      }
-    }),
-    prisma.user.create({
-      data: {
-        email: 'user5@entrip.com',
-        name: '송동현',
-        password: 'hashed_user_password',
-        role: UserRole.USER,
-        department: '영업3팀',
-        isActive: true
-      }
-    }),
-    // 게스트 계정들
-    prisma.user.create({
-      data: {
-        email: 'guest1@entrip.com',
-        name: '김수빈',
-        password: 'hashed_guest_password',
-        role: UserRole.USER, // GUEST role이 없으면 USER로
-        department: '외부',
-        isActive: true
-      }
-    }),
-    prisma.user.create({
-      data: {
-        email: 'guest2@entrip.com',
-        name: '이현우',
-        password: 'hashed_guest_password',
-        role: UserRole.USER, // GUEST role이 없으면 USER로
-        department: '외부',
-        isActive: true
-      }
-    })
-  ]);
+    });
+    users.push(manager2);
+    usersByCompany[company.code].push(manager2);
+    
+    // Regular users for each company
+    for (let i = 1; i <= 3; i++) {
+      const userNames = ['박준혁', '최서연', '정태호'];
+      const departments = ['영업1팀', '영업2팀', '마케팅팀'];
+      
+      const user = await prisma.user.create({
+        data: {
+          email: `user${i}@${company.code === 'ENTRIP_MAIN' ? 'entrip' : company.code}.com`,
+          name: `${company.name} ${userNames[i - 1]}`,
+          password: hashedPassword,
+          role: UserRole.USER,
+          department: departments[i - 1],
+          companyCode: company.code,
+          isActive: true
+        }
+      });
+      users.push(user);
+      usersByCompany[company.code].push(user);
+    }
+  }
 
-  console.log(`✅ Created ${users.length} users`);
+  console.log(`✅ Created ${users.length} users across ${COMPANIES.length} companies`);
 
-  // 2. 계좌 데이터 생성
-  console.log('🏦 Creating accounts...');
+  // 2. 계좌 데이터 생성 (회사별)
+  console.log('🏦 Creating accounts for each company...');
   
-  const accounts = await Promise.all([
-    prisma.account.create({
+  const accounts = [];
+  let accountCounter = 1;
+  
+  for (const company of COMPANIES) {
+    const companyUsers = usersByCompany[company.code];
+    const admin = companyUsers.find(u => u.role === UserRole.ADMIN);
+    const manager = companyUsers.find(u => u.role === UserRole.MANAGER);
+    
+    // KRW account for each company
+    const krwAccount = await prisma.account.create({
       data: {
-        name: '기업 주거래 계좌',
-        accountNumber: '110-123-456789',
+        name: `${company.name} 주거래 계좌`,
+        accountNumber: `110-${company.code}-${String(accountCounter++).padStart(6, '0')}`,
         bankName: '신한은행',
         currency: 'KRW',
-        balance: 50000000,
-        managerId: users[0].id,
+        balance: 50000000 * (company.code === 'ENTRIP_MAIN' ? 2 : 1),
+        managerId: admin.id,
         isActive: true
       }
-    }),
-    prisma.account.create({
-      data: {
-        name: '외화 전용 계좌',
-        accountNumber: '110-987-654321',
-        bankName: '신한은행',
-        currency: 'USD',
-        balance: 15000,
-        managerId: users[1].id,
-        isActive: true
-      }
-    })
-  ]);
+    });
+    accounts.push(krwAccount);
+    
+    // USD account for major companies
+    if (['ENTRIP_MAIN', 'j1'].includes(company.code)) {
+      const usdAccount = await prisma.account.create({
+        data: {
+          name: `${company.name} 외화 계좌`,
+          accountNumber: `110-${company.code}-${String(accountCounter++).padStart(6, '0')}`,
+          bankName: '신한은행',
+          currency: 'USD',
+          balance: 15000,
+          managerId: manager.id,
+          isActive: true
+        }
+      });
+      accounts.push(usdAccount);
+    }
+  }
 
   console.log(`✅ Created ${accounts.length} accounts`);
 
@@ -192,7 +187,6 @@ async function main() {
       const teamType = teamTypes[Math.floor(Math.random() * teamTypes.length)];
       const bookingType = bookingTypes[Math.floor(Math.random() * bookingTypes.length)];
       const status = statuses[Math.random() < 0.7 ? 1 : Math.random() < 0.9 ? 0 : 2]; // 70% 확정, 20% 대기, 10% 취소
-      const createdBy = users[Math.floor(Math.random() * users.length)].id;
 
       // 여행 유형별 인원수 조정
       let paxCount = 2;
@@ -217,12 +211,36 @@ async function main() {
       const customerName = lastNames[Math.floor(Math.random() * lastNames.length)] +
         firstNames[Math.floor(Math.random() * firstNames.length)];
 
+      // Distribute bookings across companies
+      // ENTRIP_MAIN: 40%, j1: 30%, star: 20%, happy: 10%
+      const companyDistribution = Math.random();
+      let selectedCompany;
+      if (companyDistribution < 0.4) {
+        selectedCompany = 'ENTRIP_MAIN';
+      } else if (companyDistribution < 0.7) {
+        selectedCompany = 'j1';
+      } else if (companyDistribution < 0.9) {
+        selectedCompany = 'star';
+      } else {
+        selectedCompany = 'happy';
+      }
+      
+      // Select a random user from the selected company
+      const companyUsers = usersByCompany[selectedCompany];
+      const createdBy = companyUsers[Math.floor(Math.random() * companyUsers.length)].id;
+      
+      // Add required fields for booking
+      const managers = ['김민수', '이지영', '박준혁', '최서연', '정태호'];
+      const manager = managers[Math.floor(Math.random() * managers.length)];
+      
       bookings.push({
         bookingNumber: `BK2025${String(month + 1).padStart(2, '0')}${String(bookingCounter++).padStart(3, '0')}`,
-        companyCode: 'ENTRIP_MAIN', // 회사 코드 추가
+        companyCode: selectedCompany,
         customerName,
         teamName: `${destination} ${teamType}`,
+        teamType: teamType,  // Required field
         bookingType,
+        origin: '서울',  // Required field
         destination,
         startDate,
         endDate,
@@ -230,10 +248,15 @@ async function main() {
         nights: duration - 1,
         days: duration,
         status,
+        manager: manager,  // Required field
+        representative: customerName,  // Optional
+        contact: `010-${Math.floor(Math.random() * 9000) + 1000}-${Math.floor(Math.random() * 9000) + 1000}`,  // Optional
+        email: `${customerName.replace(/[^a-zA-Z]/g, '').toLowerCase()}@example.com`,  // Optional
         totalPrice,
         depositAmount: Math.floor(totalPrice * 0.3), // 30% 계약금
         currency: 'KRW',
         notes: `${teamType} 상품 - ${paxCount}명`,
+        memo: `${selectedCompany} 회사 예약`,  // Optional
         createdBy
       });
     }
@@ -245,6 +268,17 @@ async function main() {
   });
 
   console.log(`✅ Created ${createdBookings.count} bookings`);
+  
+  // Print booking distribution by company
+  const bookingsByCompany = {};
+  for (const booking of bookings) {
+    bookingsByCompany[booking.companyCode] = (bookingsByCompany[booking.companyCode] || 0) + 1;
+  }
+  console.log('📊 Booking distribution by company:');
+  for (const [code, count] of Object.entries(bookingsByCompany)) {
+    const company = COMPANIES.find(c => c.code === code);
+    console.log(`  ${company.name} (${code}): ${count} bookings`);
+  }
 
   // 4. 거래 내역 생성 (일부 예약에 대해)
   console.log('💰 Creating transactions...');
@@ -318,7 +352,21 @@ async function main() {
     console.log(`✅ Created ${createdHistory.count} booking history entries`);
   }
 
-  console.log('🎉 Database seeding completed successfully!');
+  console.log('🎉 Multi-tenant database seeding completed successfully!');
+  console.log('\n📝 Summary:');
+  console.log(`  - Companies: ${COMPANIES.length}`);
+  console.log(`  - Users: ${users.length} (${users.length / COMPANIES.length} per company)`);
+  console.log(`  - Accounts: ${accounts.length}`);
+  console.log(`  - Bookings: ${createdBookings.count}`);
+  console.log(`  - Transactions: ${transactions.length}`);
+  console.log('\n🔑 Demo Password: ' + DEMO_PASSWORD);
+  console.log('\n👤 Sample Login Credentials:');
+  for (const company of COMPANIES) {
+    console.log(`  ${company.name}:`);
+    console.log(`    Admin: admin@${company.code === 'ENTRIP_MAIN' ? 'entrip' : company.code}.com / ${DEMO_PASSWORD}`);
+    console.log(`    Manager: manager1@${company.code === 'ENTRIP_MAIN' ? 'entrip' : company.code}.com / ${DEMO_PASSWORD}`);
+    console.log(`    User: user1@${company.code === 'ENTRIP_MAIN' ? 'entrip' : company.code}.com / ${DEMO_PASSWORD}`);
+  }
 }
 
 main()

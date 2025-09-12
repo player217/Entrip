@@ -313,7 +313,7 @@ export function TeamBookingListView() {
       <NewTeamModal
         isOpen={isNewTeamModalOpen}
         onClose={() => setIsNewTeamModalOpen(false)}
-        onSave={(data) => {
+        onSave={(data: any) => {
           logger.info('New team data', JSON.stringify(data));
           // TODO: API 호출 또는 store 업데이트
           setIsNewTeamModalOpen(false);

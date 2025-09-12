@@ -82,7 +82,9 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
         startDate: formData.departureDate,
         endDate: formData.returnDate,
         paxCount: formData.numberOfPeople,
-        status: formData.status.toUpperCase() as keyof typeof BookingStatus,
+        status: formData.status.toUpperCase() === 'CONFIRMED' ? BookingStatus.CONFIRMED : 
+               formData.status.toUpperCase() === 'PENDING' ? BookingStatus.PENDING : 
+               BookingStatus.CANCELLED,
         notes: formData.notes,
         // These fields are required by the API but not in the form
         teamName: formData.customerName, // Using customer name as team name

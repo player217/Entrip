@@ -1,15 +1,14 @@
 import { Router, Request } from 'express';
 import { respond, respondWithETag, createResponse } from '../middleware/respond';
 import { z } from 'zod';
+import { responseOf } from '../schemas/common.schema';
 
 // Test schema
-const TestResponseSchema = z.object({
-  data: z.object({
-    message: z.string(),
-    timestamp: z.string(),
-    version: z.number()
-  })
-});
+const TestResponseSchema = responseOf(z.object({
+  message: z.string(),
+  timestamp: z.string(),
+  version: z.number()
+}));
 
 const r: Router = Router();
 

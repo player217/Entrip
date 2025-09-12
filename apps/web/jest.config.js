@@ -9,17 +9,19 @@ module.exports = {
   testPathIgnorePatterns: ['<rootDir>/.next', '<rootDir>/dist', '<rootDir>/node_modules'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@entrip/ui$': '<rootDir>/../../packages/ui/src/index.ts',
+    '^@entrip/shared$': '<rootDir>/../../packages/shared/src/index.ts',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/__tests__/setup.ts'],
   coverageDirectory: '<rootDir>/coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  globals: {
-    'ts-jest': {
+  transform: {
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: {
         jsx: 'react',
         verbatimModuleSyntax: false,
       },
-    },
+    }],
   },
 };

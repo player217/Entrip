@@ -1,19 +1,17 @@
 'use client';
 import { useWorkspaceStore } from '@entrip/shared/client';
 import { FlowCanvas } from '../flow/FlowCanvas';
-import { CalendarMonth } from '@entrip/ui';
-import MonthlyCalendarView from '../../../src/features/calendar/MonthlyCalendarView';
-import MonthlyListPage from '../../../src/features/calendar/MonthlyListPage';
-import WeeklyListPage from '../../../src/features/calendar/WeeklyListPage';
-import CalendarWeekPage from '../../../src/app/(main)/calendar-week/page';
+import ReservationListView from '@/features/calendar/ReservationListView';
+import { useWorkspaceNavigation } from '@/hooks/useWorkspaceNavigation';
+import { ensureValidDate } from '@/utils/dateValidation';
 
 // 콘텐츠 타입을 실제 컴포넌트로 매핑
 const contentMap: Record<string, JSX.Element> = {
   flow: <FlowCanvas />,
-  calendar: <CalendarWeekPage />,
-  monthlyCalendar: <MonthlyCalendarView />,
-  list: <WeeklyListPage />,
-  monthlyList: <MonthlyListPage />,
+  calendar: <ReservationListView viewType="calendar-week" />,
+  monthlyCalendar: <ReservationListView viewType="calendar-month" />,
+  list: <ReservationListView viewType="list" />,
+  monthlyList: <ReservationListView viewType="list" currentMonth={ensureValidDate(new Date())} />,
   empty: (
     <div className="flex items-center justify-center h-full text-gray-500">
       <div className="text-center">
@@ -26,15 +24,18 @@ const contentMap: Record<string, JSX.Element> = {
 
 export default function WorkSpacePage() {
   const { tabs, activeTabKey } = useWorkspaceStore();
+  const { currentContent } = useWorkspaceNavigation();
   
   // Version tracking
-  console.log('📅 WorkSpace Page loaded - Version: 2025-01-22-v2, using WeekView component');
+  // console.log('📅 WorkSpace Page loaded - Version: 2025-01-22-v3, with URL sync');
 
-  // 현재 활성 탭의 콘텐츠 찾기
+  // URL 기반 콘텐츠 또는 탭 기반 콘텐츠 결정
   const activeTab = tabs.find(tab => tab.key === activeTabKey);
-  const activeContent = activeTab && activeTab.contentType
-    ? contentMap[activeTab.contentType] || contentMap.empty 
-    : contentMap.empty;
+  const contentType = currentContent !== 'empty' 
+    ? currentContent 
+    : (activeTab?.contentType || 'empty');
+    
+  const activeContent = contentMap[contentType] || contentMap.empty;
 
   return (
     <div className="h-full w-full">

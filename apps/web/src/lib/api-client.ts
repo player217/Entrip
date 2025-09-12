@@ -16,7 +16,6 @@
  */
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import Cookies from 'js-cookie';
 
 // Environment detection
 const isServer = typeof window === 'undefined';
@@ -55,7 +54,7 @@ const createApiClient = (): AxiosInstance => {
       'Content-Type': 'application/json',
     },
     withCredentials: true, // Enable cookie-based authentication
-    timeout: 10000, // 10 seconds timeout
+    timeout: parseInt(process.env.API_REQUEST_TIMEOUT || '10000', 10), // Configurable timeout
   });
 
   // Request interceptor

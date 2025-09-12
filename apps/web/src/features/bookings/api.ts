@@ -9,7 +9,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../lib/api-client';
+import { api } from '@/lib/api-client';
 import type { Booking, NewTeamPayload as NewBooking } from '@entrip/shared';
 
 // Query Keys
@@ -28,6 +28,12 @@ interface BookingListResponse {
   total: number;
   page: number;
   limit: number;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 interface BookingListParams {
@@ -63,7 +69,10 @@ export function useBookings(params: BookingListParams = {}) {
 export function useBooking(id: string) {
   return useQuery({
     queryKey: bookingKeys.detail(id),
-    queryFn: () => api.get<Booking>(`/api/bookings/${id}`),
+    queryFn: async () => {
+      const response = await api.get<Booking>(`/api/bookings/${id}`);
+      return response.data; // Extract data from AxiosResponse
+    },
     enabled: !!id,
   });
 }
@@ -72,8 +81,10 @@ export function useCreateBooking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (newBooking: NewBooking) => 
-      api.post<Booking>('/api/bookings', newBooking),
+    mutationFn: async (newBooking: NewBooking) => {
+      const response = await api.post<Booking>('/api/bookings', newBooking);
+      return response.data; // Extract data from AxiosResponse
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
     },
@@ -84,8 +95,10 @@ export function useUpdateBooking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Booking> }) =>
-      api.patch<Booking>(`/api/bookings/${id}`, data),
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Booking> }) => {
+      const response = await api.patch<Booking>(`/api/bookings/${id}`, data);
+      return response.data; // Extract data from AxiosResponse
+    },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: bookingKeys.detail(variables.id) });
@@ -97,8 +110,10 @@ export function useDeleteBooking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => 
-      api.delete(`/api/bookings/${id}`),
+    mutationFn: async (id: string) => {
+      const response = await api.delete(`/api/bookings/${id}`);
+      return response.data; // Extract data from AxiosResponse
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
     },
@@ -110,8 +125,10 @@ export function useUpdateBookingStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: Booking['status'] }) =>
-      api.patch<Booking>(`/api/bookings/${id}`, { status }),
+    mutationFn: async ({ id, status }: { id: string; status: Booking['status'] }) => {
+      const response = await api.patch<Booking>(`/api/bookings/${id}`, { status });
+      return response.data; // Extract data from AxiosResponse
+    },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: bookingKeys.detail(variables.id) });

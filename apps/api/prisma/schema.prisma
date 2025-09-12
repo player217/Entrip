@@ -58,7 +58,7 @@ model Booking {
   customerName    String
   teamName        String
   teamType        String          // 팀 타입 (필수) - 추가
-  bookingType     BookingType
+  bookingType     BookingType     @default(PACKAGE)
   origin          String          // 출발지 (필수) - 추가
   destination     String
   startDate       DateTime
@@ -117,12 +117,14 @@ enum BookingType {
   FIT
   GROUP
   BUSINESS
+  INCENTIVE
 }
 
 enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+  COMPLETED
 }
 
 // 예약 변경 이력

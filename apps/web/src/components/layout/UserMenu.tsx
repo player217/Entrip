@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@entrip/ui';
-import { useAuthStore, useUserRole } from '@/lib/auth-store';
+import { useAuthStore, useUserRole } from '../../lib/auth-store';
 
 interface UserMenuProps {
   className?: string;
@@ -63,26 +63,29 @@ export function UserMenu({ className = '' }: UserMenuProps) {
     <div className={`relative ${className}`} ref={menuRef}>
       {/* User Avatar Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        onClick={() => {
+          console.log('UserMenu clicked, current isOpen:', isOpen, '→ will be:', !isOpen);
+          setIsOpen(!isOpen);
+        }}
+        className="flex items-center space-x-2 p-2 rounded-lg hover:bg-white/10 transition-colors"
       >
         {/* Avatar */}
-        <div className="w-8 h-8 bg-brand-primary rounded-full flex items-center justify-center">
-          <span className="text-white text-sm font-medium">
+        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+          <span className="text-brand-primary text-sm font-medium">
             {user.name.charAt(user.name.length - 2)}
           </span>
         </div>
         
         {/* User Info */}
         <div className="hidden md:block text-left">
-          <p className="text-sm font-medium text-gray-900">{user.name}</p>
-          <p className="text-xs text-gray-500">{user.companyCode}</p>
+          <p className="text-sm font-medium text-white">{user.name}</p>
+          <p className="text-xs text-white/70">{user.companyCode}</p>
         </div>
         
         {/* Dropdown Icon */}
         <Icon 
           icon="ph:caret-down" 
-          className={`w-4 h-4 text-gray-500 transition-transform ${
+          className={`w-4 h-4 text-white transition-transform ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
@@ -90,7 +93,8 @@ export function UserMenu({ className = '' }: UserMenuProps) {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+        console.log('Dropdown is now rendering with isOpen:', isOpen),
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[9999]">
           {/* User Info */}
           <div className="px-4 py-3 border-b border-gray-200">
             <div className="flex items-center space-x-3">

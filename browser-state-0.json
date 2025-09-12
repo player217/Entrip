@@ -1,0 +1,65 @@
+{
+  "cookies": [
+    {
+      "name": "SNID",
+      "value": "ABablnd7OKWv6fus7viUjrV2Hha1CIuuCKHp7oANu-p8dcTSj3kyLUcAG4PFqFoQKiuq2NySDAVt2sibTSd_ficsQkeDedaizA",
+      "domain": ".google.com",
+      "path": "/verify",
+      "expires": 1773388923.318197,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "AEC",
+      "value": "AVh_V2habIAWY69KX9syNeUiDeg1dchk3_mw-oUgOzK_fHYoUNj-b5epzg",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1772341520.9703,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "NID",
+      "value": "525=Zhqm1bOtXdlsaM3Uq1jQtVT0WJCk-VumLPBGOBSwljJmczwNu4w5rXzHnXyKSmnl77sXpJsWxbWRoGDn3WPzD5POyATJ-fO_gsqKxWr-HRMmNYm9tTgkhlzeHYw6YUVIihV1eV1lWmz1tV_IHfW4SaQOOHzTKH0HA31KllmqgnzoKzql5zF-JHDB7Un-cVbkk4yWv-w_P9P2pXjG2VQn3XeKS9Xq-BkLC-eWrlnJlevyI0ulVUD7MVnPGVvo5_TJabG_",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1773388923.318122,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://www.google.com",
+      "localStorage": [
+        {
+          "name": "sb_wiz.zpc.gws-wiz-serp.",
+          "value": "{\"0\":[[\"usd to krw\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"usd to yen\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"dollar to yen\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"usd to jpy\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"1 billion won to usd\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"usd to korean won\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"45.6 billion won to usd\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"1 000 korean won to usd\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"jpy to krw\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"eur to krw\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}]],\"1\":{\"ag\":{\"a\":{\"90000\":[\"최근 검색어와 관련이 있음\",\"\",\"\",7]}},\"av\":\"3989762853999137356\",\"q\":\"-p9WSKYOuMGoIMk5WNXb5te7mUc\"}}"
+        },
+        {
+          "name": "sb_wiz.sr_di",
+          "value": "GM7sqra46M_UbBjupbG9jo2ktxoY3-z__Iui0-GdARidyavco7GusMwBGJGLsJnT6e7RxAE"
+        },
+        {
+          "name": "sb_wiz.pq_tm_hp",
+          "value": "1757577727109"
+        },
+        {
+          "name": "sb_wiz.qc",
+          "value": "3"
+        },
+        {
+          "name": "sb_wiz.sc_pq",
+          "value": ""
+        },
+        {
+          "name": "sb_wiz.pq",
+          "value": "USD KRW exchange rate today current"
+        }
+      ]
+    }
+  ]
+}

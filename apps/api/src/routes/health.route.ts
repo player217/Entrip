@@ -1,11 +1,11 @@
-import { Router, Request, Response } from 'express';
+import express, { Router, Request, Response } from 'express';
 import { getIntegrationHealth, getMetrics } from '../metrics/integrations';
 import { getExternalCallStats, getProviderErrorRate } from '../middleware/external-logging';
 import { FxService } from '../integrations/fx/fx.service';
 import { FlightService } from '../integrations/flights/flights.service';
 import prisma from '../lib/prisma';
 
-const router = Router();
+const router: express.Router = Router();
 
 /**
  * Basic health check endpoint

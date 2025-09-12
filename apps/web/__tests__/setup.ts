@@ -1,15 +1,11 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
-
-// Make vi available globally
-(globalThis as any).vi = vi;
 
 // Mock localStorage
 const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
 };
 global.localStorage = localStorageMock as any;
 

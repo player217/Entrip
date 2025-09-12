@@ -1,4 +1,4 @@
-import { FlightScheduleSearch } from '../../../src/components/FlightScheduleSearch';
+import { FlightScheduleSearch } from '@/components/FlightScheduleSearch';
 
 // 페이지를 항상 동적으로 렌더링하도록 강제
 export const dynamic = 'force-dynamic';

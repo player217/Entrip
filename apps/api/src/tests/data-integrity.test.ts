@@ -333,7 +333,9 @@ describe('Data Integrity Tests', () => {
     it('should handle database connection failures gracefully', async () => {
       // Mock a connection failure
       const originalQueryRaw = prisma.$queryRaw;
-      prisma.$queryRaw = jest.fn().mockRejectedValue(new Error('Connection failed'));
+      const mockQueryRaw = jest.fn() as any;
+      mockQueryRaw.mockRejectedValue(new Error('Connection failed'));
+      (prisma as any).$queryRaw = mockQueryRaw;
       
       const health = await checkDatabaseHealth();
       
@@ -341,7 +343,7 @@ describe('Data Integrity Tests', () => {
       expect(health.error).toBe('Connection failed');
       
       // Restore original function
-      prisma.$queryRaw = originalQueryRaw;
+      (prisma as any).$queryRaw = originalQueryRaw;
     });
   });
 

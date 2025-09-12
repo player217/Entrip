@@ -1,8 +1,6 @@
-import { vi } from 'vitest';
-
 // Mock next/navigation
-const mockPush = vi.fn();
-vi.mock('next/navigation', () => ({
+const mockPush = jest.fn();
+jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
@@ -22,7 +20,7 @@ describe('Login success', () => {
     expect(localStorage.setItem).toHaveBeenCalledWith('auth-token', 'test-jwt-token');
     
     // Mock navigation
-    mockPush('/reservations');
-    expect(mockPush).toHaveBeenCalledWith('/reservations');
+    mockPush('/workspace?content=monthlyCalendar');
+    expect(mockPush).toHaveBeenCalledWith('/workspace?content=monthlyCalendar');
   });
 });

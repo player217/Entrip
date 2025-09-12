@@ -1,0 +1,273 @@
+{
+  "testSummary": {
+    "startTime": "2025-09-07T09:21:21.952Z",
+    "endTime": "2025-09-07T09:23:53.381Z",
+    "duration": 151,
+    "totalAccounts": 12,
+    "quickBtnFound": 12,
+    "successfulLogins": 12,
+    "dashboardAccess": 12,
+    "userInfoDisplayed": 12,
+    "totalBookings": 48
+  },
+  "detailedResults": [
+    {
+      "index": 1,
+      "companyCode": "ENTRIP_MAIN",
+      "email": "admin@entrip.com",
+      "role": "ADMIN",
+      "label": "본사 관리자",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:21:22.884Z",
+      "screenshots": [
+        "login-ENTRIP_MAIN-admin-1757236885695.png",
+        "dashboard-ENTRIP_MAIN-admin-1757236896246.png"
+      ],
+      "duration": 13650
+    },
+    {
+      "index": 2,
+      "companyCode": "ENTRIP_MAIN",
+      "email": "manager1@entrip.com",
+      "role": "MANAGER",
+      "label": "본사 매니저1",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:21:38.709Z",
+      "screenshots": [
+        "login-ENTRIP_MAIN-manager-1757236901531.png",
+        "dashboard-ENTRIP_MAIN-manager-1757236912025.png"
+      ],
+      "duration": 13619
+    },
+    {
+      "index": 3,
+      "companyCode": "ENTRIP_MAIN",
+      "email": "manager2@entrip.com",
+      "role": "MANAGER",
+      "label": "본사 매니저2",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:21:54.489Z",
+      "screenshots": [
+        "login-ENTRIP_MAIN-manager-1757236917323.png",
+        "dashboard-ENTRIP_MAIN-manager-1757236927839.png"
+      ],
+      "duration": 13628
+    },
+    {
+      "index": 4,
+      "companyCode": "ENTRIP_MAIN",
+      "email": "user1@entrip.com",
+      "role": "USER",
+      "label": "본사 직원1",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:22:10.268Z",
+      "screenshots": [
+        "login-ENTRIP_MAIN-user-1757236933093.png",
+        "dashboard-ENTRIP_MAIN-user-1757236943605.png"
+      ],
+      "duration": 13631
+    },
+    {
+      "index": 5,
+      "companyCode": "ENTRIP_MAIN",
+      "email": "user2@entrip.com",
+      "role": "USER",
+      "label": "본사 직원2",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:22:26.066Z",
+      "screenshots": [
+        "login-ENTRIP_MAIN-user-1757236948884.png",
+        "dashboard-ENTRIP_MAIN-user-1757236959388.png"
+      ],
+      "duration": 13592
+    },
+    {
+      "index": 6,
+      "companyCode": "ENTRIP_MAIN",
+      "email": "user3@entrip.com",
+      "role": "USER",
+      "label": "본사 직원3",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:22:41.813Z",
+      "screenshots": [
+        "login-ENTRIP_MAIN-user-1757236964642.png",
+        "dashboard-ENTRIP_MAIN-user-1757236975125.png"
+      ],
+      "duration": 13572
+    },
+    {
+      "index": 7,
+      "companyCode": "j1",
+      "email": "admin@j1.com",
+      "role": "ADMIN",
+      "label": "J1 관리자",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 8,
+      "bookingData": [],
+      "calendarAccess": true,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:22:57.524Z",
+      "screenshots": [
+        "login-j1-admin-1757236980327.png",
+        "dashboard-j1-admin-1757236980853.png",
+        "calendar-j1-admin-1757236984609.png"
+      ],
+      "duration": 7277
+    },
+    {
+      "index": 8,
+      "companyCode": "j1",
+      "email": "manager1@j1.com",
+      "role": "MANAGER",
+      "label": "J1 매니저1",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 8,
+      "bookingData": [],
+      "calendarAccess": true,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:23:06.947Z",
+      "screenshots": [
+        "login-j1-manager-1757236989759.png",
+        "dashboard-j1-manager-1757236990248.png",
+        "calendar-j1-manager-1757236994013.png"
+      ],
+      "duration": 7244
+    },
+    {
+      "index": 9,
+      "companyCode": "j1",
+      "email": "manager2@j1.com",
+      "role": "MANAGER",
+      "label": "J1 매니저2",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 8,
+      "bookingData": [],
+      "calendarAccess": true,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:23:16.334Z",
+      "screenshots": [
+        "login-j1-manager-1757236999137.png",
+        "dashboard-j1-manager-1757236999607.png",
+        "calendar-j1-manager-1757237003352.png"
+      ],
+      "duration": 7212
+    },
+    {
+      "index": 10,
+      "companyCode": "j1",
+      "email": "user1@j1.com",
+      "role": "USER",
+      "label": "J1 직원1",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 8,
+      "bookingData": [],
+      "calendarAccess": true,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:23:25.696Z",
+      "screenshots": [
+        "login-j1-user-1757237008504.png",
+        "dashboard-j1-user-1757237008981.png",
+        "calendar-j1-user-1757237012578.png"
+      ],
+      "duration": 7068
+    },
+    {
+      "index": 11,
+      "companyCode": "j1",
+      "email": "user2@j1.com",
+      "role": "USER",
+      "label": "J1 직원2",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 8,
+      "bookingData": [],
+      "calendarAccess": true,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:23:34.901Z",
+      "screenshots": [
+        "login-j1-user-1757237017715.png",
+        "dashboard-j1-user-1757237018214.png",
+        "calendar-j1-user-1757237021839.png"
+      ],
+      "duration": 7148
+    },
+    {
+      "index": 12,
+      "companyCode": "j1",
+      "email": "user3@j1.com",
+      "role": "USER",
+      "label": "J1 직원3",
+      "quickLoginFound": true,
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 8,
+      "bookingData": [],
+      "calendarAccess": true,
+      "userDisplayed": true,
+      "errors": [],
+      "timestamp": "2025-09-07T09:23:44.204Z",
+      "screenshots": [
+        "login-j1-user-1757237027039.png",
+        "dashboard-j1-user-1757237027543.png",
+        "calendar-j1-user-1757237031181.png"
+      ],
+      "duration": 7174
+    }
+  ]
+}

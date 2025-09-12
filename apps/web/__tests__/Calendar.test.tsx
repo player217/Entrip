@@ -1,9 +1,8 @@
 import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
-import ReservationsPage from '../app/(main)/reservations/page';
+import ReservationListView from '../src/features/calendar/ReservationListView';
 
 // Mock the required modules
-vi.mock('@/hooks/useBookings', () => ({
+jest.mock('@/hooks/useBookings', () => ({
   useBookings: () => ({
     bookings: [
       {
@@ -18,26 +17,26 @@ vi.mock('@/hooks/useBookings', () => ({
     ],
     isLoading: false,
     isError: false,
-    mutate: vi.fn(),
+    mutate: jest.fn(),
   }),
 }));
 
-vi.mock('@entrip/ui', () => ({
+jest.mock('@entrip/ui', () => ({
   CalendarMonth: ({ bookings }: any) => <div data-testid="calendar-month">캘린더 월</div>,
   CalendarWeek: ({ events }: any) => <div data-testid="calendar-week">캘린더 주</div>,
   DataGrid: ({ data }: any) => <div data-testid="data-grid">데이터 그리드: {data.length}개 항목</div>,
   Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
 }));
 
-vi.mock('next/navigation', () => ({
+jest.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: jest.fn(),
   }),
 }));
 
 describe('Calendar renders', () => {
   it('should render calendar components and reservation data', () => {
-    render(<ReservationsPage />);
+    render(<ReservationListView />);
     
     // Check if title is rendered
     expect(screen.getByText('예약 관리')).toBeInTheDocument();

@@ -53,27 +53,31 @@ r.post('/',
   )
 );
 
-// GET 엔드포인트는 인증 제거 (개발용)
+// GET 엔드포인트 - 인증 필요 (회사별 데이터 필터링)
 r.get('/', 
+  authenticate,
   validate(BookingListSchema),
   respond(
     BookingListResponse,
     async (req: Request) => {
+      const authReq = req as AuthRequest;
       const validQuery = (req as any).valid?.query || req.query;
       const q = { ...parseBookingQuery(validQuery), month: validQuery.month };
-      const companyCode = (req as any).user?.companyCode;
+      const companyCode = authReq.user?.companyCode;
       const list = await svc.listBookings(q, companyCode);
-      return createResponse(list.items || list, list.meta);
+      return createResponse(list.data, { ...list.pagination });
     }
   )
 );
 
 r.get('/:id', 
+  authenticate,
   validate(BookingGetSchema),
   respondWithETag(
     BookingResponse,
     async (req: Request) => {
-      const companyCode = (req as any).user?.companyCode;
+      const authReq = req as AuthRequest;
+      const companyCode = authReq.user?.companyCode;
       const b = await svc.getBooking(req.params.id, companyCode);
       if (!b) {
         throw ApiError.notFound('Booking');
@@ -128,8 +132,7 @@ r.patch('/:id',
           req.params.id, 
           validData, 
           authReq.user!.companyCode, 
-          authReq.user!.userId,
-          expectedVersion
+          authReq.user!.userId
         );
         
         // WebSocket으로 브로드캐스트

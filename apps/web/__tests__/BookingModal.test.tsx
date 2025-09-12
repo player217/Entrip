@@ -1,22 +1,21 @@
 import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
 import BookingModal from '../src/components/BookingModal';
 
 // Mock the hooks
-vi.mock('@/hooks/useBookings', () => ({
+jest.mock('@/hooks/useBookings', () => ({
   useBookings: () => ({
-    mutate: vi.fn(),
+    mutate: jest.fn(),
   }),
-  createBooking: vi.fn(),
-  updateBooking: vi.fn(),
+  createBooking: jest.fn(),
+  updateBooking: jest.fn(),
 }));
 
 describe('BookingModal save', () => {
   it('should render booking form with validation', () => {
     const props = {
       isOpen: true,
-      onClose: vi.fn(),
-      onSave: vi.fn(),
+      onClose: jest.fn(),
+      onSave: jest.fn(),
     };
     
     render(<BookingModal {...props} />);

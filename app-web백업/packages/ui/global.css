@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-brand-50: #e6efff;
+    --color-brand-100: #b3d1ff;
+    --color-brand-200: #80b3ff;
+    --color-brand-300: #4d94ff;
+    --color-brand-400: #1a75ff;
+    --color-brand-500: #FF712E;
+    --color-brand-600: #0040a0;
+    --color-brand-700: #00357f;
+    --color-brand-800: #002659;
+    --color-brand-900: #001a3d;
+    
+    --color-gray-0: #ffffff;
+    --color-gray-50: #f9fafb;
+    --color-gray-100: #f3f4f6;
+    --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
+    --color-gray-400: #9ca3af;
+    --color-gray-500: #6b7280;
+    --color-gray-600: #4b5563;
+    --color-gray-700: #374151;
+    --color-gray-800: #1f2937;
+    --color-gray-900: #111827;
+    
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-info: #3b82f6;
+    
+    --color-surface-header: #352D29;
+    --color-surface-side: #352D29;
+    --color-canvas-base: #FDF9F2;
+    --color-canvas-grid: #E6E2DE;
+    --color-flow-connector: #7046FF;
+    
+    --tw-dot-size: 1px;
+  }
+  
+  * {
+    @apply border-gray-200;
+  }
+  
+  html {
+    @apply text-[14px] leading-[20px] font-inter;
+  }
+  
+  body {
+    @apply bg-white text-gray-900;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  /* Flow Canvas Background - Zapier style dots */
+  .bg-flow {
+    background-color: var(--color-canvas-base);
+    background-image: radial-gradient(var(--color-canvas-grid) 1px, transparent 1px);
+    background-size: 8px 8px; /* 간격을 더 넓게 조정 */
+  }
+  
+  /* Window Card - 별도 윈도우 효과 */
+  .window-card {
+    @apply bg-white rounded-lg shadow-lg border border-gray-200;
+    @apply transition-shadow duration-200;
+  }
+  
+  .window-card:hover {
+    @apply shadow-xl;
+  }
+  
+  /* Flow Node - Enhanced */
+  .flow-node {
+    @apply rounded-lg bg-white p-3 shadow-md transition-all duration-150 ease-in-out;
+    @apply border-2 border-transparent;
+    @apply hover:shadow-lg hover:border-brand-500;
+  }
+  
+  .flow-node.selected {
+    @apply !border-brand-500 !shadow-lg;
+  }
+  
+  /* Plus Button */
+  .plus-button {
+    @apply w-6 h-6 rounded-full border border-gray-300 bg-white;
+    @apply hover:bg-brand-500 hover:text-white hover:border-brand-500;
+    @apply transition-all duration-150 ease-in-out;
+    @apply flex items-center justify-center;
+    @apply shadow-sm hover:shadow-md;
+  }
+  
+  /* Property Panel */
+  .property-panel {
+    width: 360px;
+    @apply border-l border-gray-200 bg-white;
+    @apply shadow-inner;
+  }
+  
+  /* Tab styles */
+  .tab-button {
+    @apply px-4 py-3 text-sm font-medium border-b-2 transition-all duration-200;
+  }
+  
+  .tab-button.active {
+    @apply border-brand-500 text-gray-800;
+  }
+  
+  .tab-button:not(.active) {
+    @apply border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700;
+  }
+  
+  /* Zapier-style subtle animations */
+  .zapier-transition {
+    @apply transition-all duration-150 ease-in-out;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .animate-in {
+    animation-name: fadeIn;
+    animation-duration: 250ms;
+    animation-fill-mode: both;
+  }
+  
+  .animate-out {
+    animation-name: fadeOut;
+    animation-duration: 250ms;
+    animation-fill-mode: both;
+  }
+  
+  /* Flow Connector */
+  .flow-connector {
+    stroke: var(--color-flow-connector);
+    stroke-width: 2px;
+    stroke-linecap: round;
+  }
+  
+  /* Zapier-style shadow utilities */
+  .shadow-zapier {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+  
+  .shadow-zapier-lg {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.04);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}

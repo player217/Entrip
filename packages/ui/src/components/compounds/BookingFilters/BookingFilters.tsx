@@ -1,5 +1,18 @@
 import React from 'react';
-import { BookingType, BookingStatus, type BookingFilters } from '@entrip/shared';
+import type { BookingFilters } from '@entrip/shared';
+
+enum BookingType {
+  PACKAGE = 'PACKAGE',
+  FIT = 'FIT',
+  GROUP = 'GROUP',
+  BUSINESS = 'BUSINESS'
+}
+
+enum BookingStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  CANCELLED = 'CANCELLED'
+}
 
 interface BookingFiltersProps {
   filters: BookingFilters;

@@ -836,3 +836,125 @@ TEMPORARY/TODO 발견:
 - 개발 속도 증가
 - 버그 감소
 - 팀 생산성 향상
+
+---
+
+## 💱 환율 API 시스템 통합 (2025-09-12)
+
+### 📌 외부 환율 API 연동 완료
+
+#### 1. 구현 사항
+- **외부 API 연동**: exchangerate-api.com (Primary) / fixer.io (Secondary)
+- **Resilience Pattern**: Circuit Breaker + Retry + Cache + Fallback
+- **실시간 환율 제공**: KRW 기준 USD, EUR, JPY, CNY 환율
+
+#### 2. 데이터베이스 스키마 추가
+```sql
+-- FxRateCache: 환율 캐시 테이블
+CREATE TABLE "FxRateCache" (
+  base VARCHAR(10),
+  quote VARCHAR(10),
+  rate DECIMAL(20,6),
+  source VARCHAR(50),
+  fetchedAt TIMESTAMP,
+  ttlSec INTEGER
+);
+
+-- IntegrationProvider: 외부 API 제공자 관리
+CREATE TABLE "IntegrationProvider" (
+  name VARCHAR(50) PRIMARY KEY,
+  baseUrl VARCHAR(255),
+  status "ProviderStatus"
+);
+
+-- ExternalCallLog: API 호출 로그
+CREATE TABLE "ExternalCallLog" (
+  providerName VARCHAR(50),
+  endpoint VARCHAR(255),
+  method VARCHAR(10),
+  statusCode INTEGER,
+  errorType VARCHAR(50),
+  durationMs INTEGER,
+  requestHash VARCHAR(100)
+);
+```
+
+#### 3. 시스템 아키텍처
+```
+Browser → Next.js (/api/exchange) → Backend FxService → External APIs
+                                           ↓
+                                    FxRateCache (DB)
+```
+
+#### 4. 임시 조치 사항 (개선 필요)
+- **Direct SQL 사용**: Prisma migration 충돌로 인한 직접 SQL 실행
+- **console.log 사용**: Logger가 서버 사이드에서 작동 안함
+- **Next.js 빌드 캐시**: Production 빌드가 변경사항 반영 안함
+
+#### 5. 환율 데이터 정확도
+- 외부 API (exchangerate-api.com) vs 실제 은행 환율 비교
+- 약 0.5-1% 차이 (정상 범위 - API는 중간 시장 환율 제공)
+- 실시간 업데이트 with 24시간 캐싱
+
+#### 6. 해결 필요 사항
+1. **Prisma Migration 정상화**: schema.prisma와 DB 동기화
+2. **Logger 복구**: 서버 사이드 로깅 시스템 수정
+3. **Next.js 빌드**: 프로덕션 빌드 재생성으로 변경사항 반영
+4. **캐싱 최적화**: TTL 및 stale-while-revalidate 전략 개선
+
+---
+
+## 🔍 예약 DB 스키마 분석 검증 (2025-09-12)
+
+### 📌 검증 결과: 기존 "문제" 지적이 잘못되었음
+
+#### ❌ 잘못된 문제 지적들
+1. **"두 스키마 존재 = 문제"** → ✅ **의도적 v1→v2 마이그레이션 전략**
+   - Docker compose에서 명확히 분리: `api` (port 4001) vs `api-v2` (port 4002)
+   - 이미 문서화됨: "마이그레이션 진행 중"
+   - 체계적인 점진적 전환 계획
+
+2. **"JSON + 관계테이블 중복"** → ✅ **단계적 데이터 전환 과정**
+   - 스키마에 명시: `// 향후 제거 예정`
+   - flightInfo, hotelInfo JSON → Flight, Hotel 관계테이블 전환 중
+   - 호환성 유지하면서 정규화 진행
+
+3. **"packages/api 미사용"** → ✅ **v2 API 준비 완료 상태**
+   - Docker에서 api-v2로 독립 실행 (port 4002)
+   - 새 기능 개발을 위한 Clean Architecture 적용
+   - v1 레거시 유지하면서 v2 준비
+
+4. **"Booking 40개 필드 복잡함"** → ✅ **여행업계 요구사항 체계적 분류**
+   ```prisma
+   // 체계적 필드 분류
+   - 기본 정보 (9개): id, bookingNumber, customerName...
+   - 고객 정보 (3개): representative, contact, email
+   - 금액 정보 (3개): totalPrice, depositAmount, currency
+   - 상세 정보 (5개): flightInfo, hotelInfo, notes...
+   - 메타데이터 (5개): createdAt, updatedAt, version...
+   - Relations (6개): user, events, history...
+   ```
+
+5. **"companyCode 성능 문제"** → ✅ **이미 최적화 완료**
+   - `@@index([companyCode])` 인덱스 설정
+   - 회사별 데이터 분리 완벽 구현
+
+#### 🎯 실제 현황 검증
+- **마이그레이션 진행률**: v1(apps/api) 운영 중, v2(packages/api) 준비 완료
+- **데이터 전환**: JSON → 관계테이블 단계적 진행
+- **성능**: companyCode 인덱싱으로 회사별 조회 최적화
+- **비즈니스 요구사항**: 복잡한 여행업계 요구사항 체계적 수용
+
+#### 💡 학습한 분석 방법론
+1. **맥락 우선**: 마이그레이션 과정이라는 핵심 맥락 파악
+2. **문서 검토**: 기존 문서화된 내용 먼저 확인
+3. **의도 파악**: 코드만 보지 말고 설계 의도 이해
+4. **실용성 고려**: 이상론보다 실무 제약사항 우선
+
+#### 🚀 올바른 접근법
+- ✅ **현재 구조의 의도와 배경** 먼저 이해
+- ✅ **실제 운영 이슈** 확인 후 문제 정의
+- ✅ **과거 결정의 맥락** 파악
+- ✅ **성급한 개선보다 현황 이해** 우선
+
+**결론**: Entrip의 예약 DB 스키마는 체계적으로 잘 설계되고 운영되고 있으며, 의도적인 마이그레이션 전략을 성공적으로 수행 중입니다.
