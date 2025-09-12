@@ -96,7 +96,7 @@ export default function CalendarMonthlyPage() {
   const [bookingData, setBookingData] = useState<Record<string, BookingEvent[]>>({});
   
   const monthParam = format(currentMonth, 'yyyy-MM');
-  const { bookings: apiBookings, isLoading, isError, createBooking, mutate } = useBookings(monthParam);
+  const { bookings: apiBookings, isLoading, isError, mutate } = useBookings(monthParam);
   const { user } = useAuthStore();
   
   const bookings = useMemo(() => {
@@ -205,13 +205,14 @@ export default function CalendarMonthlyPage() {
   const handleQuickAddSubmit = async (data: QuickBookingFormData) => {
     try {
       // Create booking in database
+      const { createBooking } = await import('@/hooks/useBookings');
       const createdBooking = await createBooking({
         teamName: data.teamName,
         customerName: data.customerName || data.teamName,
         bookingType: 'TEAM_PACKAGE',
         status: 'PENDING',
-        startDate: new Date(data.departureDate),
-        endDate: new Date(data.departureDate),
+        startDate: data.departureDate,
+        endDate: data.departureDate,
         destination: data.destination || '미정',
         teamSize: data.pax,
         estimatedTotalCost: data.pax * 500000,

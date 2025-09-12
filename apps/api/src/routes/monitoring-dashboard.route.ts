@@ -3,7 +3,7 @@ import { getMonitoringScheduler } from '../services/monitoring-scheduler.service
 import { SchemaGuardian } from '../services/schema-guardian.service';
 import { AlertService } from '../services/alert.service';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * 모니터링 대시보드 라우트

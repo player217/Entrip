@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { SchemaGuardian } from '../services/schema-guardian.service';
 import { PrismaClient } from '@prisma/client';
 
-const router = Router();
+const router: Router = Router();
 const prisma = new PrismaClient();
 
 /**
