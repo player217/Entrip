@@ -34,10 +34,12 @@ router.post('/login', authRateLimiter, async (req, res) => {
     console.log('Auth attempt:', { companyCode, username });
     
     // Find user in database (using email as username)
+    console.log('DEBUG: About to query with:', { companyCode, email: username, isActive: true });
+    
     const user = await prisma.user.findFirst({
       where: {
         companyCode: companyCode,
-        email: username, // username is actually email
+        email: username,
         isActive: true
       }
     });

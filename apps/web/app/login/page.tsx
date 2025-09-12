@@ -33,20 +33,20 @@ const DEMO_ACCOUNTS = [
   { label: '본사 직원', companyCode: 'ENTRIP_MAIN', username: 'user@entrip.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
   
   // J1 여행사 - 실제 DB 계정 (4개)
-  { label: 'J1 관리자', companyCode: 'j1', username: 'admin@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
-  { label: 'J1 매니저', companyCode: 'j1', username: 'manager@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
-  { label: 'J1 직원1', companyCode: 'j1', username: 'user1@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
-  { label: 'J1 직원2', companyCode: 'j1', username: 'user2@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  { label: 'J1 관리자', companyCode: 'J1', username: 'admin@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: 'J1 매니저', companyCode: 'J1', username: 'manager@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: 'J1 직원1', companyCode: 'J1', username: 'user1@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  { label: 'J1 직원2', companyCode: 'J1', username: 'user2@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
   
   // 해피트래블 - 실제 DB 계정 (3개)  
-  { label: '해피 관리자', companyCode: 'happy', username: 'admin@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
-  { label: '해피 매니저', companyCode: 'happy', username: 'manager@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
-  { label: '해피 직원', companyCode: 'happy', username: 'user@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  { label: '해피 관리자', companyCode: 'HAPPY', username: 'admin@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: '해피 매니저', companyCode: 'HAPPY', username: 'manager@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: '해피 직원', companyCode: 'HAPPY', username: 'user@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
 
   // 스타투어 - 실제 DB 계정 (3개)
-  { label: '스타 관리자', companyCode: 'star', username: 'admin@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
-  { label: '스타 매니저', companyCode: 'star', username: 'manager@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
-  { label: '스타 직원', companyCode: 'star', username: 'user@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  { label: '스타 관리자', companyCode: 'STAR', username: 'admin@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: '스타 매니저', companyCode: 'STAR', username: 'manager@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: '스타 직원', companyCode: 'STAR', username: 'user@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
 ];
 
 console.log('🔍 DEMO_ACCOUNTS length:', DEMO_ACCOUNTS.length, 'accounts loaded');

@@ -117,6 +117,7 @@ enum BookingType {
   FIT
   GROUP
   BUSINESS
+  INCENTIVE
 }
 
 enum BookingStatus {
