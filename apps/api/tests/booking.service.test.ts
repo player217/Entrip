@@ -81,7 +81,7 @@ describe('BookingService', () => {
       (prisma.booking.findFirst as jest.Mock).mockResolvedValue(null);
       (prisma.booking.create as jest.Mock).mockResolvedValue(mockBooking);
 
-      const result = await service.create({ ...createDto, createdBy: 'user123' });
+      const result = await service.create({ ...createDto, createdBy: 'user123', companyCode: 'ENTRIP' });
 
       expect(prisma.booking.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -129,7 +129,7 @@ describe('BookingService', () => {
       (prisma.booking.findFirst as jest.Mock).mockResolvedValue(null);
       (prisma.booking.create as jest.Mock).mockResolvedValue(mockBooking);
 
-      await service.create({ ...createDto, createdBy: 'user456' });
+      await service.create({ ...createDto, createdBy: 'user456', companyCode: 'ENTRIP' });
 
       expect(prisma.booking.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -224,6 +224,7 @@ describe('BookingService', () => {
         totalPrice: 100000,
         currency: 'KRW',
         createdBy: 'test',
+        companyCode: 'ENTRIP',
       });
 
       const createCall = (prisma.booking.create as jest.Mock).mock.calls[0][0];

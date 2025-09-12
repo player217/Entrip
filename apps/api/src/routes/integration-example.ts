@@ -1,10 +1,11 @@
 import { Router, Request, Response } from 'express';
+import type { Router as ExpressRouter } from 'express';
 import { FxService } from '../integrations/fx/fx.service';
 import { FlightService } from '../integrations/flights/flights.service';
 import { flightRateLimit } from '../middleware/rate-limit';
 import { recordExternalCall, recordCacheUsage } from '../metrics/integrations';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * Example: Enhanced exchange rate endpoint using FxService
@@ -71,6 +72,88 @@ router.get('/exchange/:from/:to', flightRateLimit, async (req: Request, res: Res
         code: 'INTERNAL_ERROR'
       });
     }
+  }
+});
+
+/**
+ * Example: Get exchange rates for multiple currencies using FxService
+ * 
+ * This endpoint returns exchange rates for multiple currencies from a base currency
+ * Used by frontend to display exchange ticker
+ */
+router.get('/fx-rates/:base', flightRateLimit, async (req: Request, res: Response) => {
+  const startTime = Date.now();
+  const { base } = req.params;
+
+  try {
+    const fxService = new FxService();
+    const fxResult = await fxService.getRates(base.toUpperCase() as any);
+    const duration = Date.now() - startTime;
+
+    // Record successful call
+    recordExternalCall('fx_service', `/fx-rates/${base}`, 'GET', duration / 1000, 200);
+
+    res.json({
+      success: true,
+      data: {
+        base: base.toUpperCase(),
+        rates: fxResult.rates,
+        timestamp: new Date().toISOString()
+      },
+      meta: {
+        cache: fxResult.cache,
+        source: fxResult.source,
+        responseTimeMs: duration,
+        service: 'fx_resilient'
+      }
+    });
+
+  } catch (error: any) {
+    const duration = Date.now() - startTime;
+    const errorMessage = error?.message || 'Unknown error occurred';
+    
+    console.error(`[FX API] Error fetching rates for ${base}:`, error);
+    recordExternalCall('fx_service', `/fx-rates/${base}`, 'GET', duration / 1000, undefined, undefined, 'SERVICE_ERROR');
+
+    // Check if it's an FxUnavailableError (all providers down)
+    if (error?.code === 'FX_UNAVAILABLE') {
+      return res.status(503).json({
+        success: false,
+        error: 'Exchange rate service temporarily unavailable',
+        message: `All FX providers are currently unavailable for ${base}`,
+        code: 'SERVICE_UNAVAILABLE',
+        meta: {
+          responseTimeMs: duration,
+          service: 'fx_resilient'
+        }
+      });
+    }
+
+    // Check if it's an unsupported currency error
+    if (errorMessage.includes('not found') || errorMessage.includes('unsupported')) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unsupported currency',
+        message: `Exchange rates for ${base} are not available`,
+        code: 'UNSUPPORTED_CURRENCY',
+        meta: {
+          responseTimeMs: duration,
+          service: 'fx_resilient'
+        }
+      });
+    }
+
+    // General server error
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: errorMessage,
+      code: 'INTERNAL_ERROR',
+      meta: {
+        responseTimeMs: duration,
+        service: 'fx_resilient'
+      }
+    });
   }
 });
 

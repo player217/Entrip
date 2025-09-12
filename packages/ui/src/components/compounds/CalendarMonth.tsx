@@ -36,8 +36,23 @@ export interface CalendarMonthProps<T extends BookingEntry = BookingEntry> {
   };
 }
 
+// Date validation helper
+const ensureValidDate = (date: any): Date => {
+  if (date instanceof Date && !isNaN(date.getTime())) {
+    return date;
+  }
+  if (typeof date === 'string' || typeof date === 'number') {
+    const parsed = new Date(date);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+  console.warn('Invalid date provided to CalendarMonth, using current date:', date);
+  return new Date();
+};
+
 export const CalendarMonth = <T extends BookingEntry = BookingEntry>({
-  month: initialMonth = new Date(),
+  month: initialMonth,
   bookings = {},
   onAddBooking,
   onBookingClick,
@@ -45,11 +60,16 @@ export const CalendarMonth = <T extends BookingEntry = BookingEntry>({
   className,
   monthlySummary,
 }: CalendarMonthProps<T>) => {
-  const [currentMonth, setCurrentMonth] = useState(initialMonth);
+  const [currentMonth, setCurrentMonth] = useState<Date>(() => {
+    const validDate = ensureValidDate(initialMonth || new Date());
+    return validDate;
+  });
   
   // 외부에서 month prop이 변경될 때 반영
   useEffect(() => {
-    setCurrentMonth(initialMonth);
+    if (initialMonth) {
+      setCurrentMonth(ensureValidDate(initialMonth));
+    }
   }, [initialMonth]);
   
   const monthStart = startOfMonth(currentMonth);
@@ -74,7 +94,7 @@ export const CalendarMonth = <T extends BookingEntry = BookingEntry>({
   };
   
   return (
-    <div className={clsx('calendar-month bg-white h-full flex flex-col', className)}>
+    <div className={clsx('calendar-month bg-white h-auto flex flex-col', className)}>
       {/* 헤더 */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 no-print">
         <h2 className="text-xl font-semibold text-gray-900">

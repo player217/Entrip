@@ -36,9 +36,12 @@ RUN pnpm --filter @entrip/shared run build
 # Copy API source
 COPY apps/api ./apps/api
 
-# Generate Prisma client and build API
+# Generate Prisma client and build API with strict type checking
 WORKDIR /app/apps/api
 RUN npx prisma generate
+# Strict type check - will fail if any type errors exist
+RUN pnpm run type-check
+# Build only after type check passes
 RUN pnpm run build
 
 # Production dependencies stage

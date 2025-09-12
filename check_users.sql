@@ -1,0 +1,1 @@
+SELECT id, email, name, "companyCode", role, "isActive" FROM "User" WHERE "companyCode" = 'j1';

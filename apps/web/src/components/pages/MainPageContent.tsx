@@ -195,7 +195,7 @@ export default function MainPageContent() {
       <NewTeamModal
         isOpen={showEventModal}
         onClose={() => setShowEventModal(false)}
-        onSave={(data) => {
+        onSave={(data: any) => {
           logger.info('New team data:', JSON.stringify(data));
           // TODO: API 호출 또는 store 업데이트
           setShowEventModal(false);

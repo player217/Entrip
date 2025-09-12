@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma";
+import { Prisma } from '@prisma/client';
 import { createHttpClient, withRetry, DEFAULT_RETRY_POLICY } from "../../lib/http-client";
 import { CircuitBreaker, createCircuitBreaker, CircuitBreakerProfiles } from "../../lib/circuit-breaker";
 import { parseStringPromise } from 'xml2js';
@@ -363,7 +364,7 @@ export class FlightService {
       await prisma.flightStatusCache.upsert({
         where: { flightNo_date: { flightNo: key, date: new Date() } },
         update: {
-          payload: data,
+          payload: JSON.parse(JSON.stringify(data)) as Prisma.JsonArray,
           status: 'CACHED',
           source,
           fetchedAt: new Date(),
@@ -372,7 +373,7 @@ export class FlightService {
         create: {
           flightNo: key,
           date: new Date(),
-          payload: data,
+          payload: JSON.parse(JSON.stringify(data)) as Prisma.JsonArray,
           status: 'CACHED',
           source,
           fetchedAt: new Date(),

@@ -4,7 +4,8 @@ import {
   FieldPick, 
   IncludePick, 
   ValidationPatterns,
-  ErrorMessages 
+  ErrorMessages,
+  responseOf
 } from './common.schema';
 
 /**
@@ -245,41 +246,23 @@ export const BookingListItem = Booking.pick({
 /**
  * 응답 스키마
  */
-export const BookingResponse = z.object({
-  data: Booking
-});
+export const BookingResponse = responseOf(Booking);
 
-export const BookingListResponse = z.object({
-  data: z.array(BookingListItem),
-  meta: z.object({
-    nextCursor: z.string().nullable().optional(),
-    previousCursor: z.string().nullable().optional(),
-    limit: z.number(),
-    total: z.number().optional(),
-    page: z.number().optional(),
-    totalPages: z.number().optional(),
-  }).optional()
-});
+export const BookingListResponse = responseOf(z.array(BookingListItem));
 
-export const BookingCreateResponse = z.object({
-  data: Booking
-});
+export const BookingCreateResponse = responseOf(Booking);
 
-export const BookingUpdateResponse = z.object({
-  data: Booking
-});
+export const BookingUpdateResponse = responseOf(Booking);
 
 /**
  * 상태 변경 응답
  */
-export const BookingStatusResponse = z.object({
-  data: z.object({
-    id: z.string().uuid(),
-    status: BookingStatusSchema,
-    version: z.number(),
-    updatedAt: z.string().datetime()
-  })
-});
+export const BookingStatusResponse = responseOf(z.object({
+  id: z.string().uuid(),
+  status: BookingStatusSchema,
+  version: z.number(),
+  updatedAt: z.string().datetime()
+}));
 
 /**
  * 타입 추론을 위한 export

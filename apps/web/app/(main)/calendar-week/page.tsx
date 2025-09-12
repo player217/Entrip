@@ -6,8 +6,8 @@ import { useModalStore } from '@entrip/shared/client';
 import { Booking, BookingEvent, BookingStatus, MonthlySummary } from '@entrip/shared';
 import { CalendarWeek, QuickBookingModal, EditBookingModal, WeeklySummaryFooter } from '@entrip/ui';
 import type { QuickBookingFormData } from '@entrip/ui';
-import { useBookings } from '../../../hooks/useBookings';
-import { useMainContentHeight } from '../../../hooks/useViewportHeight';
+import { useBookings } from '@/hooks/useBookings';
+import { useMainContentHeight } from '@/hooks/useViewportHeight';
 import { getBookingDate, priceOf, getPaxCount, getCustomerName } from '@/utils/booking-helpers';
 
 // 실제 API 데이터를 BookingEvent 형식으로 변환 (WeeklyListPage의 고도화된 버전)
@@ -299,6 +299,7 @@ export default function CalendarWeekPage() {
               onBookingClick={handleBookingClick}
               onWeekChange={setCurrentWeek}
               weeklySummary={weeklySummary}
+              className=""
             />
           </div>
         </div>

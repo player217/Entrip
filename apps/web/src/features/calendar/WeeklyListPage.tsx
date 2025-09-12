@@ -5,6 +5,7 @@ import { WeeklyListView } from '@entrip/ui';
 import { BookingEntry, BookingStatus } from '@entrip/shared';
 import { useBookings } from '../../hooks/useBookings';
 import { format } from 'date-fns';
+import { ensureValidDate } from '../../utils/dateValidation';
 
 // API 데이터를 BookingEntry로 변환 (MonthlyListPage 스타일)
 const convertToBookingEntry = (booking: any): BookingEntry => {
@@ -37,9 +38,10 @@ const convertToBookingEntry = (booking: any): BookingEntry => {
 };
 
 export default function WeeklyListPage() {
-  const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [currentWeek, setCurrentWeek] = useState(() => ensureValidDate(new Date()));
   
-  const weekParam = format(currentWeek, 'yyyy-MM');
+  const validWeek = ensureValidDate(currentWeek);
+  const weekParam = format(validWeek, 'yyyy-MM');
   const { bookings: apiBookings, isLoading, isError } = useBookings(weekParam);
 
   // API 데이터를 평면 배열로 변환 (WeeklyListView가 필요한 형식)
@@ -56,7 +58,7 @@ export default function WeeklyListPage() {
   };
 
   const handleWeekChange = (week: Date) => {
-    setCurrentWeek(week);
+    setCurrentWeek(ensureValidDate(week));
   };
 
   if (isLoading) {
@@ -71,7 +73,7 @@ export default function WeeklyListPage() {
     <div className="h-full w-full">
       <WeeklyListView
         bookings={bookings}
-        week={currentWeek}
+        week={ensureValidDate(currentWeek)}
         onWeekChange={handleWeekChange}
         onBookingClick={handleBookingClick}
         className="h-full"

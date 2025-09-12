@@ -161,26 +161,28 @@ ALTER TABLE "Message" ADD CONSTRAINT message_content_required
   );
 
 -- ===== Integration Provider Constraints =====
+-- Disabled: IntegrationProvider table does not exist
 
-ALTER TABLE "IntegrationProvider" ADD CONSTRAINT provider_error_count_non_negative 
-  CHECK ("errorCount" >= 0);
+-- ALTER TABLE "IntegrationProvider" ADD CONSTRAINT provider_error_count_non_negative 
+--   CHECK ("errorCount" >= 0);
 
-ALTER TABLE "IntegrationProvider" ADD CONSTRAINT provider_circuit_valid 
-  CHECK (
-    ("circuitOpenUntil" IS NULL) OR 
-    ("circuitOpenUntil" > now())
-  );
+-- ALTER TABLE "IntegrationProvider" ADD CONSTRAINT provider_circuit_valid 
+--   CHECK (
+--     ("circuitOpenUntil" IS NULL) OR 
+--     ("circuitOpenUntil" > now())
+--   );
 
 -- ===== Cache Table Constraints =====
+-- Disabled: Cache tables do not exist
 
-ALTER TABLE "FxRateCache" ADD CONSTRAINT fx_cache_rate_positive 
-  CHECK ("rate" > 0);
+-- ALTER TABLE "FxRateCache" ADD CONSTRAINT fx_cache_rate_positive 
+--   CHECK ("rate" > 0);
 
-ALTER TABLE "FxRateCache" ADD CONSTRAINT fx_cache_ttl_positive 
-  CHECK ("ttlSec" > 0);
+-- ALTER TABLE "FxRateCache" ADD CONSTRAINT fx_cache_ttl_positive 
+--   CHECK ("ttlSec" > 0);
 
-ALTER TABLE "FlightStatusCache" ADD CONSTRAINT flight_cache_ttl_positive 
-  CHECK ("ttlSec" > 0);
+-- ALTER TABLE "FlightStatusCache" ADD CONSTRAINT flight_cache_ttl_positive 
+--   CHECK ("ttlSec" > 0);
 
 -- ===== Create Performance Indexes =====
 
@@ -233,33 +235,37 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_account_active
   WHERE "isActive" = true;
 
 -- Integration monitoring indexes
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_provider_health 
-  ON "IntegrationProvider"("status", "lastSuccessAt")
-  WHERE status != 'HEALTHY';
+-- Disabled: IntegrationProvider table does not exist
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_provider_health 
+--   ON "IntegrationProvider"("status", "lastSuccessAt")
+--   WHERE status != 'HEALTHY';
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_external_call_errors 
-  ON "ExternalCallLog"("providerName", "errorType", "occurredAt")
-  WHERE "errorType" IS NOT NULL;
+-- Disabled: ExternalCallLog table does not exist
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_external_call_errors 
+--   ON "ExternalCallLog"("providerName", "errorType", "occurredAt")
+--   WHERE "errorType" IS NOT NULL;
 
 -- Cache optimization indexes
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_fx_cache_lookup 
-  ON "FxRateCache"("base", "quote", "fetchedAt");
+-- Disabled: Cache tables do not exist
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_fx_cache_lookup 
+--   ON "FxRateCache"("base", "quote", "fetchedAt");
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_flight_cache_lookup 
-  ON "FlightStatusCache"("flightNo", "date", "fetchedAt");
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_flight_cache_lookup 
+--   ON "FlightStatusCache"("flightNo", "date", "fetchedAt");
 
 -- Audit and monitoring indexes
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_recent 
-  ON "AuditLog"("createdAt", "action")
-  WHERE "createdAt" > (CURRENT_DATE - INTERVAL '30 days');
+-- Disabled: These tables may not exist
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_recent 
+--   ON "AuditLog"("createdAt", "action")
+--   WHERE "createdAt" > (CURRENT_DATE - INTERVAL '30 days');
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_idempotency_cleanup 
-  ON "IdempotencyKey"("ttl")
-  WHERE "ttl" < now();
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_idempotency_cleanup 
+--   ON "IdempotencyKey"("ttl")
+--   WHERE "ttl" < now();
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_outbox_pending 
-  ON "Outbox"("topic", "createdAt")
-  WHERE "deliveredAt" IS NULL;
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_outbox_pending 
+--   ON "Outbox"("topic", "createdAt")
+--   WHERE "deliveredAt" IS NULL;
 
 -- ===== Add Comments for Documentation =====
 
@@ -280,5 +286,5 @@ ANALYZE "Hotel";
 ANALYZE "Vehicle";
 ANALYZE "Account";
 ANALYZE "Approval";
-ANALYZE "IntegrationProvider";
-ANALYZE "ExternalCallLog";
+-- ANALYZE "IntegrationProvider";
+-- ANALYZE "ExternalCallLog";

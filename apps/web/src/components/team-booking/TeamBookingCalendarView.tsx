@@ -221,7 +221,7 @@ export function TeamBookingCalendarView() {
           setIsNewTeamModalOpen(false)
           setSelectedDate('')
         }}
-        onSave={async (data) => {
+        onSave={async (data: any) => {
           console.log('=== SAVE FUNCTION CALLED ===');
           console.log('=== NEW TEAM DATA ===', data);
           console.log('=== AFTER FIRST LOG ===');

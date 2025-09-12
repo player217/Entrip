@@ -1,0 +1,51 @@
+{
+  "cookies": [
+    {
+      "name": "AEC",
+      "value": "AVh_V2hfZmdVZID5YkaDf28z-qP7Z50706-NRky2VrzARNPXIMvIv_fyng",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1772341520.988746,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "NID",
+      "value": "525=Uv9dbjoR4thDwgcX5sF6JKmbt0iLjrCiWJldCY4OX7US4BAjUW7bW2J7toiFW_H0RaRWWA7YoFQBDewM5T9ddvceM3rIjNgxDy38T0aDffLuvYh8IFg1mUVISsdt0M9d99msE1R7bUBTZ9yzcAGC9ms-bsILAc7GMZdRxKk67hbM-49cQdlOJOGJ-9ZESQ34Ni_5S2vdvBMuHTYbv-DbG_lA1wF6xBARES_ILKd0YuHhIY37AEY_nILmLJk",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1773388922.988806,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://www.google.com",
+      "localStorage": [
+        {
+          "name": "sb_wiz.sr_di",
+          "value": "GNSH6pHjrKGxORiHoJy9juvp2bsBGLrQnr6O49bn2wEY0frmwKPz84ZgGNOb0PXD6bLDpQE"
+        },
+        {
+          "name": "sb_wiz.pq_tm_hp",
+          "value": "1757577726477"
+        },
+        {
+          "name": "sb_wiz.qc",
+          "value": "3"
+        },
+        {
+          "name": "sb_wiz.sc_pq",
+          "value": ""
+        },
+        {
+          "name": "sb_wiz.pq",
+          "value": "JPY KRW exchange rate today"
+        }
+      ]
+    }
+  ]
+}

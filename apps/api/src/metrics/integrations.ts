@@ -1,4 +1,4 @@
-import client from 'prom-client';
+import * as client from 'prom-client';
 import { getExternalCallStats, getProviderErrorRate } from '../middleware/external-logging';
 import { FxService } from '../integrations/fx/fx.service';
 import { FlightService } from '../integrations/flights/flights.service';
@@ -142,7 +142,7 @@ export async function updateCacheMetrics(): Promise<void> {
     for (const stat of fxCacheStats) {
       cacheHitRate.set(
         { cache_type: 'fx_rates', provider: stat.source },
-        calculateCacheHitRate('fx', stat.source)
+        await calculateCacheHitRate('fx', stat.source)
       );
     }
 
@@ -156,7 +156,7 @@ export async function updateCacheMetrics(): Promise<void> {
     for (const stat of flightCacheStats) {
       cacheHitRate.set(
         { cache_type: 'flight_status', provider: stat.source },
-        calculateCacheHitRate('flight', stat.source)
+        await calculateCacheHitRate('flight', stat.source)
       );
     }
   } catch (error) {
@@ -296,8 +296,8 @@ export async function getIntegrationHealth(): Promise<{
     };
 
     // Determine overall status
-    const fxStatus = services.fx.overall || 'DOWN';
-    const flightStatus = services.flights.overall || 'DOWN';
+    const fxStatus = (services.fx && 'overall' in services.fx) ? services.fx.overall : 'DOWN';
+    const flightStatus = (services.flights && 'overall' in services.flights) ? services.flights.overall : 'DOWN';
     
     let status: 'healthy' | 'degraded' | 'down';
     if (fxStatus === 'HEALTHY' && flightStatus === 'HEALTHY') {

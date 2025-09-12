@@ -1,0 +1,26 @@
+{
+  "name": "@entrip/design-tokens",
+  "version": "0.1.0-rc.1",
+  "main": "build/tailwind.js",
+  "types": "build/tokens.ts",
+  "exports": {
+    ".": "./build/tailwind.js",
+    "./variables.css": "./build/variables.css",
+    "./build/variables.css": "./build/variables.css",
+    "./build/tokens": "./build/tokens.ts",
+    "./build/*": "./build/*"
+  },
+  "sideEffects": ["./build/variables.css"],
+  "scripts": {
+    "build": "style-dictionary build",
+    "clean": "rm -rf build",
+    "lint": "echo 'No files to lint in design-tokens'",
+    "test": "echo 'No tests for design-tokens'"
+  },
+  "files": [
+    "build"
+  ],
+  "devDependencies": {
+    "style-dictionary": "^3.9.2"
+  }
+}

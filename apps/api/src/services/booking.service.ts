@@ -321,8 +321,9 @@ export const updateBooking = async (id: string, dto: any, companyCode: string, a
     companyCode  // 필수 조건
   };
   
-  // Convert API request to DB format
-  const bookingData = fromApiUpdateRequest(dto);
+  // Convert API request to DB format and extract related data
+  const { flights, vehicles, hotels, settlements, ...restDto } = dto;
+  const bookingData = fromApiUpdateRequest(restDto);
   
   // Update booking with related data using transaction
   return prisma.$transaction(async (tx) => {
@@ -550,7 +551,9 @@ export const bulkCreateBookings = async (bookings: any[], userId: string, compan
           bookingNumber,
           customerName: booking.customerName,
           teamName: booking.teamName || booking.customerName,
+          teamType: 'LEISURE',
           bookingType: booking.bookingType || BookingType.PACKAGE,
+          origin: '서울',
           destination: booking.destination,
           startDate: new Date(booking.departureDate),
           endDate: new Date(booking.endDate || booking.returnDate),
@@ -558,10 +561,13 @@ export const bulkCreateBookings = async (bookings: any[], userId: string, compan
           nights: booking.nights || 3,
           days: booking.days || 4,
           status: booking.status?.toUpperCase() || BookingStatus.PENDING,
+          manager: '담당자',
           totalPrice: booking.totalPrice || 0,
           currency: 'KRW',
           notes: booking.notes || '',
-          createdBy: userId,
+          user: {
+            connect: { id: userId }
+          },
           companyCode: companyCode || 'COMPANY_A'
         }
       });

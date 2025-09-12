@@ -105,7 +105,8 @@ export default function ReservationListView({
   
   // Format current month for API call with safe date access
   const currentMonthParam = useMemo(() => {
-    return `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+    const safeDate = currentDate instanceof Date && !isNaN(currentDate.getTime()) ? currentDate : new Date();
+    return `${safeDate.getFullYear()}-${String(safeDate.getMonth() + 1).padStart(2, '0')}`;
   }, [currentDate]);
   
   // Sync with external viewType prop

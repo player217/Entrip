@@ -4,16 +4,10 @@ export const routes = {
   workspace: (content: 'monthlyCalendar' | 'calendar' | 'monthlyList' | 'list' | 'flow') =>
     `/workspace?content=${content}`,
   
-  // Legacy reservations redirect
+  // Direct reservations page (no workspace redirect)
   reservations: (view?: string) => {
-    const contentMap: Record<string, string> = {
-      'calendar-month': 'monthlyCalendar',
-      'calendar-week': 'calendar', 
-      'list': 'list',
-      'calendar-virtual': 'monthlyList'
-    };
-    const content = view ? contentMap[view] || 'monthlyCalendar' : 'monthlyCalendar';
-    return routes.workspace(content as 'monthlyCalendar' | 'calendar' | 'monthlyList' | 'list' | 'flow');
+    // Now returns direct URL to reservations page
+    return '/reservations';
   }
 };
 

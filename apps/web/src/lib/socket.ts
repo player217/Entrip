@@ -9,9 +9,8 @@ export const initializeSocket = (): Socket | undefined => {
     return; // Don't initialize socket on server-side
   }
   
-  // Check if already connected
-  if (socket?.connected) {
-    logger.info('[Socket]', 'Already connected');
+  // Check if socket already exists (connected or connecting)
+  if (socket) {
     return socket;
   }
   

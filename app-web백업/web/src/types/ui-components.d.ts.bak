@@ -1,0 +1,136 @@
+// Type definitions for @entrip/ui components to avoid 'any' types
+
+import { ComponentPropsWithoutRef, ComponentPropsWithRef, ReactNode } from 'react'
+
+// Button Component
+export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
+  fullWidth?: boolean
+  loading?: boolean
+  icon?: ReactNode
+  children?: ReactNode
+}
+
+// Input Component
+export interface InputProps extends ComponentPropsWithoutRef<'input'> {
+  label?: string
+  error?: string
+  helperText?: string
+  leftIcon?: ReactNode
+  rightIcon?: ReactNode
+  fullWidth?: boolean
+}
+
+// Card Component
+export interface CardProps extends ComponentPropsWithoutRef<'div'> {
+  padding?: 'none' | 'sm' | 'md' | 'lg'
+  shadow?: 'none' | 'sm' | 'md' | 'lg'
+  children?: ReactNode
+}
+
+// Modal Component
+export interface ModalProps {
+  isOpen: boolean
+  onClose: () => void
+  title?: string
+  children?: ReactNode
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  closeOnEsc?: boolean
+  closeOnOverlayClick?: boolean
+}
+
+// TextArea Component
+export interface TextAreaProps extends ComponentPropsWithoutRef<'textarea'> {
+  label?: string
+  error?: string
+  helperText?: string
+  rows?: number
+  fullWidth?: boolean
+}
+
+// StatusTag Component
+export interface StatusTagProps {
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  size?: 'sm' | 'md' | 'lg'
+  className?: string
+}
+
+// CalendarMonth Component
+export interface Booking {
+  id: string
+  customerName: string
+  destination: string
+  departureDate: string
+  numberOfPeople: number
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  [key: string]: unknown
+}
+
+export interface CalendarMonthProps {
+  month: Date
+  bookings: Record<string, Booking[]>
+  onAddBooking: (date: Date) => void
+  onBookingClick: (booking: Booking) => void
+  onMonthChange: (month: Date) => void
+  className?: string
+}
+
+// Skeleton Component
+export interface SkeletonProps {
+  width?: string | number
+  height?: string | number
+  className?: string
+  variant?: 'text' | 'circular' | 'rectangular'
+  animation?: 'pulse' | 'wave' | false
+}
+
+// Spinner Component
+export interface SpinnerProps {
+  size?: 'sm' | 'md' | 'lg'
+  color?: string
+  className?: string
+}
+
+// Icon Component
+export interface IconProps {
+  icon: string
+  size?: number | string
+  color?: string
+  className?: string
+}
+
+// DataGrid Component
+export interface DataGridColumn<T = Record<string, unknown>> {
+  key: string
+  header: string | ReactNode
+  width?: number | string
+  render?: (value: unknown, row: T, index: number) => ReactNode
+  sortable?: boolean
+  align?: 'left' | 'center' | 'right'
+}
+
+export interface DataGridProps<T = Record<string, unknown>> {
+  columns: DataGridColumn<T>[]
+  data: T[]
+  className?: string
+  rowKey?: string | ((row: T) => string)
+  onRowClick?: (row: T) => void
+  loading?: boolean
+  emptyMessage?: string
+}
+
+// Type augmentation for imports
+declare module '@entrip/ui' {
+  export const Button: React.FC<ButtonProps>
+  export const Input: React.FC<InputProps>
+  export const Card: React.FC<CardProps>
+  export const Modal: React.FC<ModalProps>
+  export const TextArea: React.FC<TextAreaProps>
+  export const StatusTag: React.FC<StatusTagProps>
+  export const CalendarMonth: React.FC<CalendarMonthProps>
+  export const Skeleton: React.FC<SkeletonProps>
+  export const Spinner: React.FC<SpinnerProps>
+  export const Icon: React.FC<IconProps>
+  export const DataGrid: <T = Record<string, unknown>>(props: DataGridProps<T>) => JSX.Element
+}

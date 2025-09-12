@@ -4,15 +4,15 @@
   "main": "./dist/index.mjs",
   "types": "./dist/src/index.d.ts",
   "scripts": {
-    "build": "pnpm run bundle && pnpm run build:types",
-    "bundle": "tsup --no-dts",
-    "build:types": "tsc --emitDeclarationOnly --declaration --declarationMap",
+    "build": "pnpm run bundle",
+    "bundle": "tsup",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "dev": "echo '🏖 dev는 Next가 트랜스파일합니다'"
   },
   "dependencies": {
     "@entrip/design-tokens": "workspace:*",
+    "@entrip/shared": "workspace:*",
     "@iconify-json/ph": "^1.2.2",
     "@iconify/react": "^5.0.2",
     "@radix-ui/react-select": "^2.2.5",

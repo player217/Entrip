@@ -4,36 +4,122 @@ import { FlightService } from './flights/flights.service';
 import { CircuitBreaker } from '../lib/circuit-breaker';
 import { withRetry, DEFAULT_RETRY_POLICY } from '../lib/http-client';
 import prisma from '../lib/prisma';
+import { asMock, createAsyncMock } from '../test-utils/mock-helpers';
+import { Decimal } from '@prisma/client/runtime/library';
+import { AxiosError } from '../types/axios-error';
 
 // Mock Prisma client
 jest.mock('../lib/prisma', () => ({
-  integrationProvider: {
-    findUnique: jest.fn(),
-    upsert: jest.fn(),
-    update: jest.fn(),
-    create: jest.fn(),
-    findMany: jest.fn()
-  },
-  fxRateCache: {
-    findMany: jest.fn(),
-    upsert: jest.fn(),
-    findFirst: jest.fn()
-  },
-  flightStatusCache: {
-    findUnique: jest.fn(),
-    findFirst: jest.fn(),
-    upsert: jest.fn()
-  },
-  externalCallLog: {
-    create: jest.fn()
-  },
-  $transaction: jest.fn()
+  default: {
+    integrationProvider: {
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
+      update: jest.fn(),
+      create: jest.fn(),
+      findMany: jest.fn()
+    },
+    fxRateCache: {
+      findMany: jest.fn(),
+      upsert: jest.fn(),
+      findFirst: jest.fn()
+    },
+    flightStatusCache: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      upsert: jest.fn()
+    },
+    externalCallLog: {
+      create: jest.fn()
+    },
+    $transaction: jest.fn()
+  }
 }));
 
 // Mock axios
 jest.mock('axios');
 import axios from 'axios';
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+// Helper function to create a complete mock IntegrationProvider
+function createMockProvider(overrides: any = {}) {
+  const now = new Date();
+  return {
+    id: 'test-id',
+    name: 'test_provider',
+    status: 'HEALTHY' as const,
+    baseUrl: 'https://api.test.com',
+    createdAt: now,
+    updatedAt: now,
+    version: 1,
+    lastSuccessAt: now,
+    lastErrorAt: null,
+    errorCount: 0,
+    circuitOpenUntil: null,
+    ...overrides
+  };
+}
+
+// Helper function to create a complete mock ExternalCallLog
+function createMockCallLog(overrides: any = {}) {
+  const now = new Date();
+  return {
+    id: 'log-id',
+    method: 'GET',
+    providerName: 'test_provider',
+    endpoint: '/api/test',
+    statusCode: 200,
+    errorType: null,
+    durationMs: 100,
+    requestHash: 'hash123',
+    occurredAt: now,
+    ...overrides
+  };
+}
+
+// Helper function to create a complete mock FxRateCache
+function createMockFxRateCache(overrides: any = {}) {
+  const now = new Date();
+  return {
+    id: 'fx-cache-id',
+    base: 'USD',
+    quote: 'KRW',
+    rate: new Decimal(1350),
+    source: 'fx_primary',
+    fetchedAt: now,
+    ttlSec: 3600,
+    ...overrides
+  };
+}
+
+// Helper function to create a complete mock FlightStatusCache
+function createMockFlightStatusCache(overrides: any = {}) {
+  const now = new Date();
+  return {
+    id: 'flight-cache-id',
+    flightNo: 'KE001',
+    date: now,
+    status: 'ON_TIME',
+    source: 'odcloud',
+    fetchedAt: now,
+    ttlSec: 300,
+    payload: {} as any,
+    ...overrides
+  };
+}
+
+// Helper function to create an AxiosError
+function createAxiosError(status: number, message: string, code?: string): AxiosError {
+  const error = new Error(message) as AxiosError;
+  error.response = {
+    status,
+    statusText: message,
+    data: { error: message },
+    headers: {}
+  };
+  error.code = code;
+  error.isAxiosError = true;
+  return error;
+}
 
 describe('Integration Resilience System Tests', () => {
   let fxService: FxService;
@@ -52,12 +138,13 @@ describe('Integration Resilience System Tests', () => {
   describe('Circuit Breaker', () => {
     it('should allow calls when circuit is closed', async () => {
       // Mock provider as healthy
-      (prisma.integrationProvider.findUnique as jest.Mock).mockResolvedValue({
-        name: 'test_provider',
-        status: 'HEALTHY',
-        errorCount: 0,
-        circuitOpenUntil: null
-      });
+      asMock(prisma.integrationProvider.findUnique).mockResolvedValue(
+        createMockProvider({
+          status: 'HEALTHY',
+          errorCount: 0,
+          circuitOpenUntil: null
+        })
+      );
 
       const circuitBreaker = new CircuitBreaker('test_provider');
       const canCall = await circuitBreaker.canCall();
@@ -69,12 +156,13 @@ describe('Integration Resilience System Tests', () => {
       const futureDate = new Date(Date.now() + 60_000); // 1 minute in future
       
       // Mock provider as down with open circuit
-      (prisma.integrationProvider.findUnique as jest.Mock).mockResolvedValue({
-        name: 'test_provider',
-        status: 'DOWN',
-        errorCount: 5,
-        circuitOpenUntil: futureDate
-      });
+      asMock(prisma.integrationProvider.findUnique).mockResolvedValue(
+        createMockProvider({
+          status: 'DOWN',
+          errorCount: 5,
+          circuitOpenUntil: futureDate
+        })
+      );
 
       const circuitBreaker = new CircuitBreaker('test_provider');
       const canCall = await circuitBreaker.canCall();
@@ -86,20 +174,21 @@ describe('Integration Resilience System Tests', () => {
       const pastDate = new Date(Date.now() - 1000); // 1 second ago
       
       // Mock provider with expired open circuit
-      (prisma.integrationProvider.findUnique as jest.Mock).mockResolvedValue({
-        name: 'test_provider',
-        status: 'DOWN',
-        errorCount: 5,
-        circuitOpenUntil: pastDate
-      });
+      asMock(prisma.integrationProvider.findUnique).mockResolvedValue(
+        createMockProvider({
+          status: 'DOWN',
+          errorCount: 5,
+          circuitOpenUntil: pastDate
+        })
+      );
 
-      (prisma.integrationProvider.update as jest.Mock).mockResolvedValue({});
+      asMock(prisma.integrationProvider.update).mockResolvedValue(createMockProvider());
 
       const circuitBreaker = new CircuitBreaker('test_provider');
       const canCall = await circuitBreaker.canCall();
       
       expect(canCall).toBe(true);
-      expect(prisma.integrationProvider.update).toHaveBeenCalledWith({
+      expect(asMock(prisma.integrationProvider.update)).toHaveBeenCalledWith({
         where: { name: 'test_provider' },
         data: {
           status: 'DEGRADED',
@@ -110,24 +199,25 @@ describe('Integration Resilience System Tests', () => {
 
     it('should open circuit after threshold failures', async () => {
       // Mock initial provider state
-      (prisma.integrationProvider.findUnique as jest.Mock).mockResolvedValue({
-        name: 'test_provider',
-        status: 'DEGRADED',
-        errorCount: 4 // One less than threshold
-      });
+      asMock(prisma.integrationProvider.findUnique).mockResolvedValue(
+        createMockProvider({
+          status: 'DEGRADED',
+          errorCount: 4 // One less than threshold
+        })
+      );
 
       // Mock upsert to return updated error count
-      (prisma.integrationProvider.upsert as jest.Mock).mockResolvedValue({
-        errorCount: 4
-      });
+      asMock(prisma.integrationProvider.upsert).mockResolvedValue(
+        createMockProvider({ errorCount: 4 })
+      );
 
-      (prisma.integrationProvider.update as jest.Mock).mockResolvedValue({});
+      asMock(prisma.integrationProvider.update).mockResolvedValue(createMockProvider());
 
       const circuitBreaker = new CircuitBreaker('test_provider', { failThreshold: 5 });
       await circuitBreaker.onFailure();
 
       // Should open circuit after 5th failure
-      expect(prisma.integrationProvider.update).toHaveBeenCalledWith(
+      expect(asMock(prisma.integrationProvider.update)).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { name: 'test_provider' },
           data: expect.objectContaining({
@@ -145,14 +235,12 @@ describe('Integration Resilience System Tests', () => {
       const mockFn = jest.fn().mockImplementation(() => {
         callCount++;
         if (callCount < 3) {
-          const error = new Error('Server Error');
-          (error as any).response = { status: 500 };
-          throw error;
+          throw createAxiosError(500, 'Server Error');
         }
         return Promise.resolve('success');
       });
 
-      const result = await withRetry(mockFn, {
+      const result = await withRetry(async () => mockFn(), {
         retries: 3,
         baseDelayMs: 10, // Fast for testing
         maxDelayMs: 50,
@@ -165,12 +253,10 @@ describe('Integration Resilience System Tests', () => {
 
     it('should not retry on 4xx errors', async () => {
       const mockFn = jest.fn().mockImplementation(() => {
-        const error = new Error('Bad Request');
-        (error as any).response = { status: 400 };
-        throw error;
+        throw createAxiosError(400, 'Bad Request');
       });
 
-      await expect(withRetry(mockFn, DEFAULT_RETRY_POLICY)).rejects.toThrow('Bad Request');
+      await expect(withRetry(async () => mockFn(), DEFAULT_RETRY_POLICY)).rejects.toThrow('Bad Request');
       expect(mockFn).toHaveBeenCalledTimes(1);
     });
 
@@ -179,14 +265,12 @@ describe('Integration Resilience System Tests', () => {
       const mockFn = jest.fn().mockImplementation(() => {
         callCount++;
         if (callCount < 2) {
-          const error = new Error('timeout');
-          (error as any).code = 'ECONNABORTED';
-          throw error;
+          throw createAxiosError(0, 'timeout', 'ECONNABORTED');
         }
         return Promise.resolve('success');
       });
 
-      const result = await withRetry(mockFn, DEFAULT_RETRY_POLICY);
+      const result = await withRetry(async () => mockFn(), DEFAULT_RETRY_POLICY);
 
       expect(result).toBe('success');
       expect(mockFn).toHaveBeenCalledTimes(2);
@@ -200,15 +284,15 @@ describe('Integration Resilience System Tests', () => {
           id: '1',
           base: 'USD',
           quote: 'KRW',
-          rate: 1350,
+          rate: new Decimal(1350),
           source: 'fx_primary',
           fetchedAt: new Date(Date.now() - 30_000), // 30 seconds ago
           ttlSec: 3600 // 1 hour TTL
         }
       ];
 
-      (prisma.fxRateCache.findMany as jest.Mock).mockResolvedValue(mockCacheData);
-      (prisma.externalCallLog.create as jest.Mock).mockResolvedValue({});
+      asMock(prisma.fxRateCache.findMany).mockResolvedValue(mockCacheData);
+      asMock(prisma.externalCallLog.create).mockResolvedValue(createMockCallLog());
 
       const result = await fxService.getRates('USD');
 
@@ -219,10 +303,10 @@ describe('Integration Resilience System Tests', () => {
 
     it('should fallback to secondary provider when primary fails', async () => {
       // Mock empty cache
-      (prisma.fxRateCache.findMany as jest.Mock).mockResolvedValue([]);
+      asMock(prisma.fxRateCache.findMany).mockResolvedValue([]);
       
       // Mock provider configurations
-      (prisma.integrationProvider.findUnique as jest.Mock)
+      asMock(prisma.integrationProvider.findUnique as any)
         .mockResolvedValueOnce({
           name: 'fx_primary',
           baseUrl: 'https://api.primary.com',
@@ -235,24 +319,37 @@ describe('Integration Resilience System Tests', () => {
         });
 
       // Mock circuit breakers
-      (prisma.integrationProvider.upsert as jest.Mock).mockResolvedValue({
-        name: 'fx_primary',
-        errorCount: 0
-      });
+      asMock(prisma.integrationProvider.upsert).mockResolvedValue(
+        createMockProvider({
+          name: 'fx_primary',
+          errorCount: 0
+        })
+      );
 
       // Mock primary provider failure and secondary success
+      const mockGet = jest.fn() as any;
+      mockGet.mockRejectedValueOnce(createAxiosError(500, 'Primary provider failed'));
+      mockGet.mockResolvedValueOnce({
+        status: 200,
+        data: { rates: { KRW: 1350, JPY: 110 }, base: 'USD' }
+      });
+      
       mockedAxios.create.mockReturnValue({
-        get: jest.fn()
-          .mockRejectedValueOnce(new Error('Primary provider failed'))
-          .mockResolvedValueOnce({
-            status: 200,
-            data: { rates: { KRW: 1350, JPY: 110 }, base: 'USD' }
-          })
+        get: mockGet,
+        post: jest.fn(),
+        put: jest.fn(),
+        delete: jest.fn(),
+        patch: jest.fn(),
+        head: jest.fn(),
+        options: jest.fn(),
+        request: jest.fn(),
+        defaults: {},
+        interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } }
       } as any);
 
-      (prisma.$transaction as jest.Mock).mockImplementation(async (fn) => fn(prisma));
-      (prisma.fxRateCache.upsert as jest.Mock).mockResolvedValue({});
-      (prisma.externalCallLog.create as jest.Mock).mockResolvedValue({});
+      asMock(prisma.$transaction).mockImplementation(async (fn) => fn(prisma));
+      asMock(prisma.fxRateCache.upsert).mockResolvedValue(createMockFxRateCache());
+      asMock(prisma.externalCallLog.create).mockResolvedValue(createMockCallLog());
 
       const result = await fxService.getRates('USD');
 
@@ -263,33 +360,47 @@ describe('Integration Resilience System Tests', () => {
 
     it('should use stale cache when all providers fail', async () => {
       // Mock no fresh cache
-      (prisma.fxRateCache.findMany as jest.Mock).mockResolvedValueOnce([]);
+      asMock(prisma.fxRateCache.findMany).mockResolvedValueOnce([]);
       
       // Mock provider failures
-      (prisma.integrationProvider.findUnique as jest.Mock).mockResolvedValue({
-        name: 'fx_primary',
-        baseUrl: 'https://api.primary.com',
-        status: 'DOWN'
-      });
+      asMock(prisma.integrationProvider.findUnique).mockResolvedValue(
+        createMockProvider({
+          name: 'fx_primary',
+          baseUrl: 'https://api.primary.com',
+          status: 'DOWN'
+        })
+      );
 
+      const mockGetFailed = jest.fn() as any;
+      mockGetFailed.mockRejectedValue(createAxiosError(503, 'All providers failed'));
+      
       mockedAxios.create.mockReturnValue({
-        get: jest.fn().mockRejectedValue(new Error('All providers failed'))
+        get: mockGetFailed,
+        post: jest.fn(),
+        put: jest.fn(),
+        delete: jest.fn(),
+        patch: jest.fn(),
+        head: jest.fn(),
+        options: jest.fn(),
+        request: jest.fn(),
+        defaults: {},
+        interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } }
       } as any);
 
       // Mock stale cache available
-      (prisma.fxRateCache.findMany as jest.Mock).mockResolvedValueOnce([
+      asMock(prisma.fxRateCache.findMany).mockResolvedValueOnce([
         {
           id: '1',
           base: 'USD',
           quote: 'KRW',
-          rate: 1300, // Stale rate
+          rate: new Decimal(1300), // Stale rate
           source: 'fx_primary',
           fetchedAt: new Date(Date.now() - 7200_000), // 2 hours ago
           ttlSec: 3600 // 1 hour TTL (expired)
         }
       ]);
 
-      (prisma.externalCallLog.create as jest.Mock).mockResolvedValue({});
+      asMock(prisma.externalCallLog.create).mockResolvedValue(createMockCallLog());
 
       const result = await fxService.getRates('USD');
 
@@ -299,17 +410,31 @@ describe('Integration Resilience System Tests', () => {
 
     it('should throw error when no data available', async () => {
       // Mock no cache and provider failures
-      (prisma.fxRateCache.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.integrationProvider.findUnique as jest.Mock).mockResolvedValue({
-        name: 'fx_primary',
-        status: 'DOWN'
-      });
+      asMock(prisma.fxRateCache.findMany).mockResolvedValue([]);
+      asMock(prisma.integrationProvider.findUnique).mockResolvedValue(
+        createMockProvider({
+          name: 'fx_primary',
+          status: 'DOWN'
+        })
+      );
 
+      const mockGetProvider = jest.fn() as any;
+      mockGetProvider.mockRejectedValue(createAxiosError(503, 'Provider failed'));
+      
       mockedAxios.create.mockReturnValue({
-        get: jest.fn().mockRejectedValue(new Error('Provider failed'))
+        get: mockGetProvider,
+        post: jest.fn(),
+        put: jest.fn(),
+        delete: jest.fn(),
+        patch: jest.fn(),
+        head: jest.fn(),
+        options: jest.fn(),
+        request: jest.fn(),
+        defaults: {},
+        interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } }
       } as any);
 
-      (prisma.externalCallLog.create as jest.Mock).mockResolvedValue({});
+      asMock(prisma.externalCallLog.create).mockResolvedValue(createMockCallLog());
 
       await expect(fxService.getRates('USD')).rejects.toThrow('FX_UNAVAILABLE');
     });
@@ -330,8 +455,8 @@ describe('Integration Resilience System Tests', () => {
         isStale: false
       };
 
-      (prisma.flightStatusCache.findFirst as jest.Mock).mockResolvedValue(mockCacheData);
-      (prisma.externalCallLog.create as jest.Mock).mockResolvedValue({});
+      asMock(prisma.flightStatusCache.findFirst).mockResolvedValue(mockCacheData);
+      asMock(prisma.externalCallLog.create).mockResolvedValue(createMockCallLog());
 
       const result = await flightService.searchFlights({
         departure: 'ICN',
@@ -345,41 +470,55 @@ describe('Integration Resilience System Tests', () => {
 
     it('should fallback to KAC when ODCloud fails', async () => {
       // Mock no cache
-      (prisma.flightStatusCache.findFirst as jest.Mock).mockResolvedValue(null);
+      asMock(prisma.flightStatusCache.findFirst).mockResolvedValue(null);
       
       // Mock ODCloud failure
       mockedAxios.create.mockReturnValue({
-        get: jest.fn()
-          .mockRejectedValueOnce(new Error('ODCloud failed'))
+        get: (jest.fn() as any)
+          .mockRejectedValueOnce(createAxiosError(503, 'ODCloud failed'))
           .mockResolvedValueOnce({
             status: 200,
             data: '<response><body><items><item><flightId>KE001</flightId></item></items></body></response>'
-          })
+          }),
+        post: jest.fn(),
+        put: jest.fn(),
+        delete: jest.fn(),
+        patch: jest.fn(),
+        head: jest.fn(),
+        options: jest.fn(),
+        request: jest.fn(),
+        defaults: {},
+        interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } }
       } as any);
 
-      (prisma.integrationProvider.findUnique as jest.Mock).mockResolvedValue({
-        name: 'kac',
-        baseUrl: 'https://openapi.airport.co.kr/service'
-      });
+      asMock(prisma.integrationProvider.findUnique).mockResolvedValue(
+        createMockProvider({
+          name: 'kac',
+          baseUrl: 'https://openapi.airport.co.kr/service'
+        })
+      );
 
-      (prisma.flightStatusCache.upsert as jest.Mock).mockResolvedValue({});
-      (prisma.externalCallLog.create as jest.Mock).mockResolvedValue({});
+      asMock(prisma.flightStatusCache.upsert).mockResolvedValue(createMockFlightStatusCache());
+      asMock(prisma.externalCallLog.create).mockResolvedValue(createMockCallLog());
 
       // Mock successful parsing
-      jest.doMock('xml2js', () => ({
-        parseStringPromise: jest.fn().mockResolvedValue({
-          response: {
-            body: [{
-              items: [{
-                item: [{
-                  flightId: ['KE001'],
-                  airlineKorean: ['대한항공'],
-                  io: ['O']
-                }]
+      const mockParseString = jest.fn() as any;
+      mockParseString.mockResolvedValue({
+        response: {
+          body: [{
+            items: [{
+              item: [{
+                flightId: ['KE001'],
+                airlineKorean: ['대한항공'],
+                io: ['O']
               }]
             }]
-          }
-        })
+          }]
+        }
+      });
+      
+      jest.doMock('xml2js', () => ({
+        parseStringPromise: mockParseString
       }));
 
       const result = await flightService.searchFlights({
@@ -395,8 +534,8 @@ describe('Integration Resilience System Tests', () => {
   describe('End-to-End Integration Test', () => {
     it('should handle complete system failure gracefully', async () => {
       // Simulate complete system failure
-      (prisma.fxRateCache.findMany as jest.Mock).mockRejectedValue(new Error('Database down'));
-      (prisma.flightStatusCache.findFirst as jest.Mock).mockRejectedValue(new Error('Database down'));
+      asMock(prisma.fxRateCache.findMany).mockRejectedValue(new Error('Database down'));
+      asMock(prisma.flightStatusCache.findFirst).mockRejectedValue(new Error('Database down'));
       
       // Services should handle database errors gracefully
       await expect(fxService.getRates('USD')).rejects.toThrow();
@@ -412,28 +551,42 @@ describe('Integration Resilience System Tests', () => {
 
     it('should maintain service continuity during partial failures', async () => {
       // Simulate partial failure: primary provider down, cache available
-      (prisma.fxRateCache.findMany as jest.Mock)
+      asMock(prisma.fxRateCache.findMany as any)
         .mockResolvedValueOnce([]) // No fresh cache
         .mockResolvedValueOnce([   // Stale cache available
-          {
+          createMockFxRateCache({
             base: 'USD',
             quote: 'KRW',
-            rate: 1300,
+            rate: new Decimal(1300),
             source: 'fx_primary',
             fetchedAt: new Date(Date.now() - 7200_000) // 2 hours old
-          }
+          })
         ]);
 
-      (prisma.integrationProvider.findUnique as jest.Mock).mockResolvedValue({
-        name: 'fx_primary',
-        status: 'DOWN'
-      });
+      asMock(prisma.integrationProvider.findUnique).mockResolvedValue(
+        createMockProvider({
+          name: 'fx_primary',
+          status: 'DOWN'
+        })
+      );
 
+      const mockGetUnavailable = jest.fn() as any;
+      mockGetUnavailable.mockRejectedValue(createAxiosError(503, 'Provider unavailable'));
+      
       mockedAxios.create.mockReturnValue({
-        get: jest.fn().mockRejectedValue(new Error('Provider unavailable'))
+        get: mockGetUnavailable,
+        post: jest.fn(),
+        put: jest.fn(),
+        delete: jest.fn(),
+        patch: jest.fn(),
+        head: jest.fn(),
+        options: jest.fn(),
+        request: jest.fn(),
+        defaults: {},
+        interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } }
       } as any);
 
-      (prisma.externalCallLog.create as jest.Mock).mockResolvedValue({});
+      asMock(prisma.externalCallLog.create).mockResolvedValue(createMockCallLog());
 
       const result = await fxService.getRates('USD');
 
@@ -447,17 +600,18 @@ describe('Integration Resilience System Tests', () => {
     it('should handle concurrent requests efficiently', async () => {
       const mockCacheData = [
         {
+          id: 'cache-1',
           base: 'USD',
           quote: 'KRW',
-          rate: 1350,
+          rate: new Decimal(1350),
           source: 'fx_primary',
           fetchedAt: new Date(Date.now() - 30_000),
           ttlSec: 3600
         }
       ];
 
-      (prisma.fxRateCache.findMany as jest.Mock).mockResolvedValue(mockCacheData);
-      (prisma.externalCallLog.create as jest.Mock).mockResolvedValue({});
+      asMock(prisma.fxRateCache.findMany).mockResolvedValue(mockCacheData);
+      asMock(prisma.externalCallLog.create).mockResolvedValue(createMockCallLog());
 
       // Simulate 10 concurrent requests
       const promises = Array(10).fill(null).map(() => fxService.getRates('USD'));
@@ -470,7 +624,7 @@ describe('Integration Resilience System Tests', () => {
       });
 
       // Should only query database once per concurrent batch (due to caching)
-      expect(prisma.fxRateCache.findMany).toHaveBeenCalled();
+      expect(asMock(prisma.fxRateCache.findMany)).toHaveBeenCalled();
     });
   });
 });

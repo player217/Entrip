@@ -5,6 +5,7 @@ import prisma from '../../lib/prisma';
 import { ZodError } from 'zod';
 import { logger } from '../../lib/logger';
 import { ifNoneMatch, requireIfMatch, setEtag } from '../../middleware/preconditions';
+import { authenticate, AuthRequest } from '../../middleware/auth.middleware';
 
 interface PrismaError extends Error {
   code?: string;
@@ -14,8 +15,8 @@ const router: Router = Router();
 const bookingService = new BookingService(prisma);
 
 // 버전 조회 헬퍼 (재사용)
-const getBookingVersion = async (req: Request): Promise<number | null> => {
-  const companyCode = (req as any).user?.companyCode;
+const getBookingVersion = async (req: AuthRequest): Promise<number | null> => {
+  const companyCode = req.user?.companyCode;
   const booking = await bookingService.findOne(req.params.id, companyCode);
   return booking ? booking.version : null;
 };
@@ -66,10 +67,11 @@ const getBookingVersion = async (req: Request): Promise<number | null> => {
  *       200:
  *         description: 예약 목록
  */
-router.get('/', async (req, res) => {
+router.get('/', authenticate, async (req: AuthRequest, res) => {
   try {
     const query = ListBookingsQueryDtoSchema.parse(req.query);
-    const companyCode = (req as any).user?.companyCode;
+    const companyCode = req.user?.companyCode;
+    console.log('[BookingController] User:', req.user?.userId, 'Company:', companyCode);
     const result = await bookingService.findAll(query, companyCode);
     res.json(result);
   } catch (error) {
@@ -112,10 +114,11 @@ router.get('/', async (req, res) => {
  *         description: 예약을 찾을 수 없음
  */
 router.get('/:id',
+  authenticate,
   ifNoneMatch(getBookingVersion),
-  async (req, res) => {
+  async (req: AuthRequest, res) => {
     try {
-      const companyCode = (req as any).user?.companyCode;
+      const companyCode = req.user?.companyCode;
       const booking = await bookingService.findOne(req.params.id, companyCode);
       if (!booking) {
         return res.status(404).json({
@@ -158,11 +161,11 @@ router.get('/:id',
  *       400:
  *         description: 잘못된 요청
  */
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req: AuthRequest, res) => {
   try {
     const data = CreateBookingDtoSchema.parse(req.body);
-    // TODO: Get createdBy from auth middleware
-    const user = (req as any).user;
+    // Get createdBy from auth middleware
+    const user = req.user;
     const booking = await bookingService.create({
       ...data,
       createdBy: user?.userId || 'system',
@@ -217,13 +220,14 @@ router.post('/', async (req, res) => {
  *         description: 예약을 찾을 수 없음
  */
 router.patch('/:id',
+  authenticate,
   requireIfMatch(getBookingVersion),
-  async (req, res) => {
+  async (req: AuthRequest, res) => {
     try {
       const expectedVersion = (res.locals as any).expectedVersion as number;
       const data = UpdateBookingDtoSchema.parse(req.body);
       
-      const user = (req as any).user;
+      const user = req.user;
       const booking = await bookingService.update(
         req.params.id, 
         {
@@ -281,9 +285,9 @@ router.patch('/:id',
  *       404:
  *         description: 예약을 찾을 수 없음
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
   try {
-    const companyCode = (req as any).user?.companyCode;
+    const companyCode = req.user?.companyCode;
     await bookingService.delete(req.params.id, companyCode);
     res.status(204).send();
   } catch (error) {

@@ -16,6 +16,7 @@ interface TabContentProps {
 const routeComponents: Record<string, React.ComponentType<any>> = {
   '/': dynamic(() => import('../pages/DashboardPageContent'), { ssr: false }),
   '/dashboard': dynamic(() => import('../pages/DashboardPageContent'), { ssr: false }),
+  '/reservations': dynamic(() => import('../pages/ReservationsPageContent'), { ssr: false }),
   '/calendar-performance': dynamic(() => import('../pages/CalendarPerformancePageContent'), { ssr: false }),
   '/approval': dynamic(() => import('../pages/ApprovalPageContent'), { ssr: false }),
   '/accounts': dynamic(() => import('../pages/AccountsPageContent'), { ssr: false }),

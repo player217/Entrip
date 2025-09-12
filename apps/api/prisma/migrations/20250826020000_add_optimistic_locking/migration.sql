@@ -34,9 +34,9 @@ ALTER TABLE "User"
 ALTER TABLE "Conversation" 
   ADD COLUMN IF NOT EXISTS "version" INTEGER NOT NULL DEFAULT 1;
 
--- IntegrationProvider table (circuit breaker state)
-ALTER TABLE "IntegrationProvider" 
-  ADD COLUMN IF NOT EXISTS "version" INTEGER NOT NULL DEFAULT 1;
+-- IntegrationProvider table (circuit breaker state) - DISABLED: Table does not exist
+-- ALTER TABLE "IntegrationProvider" 
+--   ADD COLUMN IF NOT EXISTS "version" INTEGER NOT NULL DEFAULT 1;
 
 -- Create indexes for version fields (helps with conflict detection queries)
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_booking_version 
@@ -73,8 +73,8 @@ ALTER TABLE "User"
 ALTER TABLE "Conversation" 
   ADD CONSTRAINT conversation_version_positive CHECK ("version" > 0);
 
-ALTER TABLE "IntegrationProvider" 
-  ADD CONSTRAINT provider_version_positive CHECK ("version" > 0);
+-- ALTER TABLE "IntegrationProvider" 
+--   ADD CONSTRAINT provider_version_positive CHECK ("version" > 0);
 
 -- Add comments for documentation
 COMMENT ON COLUMN "Booking"."version" IS 'Optimistic lock version, incremented on each update';
@@ -84,7 +84,7 @@ COMMENT ON COLUMN "Approval"."version" IS 'Optimistic lock version, incremented 
 COMMENT ON COLUMN "Settlement"."version" IS 'Optimistic lock version, incremented on each update';
 COMMENT ON COLUMN "User"."version" IS 'Optimistic lock version, incremented on each update';
 COMMENT ON COLUMN "Conversation"."version" IS 'Optimistic lock version, incremented on each update';
-COMMENT ON COLUMN "IntegrationProvider"."version" IS 'Optimistic lock version, incremented on each update';
+-- COMMENT ON COLUMN "IntegrationProvider"."version" IS 'Optimistic lock version, incremented on each update';
 
 -- Create trigger function to auto-increment version on update
 CREATE OR REPLACE FUNCTION increment_version()

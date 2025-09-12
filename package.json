@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "pnpm --filter @entrip/api exec prisma generate",
+    "postinstall": "if [ \"$NODE_ENV\" != \"production\" ]; then pnpm --filter @entrip/api exec prisma generate; fi",
     "dev": "cross-env NODE_OPTIONS=--no-warnings NEXT_TELEMETRY_DISABLED=1 pnpm run build:tokens && turbo run dev",
     "dev:web": "pnpm --filter @entrip/web dev",
     "dev:api": "pnpm --filter @entrip/api dev",
@@ -25,6 +25,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
     "type-check": "tsc -p tsconfig.base.json --noEmit",
     "type-check:strict": "cross-env CI_TYPE_CHECK=strict tsc -p tsconfig.base.json --noEmit",
+    "type-check:prod": "cross-env CI_TYPE_CHECK=strict tsc -p tsconfig.base.json --noEmit",
     "ci:type-check": "cross-env CI_TYPE_CHECK=strict tsc -p tsconfig.base.json --noEmit",
     "build:strict": "cross-env CI_TYPE_CHECK=strict pnpm run build",
     "test": "jest",

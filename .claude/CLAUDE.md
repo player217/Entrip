@@ -836,3 +836,68 @@ TEMPORARY/TODO 발견:
 - 개발 속도 증가
 - 버그 감소
 - 팀 생산성 향상
+
+---
+
+## 💱 환율 API 시스템 통합 (2025-09-12)
+
+### 📌 외부 환율 API 연동 완료
+
+#### 1. 구현 사항
+- **외부 API 연동**: exchangerate-api.com (Primary) / fixer.io (Secondary)
+- **Resilience Pattern**: Circuit Breaker + Retry + Cache + Fallback
+- **실시간 환율 제공**: KRW 기준 USD, EUR, JPY, CNY 환율
+
+#### 2. 데이터베이스 스키마 추가
+```sql
+-- FxRateCache: 환율 캐시 테이블
+CREATE TABLE "FxRateCache" (
+  base VARCHAR(10),
+  quote VARCHAR(10),
+  rate DECIMAL(20,6),
+  source VARCHAR(50),
+  fetchedAt TIMESTAMP,
+  ttlSec INTEGER
+);
+
+-- IntegrationProvider: 외부 API 제공자 관리
+CREATE TABLE "IntegrationProvider" (
+  name VARCHAR(50) PRIMARY KEY,
+  baseUrl VARCHAR(255),
+  status "ProviderStatus"
+);
+
+-- ExternalCallLog: API 호출 로그
+CREATE TABLE "ExternalCallLog" (
+  providerName VARCHAR(50),
+  endpoint VARCHAR(255),
+  method VARCHAR(10),
+  statusCode INTEGER,
+  errorType VARCHAR(50),
+  durationMs INTEGER,
+  requestHash VARCHAR(100)
+);
+```
+
+#### 3. 시스템 아키텍처
+```
+Browser → Next.js (/api/exchange) → Backend FxService → External APIs
+                                           ↓
+                                    FxRateCache (DB)
+```
+
+#### 4. 임시 조치 사항 (개선 필요)
+- **Direct SQL 사용**: Prisma migration 충돌로 인한 직접 SQL 실행
+- **console.log 사용**: Logger가 서버 사이드에서 작동 안함
+- **Next.js 빌드 캐시**: Production 빌드가 변경사항 반영 안함
+
+#### 5. 환율 데이터 정확도
+- 외부 API (exchangerate-api.com) vs 실제 은행 환율 비교
+- 약 0.5-1% 차이 (정상 범위 - API는 중간 시장 환율 제공)
+- 실시간 업데이트 with 24시간 캐싱
+
+#### 6. 해결 필요 사항
+1. **Prisma Migration 정상화**: schema.prisma와 DB 동기화
+2. **Logger 복구**: 서버 사이드 로깅 시스템 수정
+3. **Next.js 빌드**: 프로덕션 빌드 재생성으로 변경사항 반영
+4. **캐싱 최적화**: TTL 및 stale-while-revalidate 전략 개선

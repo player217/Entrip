@@ -69,8 +69,13 @@ r.get('/',
       const list = await svc.listBookings(q, companyCode);
       
       // Convert all bookings to API format
-      const apiBookings = list.map(toApiBooking);
-      res.json(apiBookings);
+      const apiBookings = list.data.map(toApiBooking);
+      
+      // Return with consistent pagination structure
+      res.json({
+        data: apiBookings,
+        meta: list.pagination
+      });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

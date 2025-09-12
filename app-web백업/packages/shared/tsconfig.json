@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "verbatimModuleSyntax": false,
+    "esModuleInterop": true,
+    "exactOptionalPropertyTypes": false,
+    "types": ["node"],
+    "module": "commonjs",
+    "target": "ES2020"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["dist", "build", "node_modules", "src/**/__tests__/**", "src/**/*.test.ts"],
+  "references": [
+    { "path": "../design-tokens" }
+  ]
+}

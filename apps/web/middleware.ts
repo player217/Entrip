@@ -1,11 +1,47 @@
-// apps/web/middleware.ts
+// apps/web/middleware.ts - D2.1: Enhanced Authentication Middleware
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Public routes that don't require authentication
-const publicPaths = ['/login', '/api/auth/login', '/_next/static', '/_next/image', '/favicon.ico']
+const publicPaths = ['/login', '/api/auth/login', '/api/exchange', '/api/health', '/_next/static', '/_next/image', '/favicon.ico']
 
-export function middleware(request: NextRequest) {
+/**
+ * D2.1: Enhanced Token Validation
+ * Validates JWT tokens server-side for improved security
+ */
+async function validateToken(token: string): Promise<{ isValid: boolean; error?: string }> {
+  try {
+    // D2.1: Server-side token validation via API route
+    const response = await fetch(`${process.env.INTERNAL_API_URL || 'http://api:4000'}/api/auth/verify`, {
+      method: 'GET',
+      headers: {
+        'Cookie': `auth-token=${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      return { 
+        isValid: false, 
+        error: `Token validation failed: ${response.status}` 
+      }
+    }
+
+    const data = await response.json()
+    return { 
+      isValid: data.success === true,
+      error: data.success ? undefined : data.message 
+    }
+  } catch (error) {
+    console.error('[D2.1] Token validation error:', error)
+    return { 
+      isValid: false, 
+      error: 'Token validation service unavailable' 
+    }
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
   // Allow public routes
@@ -13,18 +49,29 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for auth token in HttpOnly cookie
+  // D2.1: Enhanced authentication checks
   const token = request.cookies.get('auth-token')?.value
   
-  // If no token, redirect to login (SINGLE SOURCE OF REDIRECTS)
+  // If no token, redirect to login
   if (!token) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('from', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  // Token exists, allow access
-  // Note: Full token validation happens in API middleware for security
+  // D2.1: Validate token integrity and expiration
+  const validation = await validateToken(token)
+  
+  if (!validation.isValid) {
+    console.warn(`[D2.1] Token validation failed for ${pathname}:`, validation.error)
+    
+    // Clear invalid token and redirect to login
+    const response = NextResponse.redirect(new URL('/login', request.url))
+    response.cookies.delete('auth-token')
+    return response
+  }
+
+  // Token is valid, allow access
   return NextResponse.next()
 }
 

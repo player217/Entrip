@@ -13,12 +13,10 @@ interface NavItem {
   href?: string
   icon: string
   badge?: string
-  workspaceAction?: 'flow' | 'calendar' | 'list' | 'monthlyCalendar' | 'monthlyList'
   children?: {
     name: string
     href?: string
     icon?: string
-    workspaceAction?: 'flow' | 'calendar' | 'list' | 'monthlyCalendar' | 'monthlyList'
   }[]
 }
 
@@ -29,9 +27,14 @@ const navigation: NavItem[] = [
     icon: 'ph:layout-bold'
   },
   { 
-    name: '예약관리', 
-    href: '/reservations',
-    icon: 'ph:calendar-bold'
+    name: '예약관리',
+    icon: 'ph:calendar-bold',
+    children: [
+      { name: '월별 캘린더', href: '/calendar-monthly' },
+      { name: '주별 캘린더', href: '/calendar-weekly' },
+      { name: '월별 리스트', href: '/list-monthly' },
+      { name: '주별 리스트', href: '/list-weekly' }
+    ]
   },
   { 
     name: '운영현황', 
@@ -116,6 +119,17 @@ export function Sidebar({ className = '' }: SidebarProps) {
   const handleNavClick = (e: React.MouseEvent, href: string, name: string, icon: string) => {
     e.preventDefault()
     
+    // Direct pages that should NOT use workspace/tab system
+    const directPages = ['/calendar-monthly', '/calendar-weekly', '/list-monthly', '/list-weekly', '/stats', '/enformation', '/approval', '/accounts', '/chat', '/mail', '/settings']
+    const isDirectPage = directPages.some(page => href.startsWith(page))
+    
+    if (isDirectPage) {
+      // Always use direct navigation for these pages
+      router.push(href)
+      return
+    }
+    
+    // Only use tab system for workspace-compatible pages
     if (activeTabKey) {
       // 활성 탭 재사용 - navigateInTab을 사용하여 상태 보존
       updateTab(activeTabKey, { 
@@ -144,28 +158,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
     return 'empty'
   }
 
-  // workspace 페이지에서 특정 콘텐츠를 로드하는 헬퍼 함수
-  const handleWorkspaceAction = (contentType: 'flow' | 'calendar' | 'monthlyCalendar' | 'monthlyList' | 'list') => {
-    // URL과 상태를 동시에 업데이트하는 새로운 방식
-    const targetUrl = routes.workspace(contentType as any);
-    
-    if (activeTabKey) {
-      // 탭 시스템 사용 중이면 탭 업데이트
-      updateTab(activeTabKey, { 
-        label: '예약관리', 
-        icon: 'ph:calendar-bold', 
-        route: targetUrl, 
-        contentType 
-      })
-      navigateInTab(targetUrl)
-    } else {
-      // 직접 이동
-      router.push(targetUrl)
-    }
-    
-    // 상태도 함께 업데이트
-    updateActiveTabContent(contentType)
-  }
+  // Remove unused function - now handled by handleNavClick
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev => 
@@ -191,7 +184,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
   return (
     <aside className={clsx(
       'relative z-20 shrink-0 bg-[#016B9F] text-white flex flex-col transition-all duration-300 ease-in-out pt-4',
-      'h-[calc(100vh-70px)]', // 헤더 높이만큼 제외하고 정확한 높이 설정
+      'h-full', // 부모 컨테이너 높이 상속
       isCollapsed ? 'w-16' : 'w-64', // w-60 -> w-64로 조정
       className
     )}>
@@ -235,38 +228,21 @@ export function Sidebar({ className = '' }: SidebarProps) {
                 </button>
                 {!isCollapsed && isExpanded && (
                   <div className="mt-0.5">
-                    {item.children.map(child => {
-                      if (child.workspaceAction) {
-                        return (
-                          <button
-                            key={child.name}
-                            onClick={() => handleWorkspaceAction(child.workspaceAction!)}
-                            className={clsx(
-                              'block w-full text-left px-4 py-2 pl-12 text-base transition-all duration-200',
-                              'text-white/60 hover:bg-white/5 hover:text-white/80 font-medium'
-                            )}
-                          >
-                            {child.name}
-                          </button>
-                        )
-                      }
-                      
-                      return (
-                        <a
-                          key={child.href}
-                          href={child.href!}
-                          onClick={(e) => handleNavClick(e, child.href!, child.name, child.icon || item.icon)}
-                          className={clsx(
-                            'block px-4 py-2 pl-12 text-base transition-all duration-200 cursor-pointer',
-                            isActive(child.href)
-                              ? 'bg-white/10 text-white font-semibold border-l-2 border-brand-500 ml-4'
-                              : 'text-white/60 hover:bg-white/5 hover:text-white/80 font-medium'
-                          )}
-                        >
-                          {child.name}
-                        </a>
-                      )
-                    })}
+                    {item.children.map(child => (
+                      <a
+                        key={child.href}
+                        href={child.href!}
+                        onClick={(e) => handleNavClick(e, child.href!, child.name, child.icon || item.icon)}
+                        className={clsx(
+                          'block px-4 py-2 pl-12 text-base transition-all duration-200 cursor-pointer',
+                          isActive(child.href)
+                            ? 'bg-white/10 text-white font-semibold border-l-2 border-brand-500 ml-4'
+                            : 'text-white/60 hover:bg-white/5 hover:text-white/80 font-medium'
+                        )}
+                      >
+                        {child.name}
+                      </a>
+                    ))}
                   </div>
                 )}
               </div>
@@ -305,8 +281,8 @@ export function Sidebar({ className = '' }: SidebarProps) {
         })}
       </nav>
 
-      {/* 하단 메뉴 - 사이드바 닫기만 - 항상 하단 고정 */}
-      <div className="mt-auto p-4 border-t border-white/10 flex-shrink-0">
+      {/* 하단 메뉴 - 사이드바 닫기만 */}
+      <div className="mt-auto p-4 border-t border-white/10 bg-[#016B9F] flex-shrink-0">
         <button
           onClick={toggleSidebar}
           className="w-full px-4 py-2.5 flex items-center justify-center gap-3 hover:bg-white/5 transition-all duration-200"

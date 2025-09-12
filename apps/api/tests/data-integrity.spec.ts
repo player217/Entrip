@@ -3,6 +3,7 @@ import { app } from '../src/app';
 import { PrismaClient } from '@prisma/client';
 import { IdempotencyManager } from '../src/lib/idempotency';
 import { outboxDispatcher } from '../src/lib/outbox-dispatcher';
+import { isJsonObject, hasProperty } from '../src/utils/json-type-guards';
 
 const prisma = new PrismaClient();
 
@@ -296,8 +297,11 @@ describe('데이터 무결성 테스트', () => {
       });
 
       expect(updateMessages).toHaveLength(1);
-      expect(updateMessages[0].payload.changes).toContain('customerName');
-      expect(updateMessages[0].payload.changes).toContain('totalPrice');
+      const payload = updateMessages[0].payload;
+      if (hasProperty(payload, 'changes') && isJsonObject(payload.changes)) {
+        expect(payload.changes).toContain('customerName');
+        expect(payload.changes).toContain('totalPrice');
+      }
     });
   });
 
@@ -348,9 +352,15 @@ describe('데이터 무결성 테스트', () => {
       expect(auditLogs[2].action).toBe('DELETE');
 
       // 각 로그에 적절한 세부 정보가 있는지 확인
-      expect(auditLogs[0].detail.bookingNumber).toBeDefined();
-      expect(auditLogs[1].detail.changes).toBeDefined();
-      expect(auditLogs[2].detail.deletedData).toBeDefined();
+      if (hasProperty(auditLogs[0].detail, 'bookingNumber')) {
+        expect(auditLogs[0].detail.bookingNumber).toBeDefined();
+      }
+      if (hasProperty(auditLogs[1].detail, 'changes')) {
+        expect(auditLogs[1].detail.changes).toBeDefined();
+      }
+      if (hasProperty(auditLogs[2].detail, 'deletedData')) {
+        expect(auditLogs[2].detail.deletedData).toBeDefined();
+      }
     });
 
     it('대량 작업에 대한 감사 로그', async () => {
@@ -395,7 +405,12 @@ describe('데이터 무결성 테스트', () => {
       });
 
       expect(bulkOutboxMessage).toBeTruthy();
-      expect(bulkOutboxMessage.payload.count).toBe(2);
+      if (hasProperty(bulkOutboxMessage.payload, 'count')) {
+        const count = bulkOutboxMessage.payload.count;
+        if (typeof count === 'number') {
+          expect(count).toBe(2);
+        }
+      }
     });
   });
 

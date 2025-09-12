@@ -78,7 +78,7 @@ export function BookingModal({ isOpen, onClose, booking, onSave }: BookingModalP
               <Input
                 label="팀명"
                 value={formData.teamName}
-                onChange={(e) => handleChange('teamName', e.target.value)}
+                onChange={(e: any) => handleChange('teamName', e.target.value)}
                 required
               />
               <div>
@@ -105,13 +105,13 @@ export function BookingModal({ isOpen, onClose, booking, onSave }: BookingModalP
               <Input
                 label="출발지"
                 value={formData.origin}
-                onChange={(e) => handleChange('origin', e.target.value)}
+                onChange={(e: any) => handleChange('origin', e.target.value)}
                 required
               />
               <Input
                 label="목적지"
                 value={formData.destination}
-                onChange={(e) => handleChange('destination', e.target.value)}
+                onChange={(e: any) => handleChange('destination', e.target.value)}
                 required
               />
             </div>
@@ -121,14 +121,14 @@ export function BookingModal({ isOpen, onClose, booking, onSave }: BookingModalP
                 type="date"
                 label="출발일"
                 value={formData.startDate}
-                onChange={(e) => handleChange('startDate', e.target.value)}
+                onChange={(e: any) => handleChange('startDate', e.target.value)}
                 required
               />
               <Input
                 type="date"
                 label="도착일"
                 value={formData.endDate}
-                onChange={(e) => handleChange('endDate', e.target.value)}
+                onChange={(e: any) => handleChange('endDate', e.target.value)}
                 required
               />
             </div>
@@ -138,7 +138,7 @@ export function BookingModal({ isOpen, onClose, booking, onSave }: BookingModalP
                 type="number"
                 label="인원수"
                 value={formData.totalPax}
-                onChange={(e) => handleChange('totalPax', parseInt(e.target.value))}
+                onChange={(e: any) => handleChange('totalPax', parseInt(e.target.value))}
                 min={1}
                 required
               />
@@ -163,14 +163,14 @@ export function BookingModal({ isOpen, onClose, booking, onSave }: BookingModalP
               <Input
                 label="담당자"
                 value={formData.coordinator}
-                onChange={(e) => handleChange('coordinator', e.target.value)}
+                onChange={(e: any) => handleChange('coordinator', e.target.value)}
                 required
               />
               <Input
                 type="number"
                 label="매출액 (원)"
                 value={formData.revenue}
-                onChange={(e) => handleChange('revenue', parseInt(e.target.value))}
+                onChange={(e: any) => handleChange('revenue', parseInt(e.target.value))}
                 min={0}
                 required
               />

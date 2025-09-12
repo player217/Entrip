@@ -7,14 +7,14 @@ const nextConfig = {
   
   // Environment-conditional type checking
   eslint: {
-    // Temporary: ignore during builds for Docker
+    // Temporarily ignore ESLint during builds - need to fix unused vars
     ignoreDuringBuilds: true,
   },
   
   // Environment-conditional TypeScript error handling
   typescript: {
-    // Temporary: ignore during builds for Docker
-    ignoreBuildErrors: true,
+    // D1.3: Build Gate activated - TypeScript errors must be fixed
+    ignoreBuildErrors: false,
   },
   
   
@@ -70,16 +70,70 @@ const nextConfig = {
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || '0.0.0',
   },
   
-  // Headers
+  // D2.2: Enhanced Security Headers and CORS Policy
   async headers() {
     return [
+      // D2.2: Comprehensive security headers for all routes
+      {
+        source: '/(.*)',
+        headers: [
+          // Content Security Policy - Prevent XSS attacks
+          { 
+            key: 'Content-Security-Policy', 
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // Next.js requires unsafe-eval
+              "style-src 'self' 'unsafe-inline'", // Allow inline styles for components
+              "img-src 'self' data: https:",
+              "font-src 'self' data:",
+              "connect-src 'self' http://localhost:4001 ws://localhost:4001 https://api.iconify.design https://api.simplesvg.com https://api.unisvg.com https://cdn.jsdelivr.net", // Allow Iconify API services for dynamic icon loading
+              "frame-ancestors 'none'", // Prevent clickjacking
+              "base-uri 'self'",
+              "form-action 'self'",
+              "object-src 'none'"
+            ].join('; ')
+          },
+          
+          // HSTS - Force HTTPS in production
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          
+          // Prevent MIME type sniffing
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          
+          // Prevent clickjacking
+          { key: 'X-Frame-Options', value: 'DENY' },
+          
+          // XSS Protection
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          
+          // Referrer Policy
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          
+          // Permissions Policy
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          
+          // Remove server info
+          { key: 'X-Powered-By', value: '' }
+        ],
+      },
+      
+      // D2.2: Secure CORS policy for API routes
       {
         source: '/api/:path*',
         headers: [
           { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          { key: 'Access-Control-Allow-Origin', value: '*' },
+          // D2.2: Restrict to specific origins instead of wildcard
+          { key: 'Access-Control-Allow-Origin', value: process.env.NODE_ENV === 'production' 
+              ? 'https://your-production-domain.com'  // Replace with actual production domain
+              : 'http://localhost:3000' 
+          },
           { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT,OPTIONS' },
-          { key: 'Access-Control-Allow-Headers', value: 'Accept, Accept-Version, Authorization, Content-Length, Content-MD5, Content-Type, Date, X-Requested-With' },
+          { key: 'Access-Control-Allow-Headers', value: 'Accept, Accept-Version, Authorization, Content-Length, Content-MD5, Content-Type, Date, X-Requested-With, X-Request-ID' },
+          { key: 'Access-Control-Max-Age', value: '86400' }, // 24 hours preflight cache
+          
+          // Additional security headers for API
+          { key: 'X-API-Version', value: process.env.NEXT_PUBLIC_APP_VERSION || '0.0.0' },
+          { key: 'Cache-Control', value: 'no-store, must-revalidate' },
         ],
       },
     ];
@@ -97,18 +151,7 @@ const nextConfig = {
 
   // Redirects
   async redirects() {
-    return [
-      {
-        source: '/reservations',
-        destination: '/workspace?content=monthlyCalendar',
-        permanent: false,
-      },
-      {
-        source: '/reservations/:path*',
-        destination: '/workspace?content=monthlyCalendar',
-        permanent: false,
-      },
-    ];
+    return [];
   },
 };
 

@@ -6,10 +6,7 @@ export default defineConfig({
   format: ['esm'],
   bundle: true,
   treeshake: true,
-  dts: {
-    resolve: true,
-    entry: './src/index.ts',
-  },
+  dts: false, // We'll generate types separately using tsc
   external: ['react', 'react-dom', '@entrip/shared'],
   minify: false,
   clean: true,
@@ -22,7 +19,7 @@ export default defineConfig({
     options.mainFields = ['module', 'main']
     options.conditions = ['import']
   },
-  onSuccess: () => {
+  onSuccess: async () => {
     // Unix cp 대신 Node.js API로 파일 복사
     try {
       // global.css 복사
@@ -36,20 +33,22 @@ export default defineConfig({
         console.log('ℹ️ No global.css found, skipping...')
       }
       
-      // index.d.ts 복사 (있다면)
-      const typesSrc = './src/index.d.ts'
-      const typesDist = './dist/types/index.d.ts'
-      
-      if (existsSync(typesSrc)) {
-        mkdirSync('./dist/types', { recursive: true })
-        copyFileSync(typesSrc, typesDist)
-        console.log('✅ Copied type definitions')
+      // Generate TypeScript declarations using tsc
+      const { execSync } = require('child_process')
+      try {
+        execSync('npx tsc --emitDeclarationOnly --outDir dist/src --declaration true', { 
+          cwd: process.cwd(),
+          stdio: 'inherit'
+        })
+        console.log('✅ TypeScript declarations generated')
+      } catch (tscError) {
+        console.log('⚠️ TypeScript declaration generation failed, continuing...')
       }
       
       console.log('✅ UI package rebuilt successfully')
     } catch (error) {
-      console.error('⚠️ Copy operation failed (non-critical):', error)
-      // 복사 실패는 빌드를 중단시키지 않음
+      console.error('⚠️ Build steps failed (non-critical):', error)
+      // 실패는 빌드를 중단시키지 않음
     }
   }
 })

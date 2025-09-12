@@ -56,6 +56,9 @@ export class BookingService {
     // Filter by company code if provided
     if (companyCode) {
       where.companyCode = companyCode;
+      console.log('[BookingService] Filtering by companyCode:', companyCode);
+    } else {
+      console.log('[BookingService] WARNING: No companyCode provided, returning ALL bookings');
     }
     
     if (status) {

@@ -7,6 +7,7 @@ import { startOfMonth, endOfMonth } from 'date-fns';
 import { useBookings } from '../../hooks/useBookings';
 import { BookingModal } from '@/components/booking/BookingModal';
 import type { Booking } from '@entrip/shared';
+import { ensureValidDate } from '../../utils/dateValidation';
 
 // 실제 API 데이터를 BookingEntry 형식으로 변환
 const convertToBookingEntry = (booking: any): BookingEntry => {
@@ -43,7 +44,7 @@ const convertToBookingEntry = (booking: any): BookingEntry => {
 };
 
 export default function MonthlyListPage() {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(() => ensureValidDate(new Date()));
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { bookings: apiBookings, isLoading, isError } = useBookings();
@@ -54,12 +55,13 @@ export default function MonthlyListPage() {
       return [];
     }
     
-    const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(currentMonth);
+    const validMonth = ensureValidDate(currentMonth);
+    const monthStart = startOfMonth(validMonth);
+    const monthEnd = endOfMonth(validMonth);
     
     return apiBookings
       .filter((booking: any) => {
-        const bookingDate = new Date(booking.startDate);
+        const bookingDate = ensureValidDate(booking.startDate || booking.departureDate || booking.date);
         return bookingDate >= monthStart && bookingDate <= monthEnd;
       })
       .map(convertToBookingEntry);
@@ -86,9 +88,10 @@ export default function MonthlyListPage() {
     <>
       <MonthlyListView
         bookings={bookings}
-        month={currentMonth}
-        onMonthChange={setCurrentMonth}
+        month={ensureValidDate(currentMonth)}
+        onMonthChange={(date: Date) => setCurrentMonth(ensureValidDate(date))}
         onBookingClick={handleBookingClick}
+        className=""
       />
       
       <BookingModal
@@ -97,7 +100,7 @@ export default function MonthlyListPage() {
           setIsModalOpen(false);
           setSelectedBooking(null);
         }}
-        booking={selectedBooking}
+        booking={selectedBooking || undefined}
         onSave={() => {
           setIsModalOpen(false);
           setSelectedBooking(null);

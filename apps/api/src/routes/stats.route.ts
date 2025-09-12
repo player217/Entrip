@@ -101,7 +101,7 @@ router.get('/stats/overview', authenticate, async (req: AuthRequest, res) => {
       const profit = revenue - cost;
       
       return {
-        name: manager.name,
+        name: manager.user?.name || 'Unknown',
         revenue,
         profit,
         count: manager.bookings.length,

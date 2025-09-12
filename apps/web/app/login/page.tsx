@@ -16,23 +16,37 @@ interface LoginFormData {
 
 // Demo accounts for quick testing - 원클릭 자동 로그인
 const DEMO_DEFAULT_PASSWORD = process.env.DEMO_DEFAULT_PASSWORD || 'pass1234';
-const DEMO_DEFAULT_COMPANY = process.env.DEMO_DEFAULT_COMPANY || 'ENTRIP_MAIN';
 
+// Company information
+const COMPANIES = [
+  { code: 'ENTRIP_MAIN', name: '엔트립 본사', color: 'blue' },
+  { code: 'j1', name: 'J1 여행사', color: 'green' },
+  { code: 'star', name: '스타투어', color: 'yellow' },
+  { code: 'happy', name: '해피트래블', color: 'pink' },
+];
+
+// Demo accounts - Updated to match actual database users exactly
 const DEMO_ACCOUNTS = [
-  { label: '관리자', companyCode: DEMO_DEFAULT_COMPANY, username: 'admin', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
-  { label: '매니저1', companyCode: DEMO_DEFAULT_COMPANY, username: 'manager1', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
-  { label: '매니저2', companyCode: DEMO_DEFAULT_COMPANY, username: 'manager2', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
-  { label: '직원1', companyCode: DEMO_DEFAULT_COMPANY, username: 'user1', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
-  { label: '직원2', companyCode: DEMO_DEFAULT_COMPANY, username: 'user2', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
-  { label: '직원3', companyCode: DEMO_DEFAULT_COMPANY, username: 'user3', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
-  { label: '직원4', companyCode: DEMO_DEFAULT_COMPANY, username: 'user4', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
-  { label: '직원5', companyCode: DEMO_DEFAULT_COMPANY, username: 'user5', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
-  { label: '게스트1', companyCode: DEMO_DEFAULT_COMPANY, username: 'guest1', password: DEMO_DEFAULT_PASSWORD, role: 'GUEST' },
-  { label: '게스트2', companyCode: DEMO_DEFAULT_COMPANY, username: 'guest2', password: DEMO_DEFAULT_PASSWORD, role: 'GUEST' },
-  // J1 여행사 계정들
-  { label: 'J1관리자', companyCode: 'j1', username: 'admin', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
-  { label: 'J1매니저', companyCode: 'j1', username: 'manager1', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
-  { label: 'J1직원', companyCode: 'j1', username: 'user1', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  // ENTRIP_MAIN (본사) - 실제 DB 계정 (3개)
+  { label: '본사 관리자', companyCode: 'ENTRIP_MAIN', username: 'admin@entrip.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: '본사 매니저', companyCode: 'ENTRIP_MAIN', username: 'manager@entrip.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: '본사 직원', companyCode: 'ENTRIP_MAIN', username: 'user@entrip.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  
+  // J1 여행사 - 실제 DB 계정 (4개)
+  { label: 'J1 관리자', companyCode: 'j1', username: 'admin@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: 'J1 매니저', companyCode: 'j1', username: 'manager@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: 'J1 직원1', companyCode: 'j1', username: 'user1@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  { label: 'J1 직원2', companyCode: 'j1', username: 'user2@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+  
+  // 해피트래블 - 실제 DB 계정 (3개)  
+  { label: '해피 관리자', companyCode: 'happy', username: 'admin@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: '해피 매니저', companyCode: 'happy', username: 'manager@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: '해피 직원', companyCode: 'happy', username: 'user@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+
+  // 스타투어 - 실제 DB 계정 (3개)
+  { label: '스타 관리자', companyCode: 'star', username: 'admin@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: '스타 매니저', companyCode: 'star', username: 'manager@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: '스타 직원', companyCode: 'star', username: 'user@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
 ];
 
 console.log('🔍 DEMO_ACCOUNTS length:', DEMO_ACCOUNTS.length, 'accounts loaded');
@@ -40,9 +54,10 @@ console.log('🔍 DEMO_ACCOUNTS length:', DEMO_ACCOUNTS.length, 'accounts loaded
 export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore(state => state.login);
+  // FIXED: Default form to use EMAIL format, not username format
   const [formData, setFormData] = useState<LoginFormData>({
     companyCode: 'j1',
-    username: 'admin',
+    username: 'admin@j1.com', // FIXED: Use email format instead of 'admin'
     password: DEMO_DEFAULT_PASSWORD
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -67,6 +82,12 @@ export default function LoginPage() {
     if (error) setError(null);
     setIsLoading(true);
 
+    console.log('🔄 Attempting login with account:', { 
+      companyCode: account.companyCode, 
+      username: account.username, 
+      role: account.role 
+    });
+
     try {
       // 즉시 로그인 수행
       const success = await login({
@@ -76,6 +97,7 @@ export default function LoginPage() {
       });
       
       if (success) {
+        console.log('✅ Login successful');
         // Store userId separately for messenger
         const user = useAuthStore.getState().user;
         if (user?.id) {
@@ -89,8 +111,9 @@ export default function LoginPage() {
       } else {
         // Get error from auth store
         const authError = useAuthStore.getState().error;
+        console.log('❌ Login failed:', authError);
         setError(authError || '로그인에 실패했습니다.');
-        // 실패 시 폼 데이터도 채워줌
+        // 실패 시 폼 데이터도 채워줌 - ENHANCED ERROR HANDLING
         setFormData({
           companyCode: account.companyCode,
           username: account.username,
@@ -116,11 +139,17 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
 
+    console.log('🔄 Manual login attempt:', { 
+      companyCode: formData.companyCode, 
+      username: formData.username 
+    });
+
     try {
       // Use auth store login method
       const success = await login(formData as LoginRequest);
       
       if (success) {
+        console.log('✅ Manual login successful');
         // Store userId separately for messenger
         const user = useAuthStore.getState().user;
         if (user?.id) {
@@ -134,6 +163,7 @@ export default function LoginPage() {
       } else {
         // Get error from auth store
         const authError = useAuthStore.getState().error;
+        console.log('❌ Manual login failed:', authError);
         setError(authError || '로그인에 실패했습니다.');
       }
     } catch (error) {
@@ -169,25 +199,44 @@ export default function LoginPage() {
               <p className="text-gray-600">계정 정보를 입력해주세요</p>
             </div>
 
-            {/* Demo Account Selector */}
+            {/* Demo Account Selector - Grouped by Company */}
             <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm font-semibold text-blue-900 mb-2">데모 계정 선택:</p>
-              <div className="flex flex-wrap gap-2">
-                {DEMO_ACCOUNTS.map((account, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => selectDemoAccount(index)}
-                    disabled={isLoading}
-                    className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                      selectedDemo === index 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-white text-blue-600 border border-blue-300 hover:bg-blue-100'
-                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {isLoading && selectedDemo === index ? '로그인 중...' : account.label}
-                  </button>
-                ))}
+              <p className="text-sm font-semibold text-blue-900 mb-3">데모 계정 선택 (Quick Login):</p>
+              {COMPANIES.map((company) => {
+                const companyAccounts = DEMO_ACCOUNTS.filter(acc => acc.companyCode === company.code);
+                return (
+                  <div key={company.code} className="mb-3">
+                    <p className="text-xs font-medium text-gray-700 mb-1">{company.name}:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {companyAccounts.map((account, index) => {
+                        const globalIndex = DEMO_ACCOUNTS.indexOf(account);
+                        return (
+                          <button
+                            key={globalIndex}
+                            type="button"
+                            onClick={() => selectDemoAccount(globalIndex)}
+                            disabled={isLoading}
+                            className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                              selectedDemo === globalIndex 
+                                ? 'bg-blue-600 text-white' 
+                                : 'bg-white text-blue-600 border border-blue-300 hover:bg-blue-100'
+                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {isLoading && selectedDemo === globalIndex ? '로그인 중...' : account.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="mt-3 pt-3 border-t border-blue-200">
+                <p className="text-xs text-gray-600">
+                  <strong>패스워드:</strong> {DEMO_DEFAULT_PASSWORD} (모든 계정 동일)
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  <strong>주의:</strong> 이메일 형식으로 로그인해야 합니다 (예: admin@j1.com)
+                </p>
               </div>
             </div>
 
@@ -210,10 +259,10 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Username */}
+              {/* Username - UPDATED PLACEHOLDER */}
               <div>
                 <label htmlFor="username" className="block text-sm font-semibold text-blue-900 mb-2">
-                  아이디
+                  아이디 (이메일 형식)
                 </label>
                 <input
                   id="username"
@@ -223,7 +272,7 @@ export default function LoginPage() {
                   value={formData.username}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-blue-50 text-blue-900 font-medium"
-                  placeholder="admin"
+                  placeholder="admin@j1.com"
                   disabled={isLoading}
                 />
               </div>

@@ -1,27 +1,31 @@
 import { Booking, BookingEvent } from '@entrip/shared';
+import { toDate, type DateLike } from '@entrip/shared/utils/dateUtils';
 
 /**
  * Booking 또는 BookingEvent에서 날짜를 안전하게 추출하는 헬퍼 함수
  */
 export function getBookingDate(b: Booking | BookingEvent): Date | null {
   try {
-    let dateStr: string = '';
+    let dateValue: DateLike = null;
     
     // Booking 타입인 경우
     if ('startDate' in b && b.startDate) {
-      dateStr = b.startDate;
+      dateValue = b.startDate;
     }
     // BookingEvent 타입인 경우 (여러 날짜 필드 확인)
     else if ('departureDate' in b && b.departureDate) {
-      dateStr = b.departureDate;
+      dateValue = b.departureDate;
     }
     else if ('date' in b && b.date) {
-      dateStr = b.date;
+      dateValue = b.date;
     }
     
-    return dateStr ? new Date(dateStr) : null;
+    if (!dateValue) return null;
+    
+    // toDate 함수를 사용하여 안전하게 Date 객체 생성
+    return toDate(dateValue);
   } catch (e) {
-    console.warn('Invalid date in booking:', e);
+    console.warn('Invalid date in booking:', e, b);
     return null;
   }
 }

@@ -7,6 +7,7 @@ import { ko } from 'date-fns/locale';
 import { useBookings, updateBooking } from '../../hooks/useBookings';
 import StatusTag from '../../components/StatusTag';
 import { logger, BookingStatus, type Booking } from '@entrip/shared';
+import { ensureValidDate } from '../../utils/dateValidation';
 
 // BookingStatus enum을 StatusTag의 StatusType으로 변환
 const convertBookingStatus = (status: BookingStatus): 'pending' | 'confirmed' | 'cancelled' | 'completed' => {
@@ -30,8 +31,11 @@ export default function WeekView({ currentDate }: WeekViewProps) {
   const { bookings, mutate } = useBookings();
   const [_isDragging, setIsDragging] = useState(false);
   
+  // Ensure currentDate is valid
+  const validDate = ensureValidDate(currentDate);
+  
   // 주간 시작일 계산
-  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // 월요일 시작
+  const weekStart = startOfWeek(validDate, { weekStartsOn: 1 }); // 월요일 시작
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   
   // 날짜별로 예약 그룹화

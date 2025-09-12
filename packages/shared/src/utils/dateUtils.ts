@@ -222,3 +222,55 @@ export function formatDateRange(start: Date | string, end: Date | string, separa
     return `${startYear}년 ${startMonth}월 ${startDay}일${separator}${endYear}년 ${endMonth}월 ${endDay}일`;
   }
 }
+
+// 안전한 Date 변환을 위한 유틸리티 함수
+export type DateLike = Date | string | number | null | undefined | { toDate?: () => Date };
+
+export function toDate(value: DateLike): Date {
+  if (value instanceof Date) {
+    if (isNaN(value.getTime())) {
+      throw new TypeError(`Invalid Date object: ${value}`);
+    }
+    return value;
+  }
+  
+  if (typeof value === 'number') {
+    const date = new Date(value);
+    if (isNaN(date.getTime())) {
+      throw new TypeError(`Invalid timestamp: ${value}`);
+    }
+    return date;
+  }
+  
+  if (typeof value === 'string') {
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
+    throw new TypeError(`Invalid date string: ${value}`);
+  }
+  
+  if (value && typeof (value as any).toDate === 'function') {
+    try {
+      return (value as any).toDate();
+    } catch (e) {
+      throw new TypeError(`toDate() method failed: ${e}`);
+    }
+  }
+  
+  if (value === null || value === undefined) {
+    throw new TypeError(`Cannot convert null or undefined to Date`);
+  }
+  
+  throw new TypeError(`Invalid date input: ${String(value)}`);
+}
+
+export function safeDateFormat(value: DateLike, formatStr: string = 'yyyy-MM-dd'): string {
+  try {
+    const date = toDate(value);
+    return formatDate(date, formatStr);
+  } catch (e) {
+    console.warn('Date formatting error:', e);
+    return 'Invalid Date';
+  }
+}

@@ -3,6 +3,7 @@ import { useWorkspaceStore } from '@entrip/shared/client';
 import { FlowCanvas } from '../flow/FlowCanvas';
 import ReservationListView from '@/features/calendar/ReservationListView';
 import { useWorkspaceNavigation } from '@/hooks/useWorkspaceNavigation';
+import { ensureValidDate } from '@/utils/dateValidation';
 
 // 콘텐츠 타입을 실제 컴포넌트로 매핑
 const contentMap: Record<string, JSX.Element> = {
@@ -10,7 +11,7 @@ const contentMap: Record<string, JSX.Element> = {
   calendar: <ReservationListView viewType="calendar-week" />,
   monthlyCalendar: <ReservationListView viewType="calendar-month" />,
   list: <ReservationListView viewType="list" />,
-  monthlyList: <ReservationListView viewType="list" currentMonth={new Date()} />,
+  monthlyList: <ReservationListView viewType="list" currentMonth={ensureValidDate(new Date())} />,
   empty: (
     <div className="flex items-center justify-center h-full text-gray-500">
       <div className="text-center">

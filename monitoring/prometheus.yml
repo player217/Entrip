@@ -23,12 +23,7 @@ scrape_configs:
     metrics_path: '/metrics'
     scrape_interval: 30s
 
-  # API v2 service (new)
-  - job_name: 'entrip-api-v2'
-    static_configs:
-      - targets: ['api-v2:4002']
-    metrics_path: '/metrics'
-    scrape_interval: 30s
+  # API v2 service (disabled - removed in Phase 1)
 
   # Web application
   - job_name: 'entrip-web'

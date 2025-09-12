@@ -1,0 +1,45 @@
+FROM node:20-slim
+
+# Install dependencies for building
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy workspace files
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json .npmrc ./
+
+# Copy all package.json files
+COPY packages/design-tokens/package.json ./packages/design-tokens/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/ui/package.json ./packages/ui/
+COPY apps/web/package.json ./apps/web/
+
+# Install dependencies (skip postinstall scripts)
+RUN pnpm install --no-frozen-lockfile --ignore-scripts
+
+# Copy source files
+COPY . .
+
+# Build dependencies
+WORKDIR /app/packages/design-tokens
+RUN pnpm build || true
+
+WORKDIR /app/packages/shared
+RUN pnpm build || true
+
+WORKDIR /app/packages/ui
+RUN pnpm build || true
+
+WORKDIR /app/apps/web
+
+EXPOSE 3000
+
+CMD ["pnpm", "dev"]

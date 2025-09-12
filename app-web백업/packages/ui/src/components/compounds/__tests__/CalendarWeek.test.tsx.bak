@@ -1,0 +1,325 @@
+import React from 'react';
+import '@testing-library/jest-dom';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { CalendarWeek } from '../CalendarWeek';
+
+// Mock date-fns to control dates
+jest.mock('date-fns', () => ({
+  ...jest.requireActual('date-fns'),
+  isToday: jest.fn((date) => {
+    const today = new Date('2024-02-15');
+    return date.toDateString() === today.toDateString();
+  }),
+}));
+
+describe('CalendarWeek', () => {
+  const mockOnEventClick = jest.fn();
+  const mockOnDateClick = jest.fn();
+
+  const mockEvents = [
+    {
+      id: '1',
+      date: '2024-02-15',
+      title: '제주도 골프투어',
+      type: 'golf' as const,
+      status: 'confirmed' as const,
+      time: '09:00',
+      details: '삼성전자 팀',
+    },
+    {
+      id: '2',
+      date: '2024-02-16',
+      title: '하와이 인센티브',
+      type: 'incentive' as const,
+      status: 'pending' as const,
+      time: '14:00',
+    },
+    {
+      id: '3',
+      date: '2024-02-17',
+      title: '몰디브 허니문',
+      type: 'honeymoon' as const,
+      status: 'confirmed' as const,
+      time: '10:00',
+    },
+    {
+      id: '4',
+      date: '2024-02-15',
+      title: '발리 에어텔',
+      type: 'airtel' as const,
+      status: 'cancelled' as const,
+      time: '09:00',
+    },
+  ];
+
+  const defaultProps = {
+    currentDate: new Date('2024-02-15'),
+    events: mockEvents,
+    onEventClick: mockOnEventClick,
+    onDateClick: mockOnDateClick,
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Rendering', () => {
+    it('should render week view with 7 days', () => {
+      render(<CalendarWeek {...defaultProps} />);
+      
+      // Check for day headers (월, 화, 수, etc.)
+      const dayHeaders = screen.getAllByRole('columnheader', { hidden: true });
+      expect(dayHeaders).toHaveLength(7); // Excluding time column
+    });
+
+    it('should render 24 hour rows', () => {
+      render(<CalendarWeek {...defaultProps} />);
+      
+      // Check for time labels
+      expect(screen.getByText('00:00')).toBeInTheDocument();
+      expect(screen.getByText('12:00')).toBeInTheDocument();
+      expect(screen.getByText('23:00')).toBeInTheDocument();
+    });
+
+    it('should highlight today', () => {
+      render(<CalendarWeek {...defaultProps} />);
+      
+      // Date 15 should be highlighted as today
+      const todayCell = screen.getByText('15');
+      expect(todayCell).toHaveClass('text-brand-600');
+    });
+
+    it('should render legend', () => {
+      render(<CalendarWeek {...defaultProps} />);
+      
+      expect(screen.getByText('골프')).toBeInTheDocument();
+      expect(screen.getByText('인센티브')).toBeInTheDocument();
+      expect(screen.getByText('허니문')).toBeInTheDocument();
+      expect(screen.getByText('에어텔')).toBeInTheDocument();
+      expect(screen.getByText('취소됨')).toBeInTheDocument();
+    });
+  });
+
+  describe('Events', () => {
+    it('should render events at correct time slots', () => {
+      render(<CalendarWeek {...defaultProps} />);
+      
+      // Check if events are rendered
+      expect(screen.getByText('제주도 골프투어')).toBeInTheDocument();
+      expect(screen.getByText('하와이 인센티브')).toBeInTheDocument();
+      expect(screen.getByText('몰디브 허니문')).toBeInTheDocument();
+      expect(screen.getByText('발리 에어텔')).toBeInTheDocument();
+    });
+
+    it('should display event time', () => {
+      render(<CalendarWeek {...defaultProps} />);
+      
+      // Events should show their time
+      expect(screen.getByText('09:00', { exact: false })).toBeInTheDocument();
+      expect(screen.getByText('14:00', { exact: false })).toBeInTheDocument();
+    });
+
+    it('should apply correct colors based on event type', () => {
+      const { container } = render(<CalendarWeek {...defaultProps} />);
+      
+      const golfEvent = container.querySelector('[title*="제주도 골프투어"]');
+      const incentiveEvent = container.querySelector('[title*="하와이 인센티브"]');
+      const honeymoonEvent = container.querySelector('[title*="몰디브 허니문"]');
+      const cancelledEvent = container.querySelector('[title*="발리 에어텔"]');
+      
+      expect(golfEvent).toHaveClass('bg-brand-500');
+      expect(incentiveEvent).toHaveClass('bg-success');
+      expect(honeymoonEvent).toHaveClass('bg-danger');
+      expect(cancelledEvent).toHaveClass('bg-gray-300'); // Cancelled status
+    });
+
+    it('should handle multiple events at same time', () => {
+      render(<CalendarWeek {...defaultProps} />);
+      
+      // Both golf and airtel events are at 09:00 on Feb 15
+      const eventsAt9 = screen.getAllByText('09:00', { exact: false });
+      expect(eventsAt9.length).toBeGreaterThan(1);
+    });
+
+    it('should show event details in tooltip', () => {
+      const { container } = render(<CalendarWeek {...defaultProps} />);
+      
+      const eventWithDetails = container.querySelector('[title*="삼성전자 팀"]');
+      expect(eventWithDetails).toBeInTheDocument();
+      expect(eventWithDetails?.getAttribute('title')).toContain('제주도 골프투어');
+      expect(eventWithDetails?.getAttribute('title')).toContain('삼성전자 팀');
+    });
+  });
+
+  describe('Interactions', () => {
+    it('should call onEventClick when event is clicked', () => {
+      const { container } = render(<CalendarWeek {...defaultProps} />);
+      
+      const golfEvent = container.querySelector('[title*="제주도 골프투어"]');
+      fireEvent.click(golfEvent!);
+      
+      expect(mockOnEventClick).toHaveBeenCalledWith(mockEvents[0]);
+    });
+
+    it('should call onDateClick when date number is clicked', () => {
+      render(<CalendarWeek {...defaultProps} />);
+      
+      const dateNumber = screen.getByText('15');
+      fireEvent.click(dateNumber);
+      
+      expect(mockOnDateClick).toHaveBeenCalledWith(expect.any(Date));
+    });
+
+    it('should call onDateClick when empty cell is clicked', () => {
+      render(<CalendarWeek {...defaultProps} />);
+      
+      // Click on an empty time slot
+      const timeCells = screen.getAllByText(/^\d{2}:00$/);
+      const parentCell = timeCells[0].parentElement?.nextElementSibling;
+      
+      if (parentCell) {
+        fireEvent.click(parentCell);
+        expect(mockOnDateClick).toHaveBeenCalled();
+      }
+    });
+
+    it('should stop propagation when event is clicked', () => {
+      const { container } = render(<CalendarWeek {...defaultProps} />);
+      
+      const event = container.querySelector('[title*="제주도 골프투어"]');
+      
+      fireEvent.click(event!);
+      
+      expect(mockOnEventClick).toHaveBeenCalledTimes(1);
+      expect(mockOnDateClick).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Date Navigation', () => {
+    it('should display correct week based on currentDate', () => {
+      const { rerender } = render(<CalendarWeek {...defaultProps} />);
+      
+      // Check February 15 week (Feb 12-18, 2024)
+      expect(screen.getByText('12')).toBeInTheDocument();
+      expect(screen.getByText('18')).toBeInTheDocument();
+      
+      // Change to next week
+      rerender(<CalendarWeek {...defaultProps} currentDate={new Date('2024-02-22')} />);
+      
+      // Should show Feb 19-25
+      expect(screen.getByText('19')).toBeInTheDocument();
+      expect(screen.getByText('25')).toBeInTheDocument();
+    });
+
+    it('should start week on Monday', () => {
+      render(<CalendarWeek {...defaultProps} currentDate={new Date('2024-02-15')} />);
+      
+      // First day should be Monday (12th)
+      const dates = screen.getAllByRole('button', { hidden: true });
+      const firstDateButton = dates.find(button => /^\d+$/.test(button.textContent || ''));
+      expect(firstDateButton).toHaveTextContent('12');
+    });
+  });
+
+  describe('Empty States', () => {
+    it('should render without events', () => {
+      render(<CalendarWeek {...defaultProps} events={[]} />);
+      
+      expect(screen.getByText('00:00')).toBeInTheDocument();
+      expect(screen.queryByText('제주도 골프투어')).not.toBeInTheDocument();
+    });
+
+    it('should handle events without time', () => {
+      const eventsWithoutTime = [{
+        id: '5',
+        date: '2024-02-15',
+        title: 'All Day Event',
+        type: 'other' as const,
+        status: 'confirmed' as const,
+      }];
+      
+      render(<CalendarWeek {...defaultProps} events={eventsWithoutTime} />);
+      
+      // Should default to 9 AM
+      expect(screen.getByText('All Day Event')).toBeInTheDocument();
+    });
+
+    it('should handle undefined callbacks', () => {
+      const { container } = render(
+        <CalendarWeek
+          currentDate={defaultProps.currentDate}
+          events={mockEvents}
+        />
+      );
+      
+      // Click event without callbacks
+      const event = container.querySelector('[title*="제주도 골프투어"]');
+      expect(() => fireEvent.click(event!)).not.toThrow();
+      
+      // Click date without callbacks
+      const dateNumber = screen.getByText('15');
+      expect(() => fireEvent.click(dateNumber)).not.toThrow();
+    });
+  });
+
+  describe('Styling', () => {
+    it('should apply hover effects', () => {
+      const { container } = render(<CalendarWeek {...defaultProps} />);
+      
+      const event = container.querySelector('[title*="제주도 골프투어"]');
+      expect(event).toHaveClass('hover:opacity-80');
+      
+      const dateNumber = screen.getByText('15');
+      expect(dateNumber).toHaveClass('hover:text-brand-600');
+    });
+
+    it('should have scrollable time grid', () => {
+      const { container } = render(<CalendarWeek {...defaultProps} />);
+      
+      const scrollContainer = container.querySelector('.overflow-y-auto');
+      expect(scrollContainer).toHaveClass('max-h-[600px]');
+    });
+
+    it('should handle event overflow with truncation', () => {
+      const longTitleEvent = [{
+        id: '6',
+        date: '2024-02-15',
+        title: 'This is a very long event title that should be truncated',
+        type: 'other' as const,
+        status: 'confirmed' as const,
+        time: '12:00',
+      }];
+      
+      render(<CalendarWeek {...defaultProps} events={longTitleEvent} />);
+      
+      const eventElement = screen.getByText(/This is a very long event title/);
+      expect(eventElement.parentElement).toHaveClass('truncate');
+    });
+  });
+
+  describe('Event Positioning', () => {
+    it('should stack multiple events at same time', () => {
+      const { container } = render(<CalendarWeek {...defaultProps} />);
+      
+      // Golf and Airtel events are both at 09:00 on Feb 15
+      const eventsAt9 = container.querySelectorAll('[title*="09:00"]');
+      
+      // Events should have different top positions
+      const positions = Array.from(eventsAt9).map(el => 
+        (el as HTMLElement).style.top
+      );
+      
+      expect(new Set(positions).size).toBeGreaterThan(1);
+    });
+
+    it('should set correct z-index for stacked events', () => {
+      const { container } = render(<CalendarWeek {...defaultProps} />);
+      
+      const events = container.querySelectorAll('.absolute[style*="z-index"]');
+      events.forEach((event) => {
+        const zIndex = (event as HTMLElement).style.zIndex;
+        expect(parseInt(zIndex)).toBeGreaterThan(0);
+      });
+    });
+  });
+});

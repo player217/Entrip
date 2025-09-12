@@ -1,0 +1,55 @@
+{
+  "cookies": [
+    {
+      "name": "AEC",
+      "value": "AVh_V2izEW_kBGdA6BZJ7JNElHuk5eTdPBkRSmHro85sPzn06ES9lkf0RQ",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1772341520.98461,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "NID",
+      "value": "525=cMGvUHPvhcublegY_oQm8BqFEiQAllOsG5A6gSgeRoVZqEg6jfxceT_50PcvtZ6mce-PWP1WXgI8my1qHsDd68CF-qduS_lEc8a9W2X2dx5OnAWaovDrdbZek1nsr02NpMJ3idIYVTTT4U9JAh-SVDG1qDd837TU8mzO841EBTIr7e-xoOYWO5VBTgThwkYvVL8xjQGMD64DdMTf_kIdjEhysF99GOObQQyfUC0oggvtU8OXY3eJXnLzxbE",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1773388922.984661,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://www.google.com",
+      "localStorage": [
+        {
+          "name": "sb_wiz.zpc.gws-wiz-serp.",
+          "value": "{\"0\":[[\"usd to krw\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"eur to krw\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"euro to krw\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"eur to usd\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"1 000 korean won to euro\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"euro to korean won\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"gbp to krw\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"1 usd to krw\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"1 eur to krw\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}],[\"1 billion won to euro\",0,[512,308,468,357,439,650,362,394],{\"zl\":90000}]],\"1\":{\"ag\":{\"a\":{\"90000\":[\"최근 검색어와 관련이 있음\",\"\",\"\",7]}},\"av\":\"-5090048359965335989\",\"q\":\"MLPxf5vpCCz_8k0bsvhhiaACfvM\"}}"
+        },
+        {
+          "name": "sb_wiz.sr_di",
+          "value": "GJDum_TO4ZKKHRi8r7amzMqhomsYoN3o9sCOl_2QARiF0eCI0vPlp3oYrofE84-_h_KJAQ"
+        },
+        {
+          "name": "sb_wiz.pq_tm_hp",
+          "value": "1757577726581"
+        },
+        {
+          "name": "sb_wiz.qc",
+          "value": "3"
+        },
+        {
+          "name": "sb_wiz.sc_pq",
+          "value": ""
+        },
+        {
+          "name": "sb_wiz.pq",
+          "value": "EUR KRW exchange rate current"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,884 @@
+{
+  "testSummary": {
+    "startTime": "2025-09-07T03:44:30.223Z",
+    "endTime": "2025-09-07T03:47:01.145Z",
+    "duration": 151,
+    "totalAccounts": 24,
+    "successfulLogins": 8,
+    "dashboardAccess": 8,
+    "calendarAccess": 8,
+    "totalBookings": 0
+  },
+  "companyBreakdown": [
+    {
+      "companyCode": "ENTRIP_MAIN",
+      "totalAccounts": 6,
+      "successfulLogins": 0,
+      "totalBookings": 0,
+      "accounts": [
+        {
+          "index": 1,
+          "companyCode": "ENTRIP_MAIN",
+          "username": "admin@entrip.com",
+          "role": "ADMIN",
+          "label": "본사 관리자",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+          ],
+          "timestamp": "2025-09-07T03:44:30.582Z",
+          "duration": 11902
+        },
+        {
+          "index": 2,
+          "companyCode": "ENTRIP_MAIN",
+          "username": "manager1@entrip.com",
+          "role": "MANAGER",
+          "label": "본사 매니저1",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+          ],
+          "timestamp": "2025-09-07T03:44:43.605Z",
+          "duration": 11886
+        },
+        {
+          "index": 3,
+          "companyCode": "ENTRIP_MAIN",
+          "username": "manager2@entrip.com",
+          "role": "MANAGER",
+          "label": "본사 매니저2",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+          ],
+          "timestamp": "2025-09-07T03:44:56.597Z",
+          "duration": 11895
+        },
+        {
+          "index": 4,
+          "companyCode": "ENTRIP_MAIN",
+          "username": "user1@entrip.com",
+          "role": "USER",
+          "label": "본사 직원1",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+          ],
+          "timestamp": "2025-09-07T03:45:09.608Z",
+          "duration": 11911
+        },
+        {
+          "index": 5,
+          "companyCode": "ENTRIP_MAIN",
+          "username": "user2@entrip.com",
+          "role": "USER",
+          "label": "본사 직원2",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+          ],
+          "timestamp": "2025-09-07T03:45:22.626Z",
+          "duration": 11884
+        },
+        {
+          "index": 6,
+          "companyCode": "ENTRIP_MAIN",
+          "username": "user3@entrip.com",
+          "role": "USER",
+          "label": "본사 직원3",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+          ],
+          "timestamp": "2025-09-07T03:45:35.619Z",
+          "duration": 11897
+        }
+      ]
+    },
+    {
+      "companyCode": "j1",
+      "totalAccounts": 6,
+      "successfulLogins": 6,
+      "totalBookings": 0,
+      "accounts": [
+        {
+          "index": 7,
+          "companyCode": "j1",
+          "username": "admin@j1.com",
+          "role": "ADMIN",
+          "label": "J1 관리자",
+          "loginSuccess": true,
+          "dashboardAccess": true,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": true,
+          "dataIsolation": true,
+          "errors": [],
+          "timestamp": "2025-09-07T03:45:48.624Z",
+          "duration": 4422
+        },
+        {
+          "index": 8,
+          "companyCode": "j1",
+          "username": "manager1@j1.com",
+          "role": "MANAGER",
+          "label": "J1 매니저1",
+          "loginSuccess": true,
+          "dashboardAccess": true,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": true,
+          "dataIsolation": true,
+          "errors": [],
+          "timestamp": "2025-09-07T03:45:54.156Z",
+          "duration": 4431
+        },
+        {
+          "index": 9,
+          "companyCode": "j1",
+          "username": "manager2@j1.com",
+          "role": "MANAGER",
+          "label": "J1 매니저2",
+          "loginSuccess": true,
+          "dashboardAccess": true,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": true,
+          "dataIsolation": true,
+          "errors": [],
+          "timestamp": "2025-09-07T03:45:59.697Z",
+          "duration": 4392
+        },
+        {
+          "index": 10,
+          "companyCode": "j1",
+          "username": "user1@j1.com",
+          "role": "USER",
+          "label": "J1 직원1",
+          "loginSuccess": true,
+          "dashboardAccess": true,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": true,
+          "dataIsolation": true,
+          "errors": [],
+          "timestamp": "2025-09-07T03:46:05.198Z",
+          "duration": 4413
+        },
+        {
+          "index": 11,
+          "companyCode": "j1",
+          "username": "user2@j1.com",
+          "role": "USER",
+          "label": "J1 직원2",
+          "loginSuccess": true,
+          "dashboardAccess": true,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": true,
+          "dataIsolation": true,
+          "errors": [],
+          "timestamp": "2025-09-07T03:46:10.722Z",
+          "duration": 4405
+        },
+        {
+          "index": 12,
+          "companyCode": "j1",
+          "username": "user3@j1.com",
+          "role": "USER",
+          "label": "J1 직원3",
+          "loginSuccess": true,
+          "dashboardAccess": true,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": true,
+          "dataIsolation": true,
+          "errors": [],
+          "timestamp": "2025-09-07T03:46:16.229Z",
+          "duration": 4400
+        }
+      ]
+    },
+    {
+      "companyCode": "star",
+      "totalAccounts": 6,
+      "successfulLogins": 1,
+      "totalBookings": 0,
+      "accounts": [
+        {
+          "index": 13,
+          "companyCode": "star",
+          "username": "admin@star.com",
+          "role": "ADMIN",
+          "label": "스타투어 관리자",
+          "loginSuccess": true,
+          "dashboardAccess": true,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": true,
+          "dataIsolation": true,
+          "errors": [],
+          "timestamp": "2025-09-07T03:46:21.747Z",
+          "duration": 4369
+        },
+        {
+          "index": 14,
+          "companyCode": "star",
+          "username": "manager1@star.com",
+          "role": "MANAGER",
+          "label": "스타투어 매니저1",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Quick login button not found"
+          ],
+          "timestamp": "2025-09-07T03:46:27.222Z",
+          "duration": 1754
+        },
+        {
+          "index": 15,
+          "companyCode": "star",
+          "username": "manager2@star.com",
+          "role": "MANAGER",
+          "label": "스타투어 매니저2",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Quick login button not found"
+          ],
+          "timestamp": "2025-09-07T03:46:30.095Z",
+          "duration": 1731
+        },
+        {
+          "index": 16,
+          "companyCode": "star",
+          "username": "user1@star.com",
+          "role": "USER",
+          "label": "스타투어 직원1",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Quick login button not found"
+          ],
+          "timestamp": "2025-09-07T03:46:32.934Z",
+          "duration": 1747
+        },
+        {
+          "index": 17,
+          "companyCode": "star",
+          "username": "user2@star.com",
+          "role": "USER",
+          "label": "스타투어 직원2",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Quick login button not found"
+          ],
+          "timestamp": "2025-09-07T03:46:35.791Z",
+          "duration": 1752
+        },
+        {
+          "index": 18,
+          "companyCode": "star",
+          "username": "user3@star.com",
+          "role": "USER",
+          "label": "스타투어 직원3",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Quick login button not found"
+          ],
+          "timestamp": "2025-09-07T03:46:38.645Z",
+          "duration": 1738
+        }
+      ]
+    },
+    {
+      "companyCode": "happy",
+      "totalAccounts": 6,
+      "successfulLogins": 1,
+      "totalBookings": 0,
+      "accounts": [
+        {
+          "index": 19,
+          "companyCode": "happy",
+          "username": "admin@happy.com",
+          "role": "ADMIN",
+          "label": "해피 관리자",
+          "loginSuccess": true,
+          "dashboardAccess": true,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": true,
+          "dataIsolation": true,
+          "errors": [],
+          "timestamp": "2025-09-07T03:46:41.497Z",
+          "duration": 4367
+        },
+        {
+          "index": 20,
+          "companyCode": "happy",
+          "username": "manager1@happy.com",
+          "role": "MANAGER",
+          "label": "해피 매니저1",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Quick login button not found"
+          ],
+          "timestamp": "2025-09-07T03:46:46.971Z",
+          "duration": 1744
+        },
+        {
+          "index": 21,
+          "companyCode": "happy",
+          "username": "manager2@happy.com",
+          "role": "MANAGER",
+          "label": "해피 매니저2",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Quick login button not found"
+          ],
+          "timestamp": "2025-09-07T03:46:49.820Z",
+          "duration": 1750
+        },
+        {
+          "index": 22,
+          "companyCode": "happy",
+          "username": "user1@happy.com",
+          "role": "USER",
+          "label": "해피 직원1",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Quick login button not found"
+          ],
+          "timestamp": "2025-09-07T03:46:52.677Z",
+          "duration": 1746
+        },
+        {
+          "index": 23,
+          "companyCode": "happy",
+          "username": "user2@happy.com",
+          "role": "USER",
+          "label": "해피 직원2",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Quick login button not found"
+          ],
+          "timestamp": "2025-09-07T03:46:55.534Z",
+          "duration": 1747
+        },
+        {
+          "index": 24,
+          "companyCode": "happy",
+          "username": "user3@happy.com",
+          "role": "USER",
+          "label": "해피 직원3",
+          "loginSuccess": false,
+          "dashboardAccess": false,
+          "bookingCount": 0,
+          "bookingData": [],
+          "calendarAccess": false,
+          "dataIsolation": true,
+          "errors": [
+            "Quick login button not found"
+          ],
+          "timestamp": "2025-09-07T03:46:58.390Z",
+          "duration": 1750
+        }
+      ]
+    }
+  ],
+  "dataIsolation": {
+    "passed": true,
+    "issues": []
+  },
+  "detailedResults": [
+    {
+      "index": 1,
+      "companyCode": "ENTRIP_MAIN",
+      "username": "admin@entrip.com",
+      "role": "ADMIN",
+      "label": "본사 관리자",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+      ],
+      "timestamp": "2025-09-07T03:44:30.582Z",
+      "duration": 11902
+    },
+    {
+      "index": 2,
+      "companyCode": "ENTRIP_MAIN",
+      "username": "manager1@entrip.com",
+      "role": "MANAGER",
+      "label": "본사 매니저1",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+      ],
+      "timestamp": "2025-09-07T03:44:43.605Z",
+      "duration": 11886
+    },
+    {
+      "index": 3,
+      "companyCode": "ENTRIP_MAIN",
+      "username": "manager2@entrip.com",
+      "role": "MANAGER",
+      "label": "본사 매니저2",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+      ],
+      "timestamp": "2025-09-07T03:44:56.597Z",
+      "duration": 11895
+    },
+    {
+      "index": 4,
+      "companyCode": "ENTRIP_MAIN",
+      "username": "user1@entrip.com",
+      "role": "USER",
+      "label": "본사 직원1",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+      ],
+      "timestamp": "2025-09-07T03:45:09.608Z",
+      "duration": 11911
+    },
+    {
+      "index": 5,
+      "companyCode": "ENTRIP_MAIN",
+      "username": "user2@entrip.com",
+      "role": "USER",
+      "label": "본사 직원2",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+      ],
+      "timestamp": "2025-09-07T03:45:22.626Z",
+      "duration": 11884
+    },
+    {
+      "index": 6,
+      "companyCode": "ENTRIP_MAIN",
+      "username": "user3@entrip.com",
+      "role": "USER",
+      "label": "본사 직원3",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Login timeout: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"http://localhost:3000/\" until \"load\"\n  navigated to \"http://localhost:3000/login\"\n============================================================"
+      ],
+      "timestamp": "2025-09-07T03:45:35.619Z",
+      "duration": 11897
+    },
+    {
+      "index": 7,
+      "companyCode": "j1",
+      "username": "admin@j1.com",
+      "role": "ADMIN",
+      "label": "J1 관리자",
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": true,
+      "dataIsolation": true,
+      "errors": [],
+      "timestamp": "2025-09-07T03:45:48.624Z",
+      "duration": 4422
+    },
+    {
+      "index": 8,
+      "companyCode": "j1",
+      "username": "manager1@j1.com",
+      "role": "MANAGER",
+      "label": "J1 매니저1",
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": true,
+      "dataIsolation": true,
+      "errors": [],
+      "timestamp": "2025-09-07T03:45:54.156Z",
+      "duration": 4431
+    },
+    {
+      "index": 9,
+      "companyCode": "j1",
+      "username": "manager2@j1.com",
+      "role": "MANAGER",
+      "label": "J1 매니저2",
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": true,
+      "dataIsolation": true,
+      "errors": [],
+      "timestamp": "2025-09-07T03:45:59.697Z",
+      "duration": 4392
+    },
+    {
+      "index": 10,
+      "companyCode": "j1",
+      "username": "user1@j1.com",
+      "role": "USER",
+      "label": "J1 직원1",
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": true,
+      "dataIsolation": true,
+      "errors": [],
+      "timestamp": "2025-09-07T03:46:05.198Z",
+      "duration": 4413
+    },
+    {
+      "index": 11,
+      "companyCode": "j1",
+      "username": "user2@j1.com",
+      "role": "USER",
+      "label": "J1 직원2",
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": true,
+      "dataIsolation": true,
+      "errors": [],
+      "timestamp": "2025-09-07T03:46:10.722Z",
+      "duration": 4405
+    },
+    {
+      "index": 12,
+      "companyCode": "j1",
+      "username": "user3@j1.com",
+      "role": "USER",
+      "label": "J1 직원3",
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": true,
+      "dataIsolation": true,
+      "errors": [],
+      "timestamp": "2025-09-07T03:46:16.229Z",
+      "duration": 4400
+    },
+    {
+      "index": 13,
+      "companyCode": "star",
+      "username": "admin@star.com",
+      "role": "ADMIN",
+      "label": "스타투어 관리자",
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": true,
+      "dataIsolation": true,
+      "errors": [],
+      "timestamp": "2025-09-07T03:46:21.747Z",
+      "duration": 4369
+    },
+    {
+      "index": 14,
+      "companyCode": "star",
+      "username": "manager1@star.com",
+      "role": "MANAGER",
+      "label": "스타투어 매니저1",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Quick login button not found"
+      ],
+      "timestamp": "2025-09-07T03:46:27.222Z",
+      "duration": 1754
+    },
+    {
+      "index": 15,
+      "companyCode": "star",
+      "username": "manager2@star.com",
+      "role": "MANAGER",
+      "label": "스타투어 매니저2",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Quick login button not found"
+      ],
+      "timestamp": "2025-09-07T03:46:30.095Z",
+      "duration": 1731
+    },
+    {
+      "index": 16,
+      "companyCode": "star",
+      "username": "user1@star.com",
+      "role": "USER",
+      "label": "스타투어 직원1",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Quick login button not found"
+      ],
+      "timestamp": "2025-09-07T03:46:32.934Z",
+      "duration": 1747
+    },
+    {
+      "index": 17,
+      "companyCode": "star",
+      "username": "user2@star.com",
+      "role": "USER",
+      "label": "스타투어 직원2",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Quick login button not found"
+      ],
+      "timestamp": "2025-09-07T03:46:35.791Z",
+      "duration": 1752
+    },
+    {
+      "index": 18,
+      "companyCode": "star",
+      "username": "user3@star.com",
+      "role": "USER",
+      "label": "스타투어 직원3",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Quick login button not found"
+      ],
+      "timestamp": "2025-09-07T03:46:38.645Z",
+      "duration": 1738
+    },
+    {
+      "index": 19,
+      "companyCode": "happy",
+      "username": "admin@happy.com",
+      "role": "ADMIN",
+      "label": "해피 관리자",
+      "loginSuccess": true,
+      "dashboardAccess": true,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": true,
+      "dataIsolation": true,
+      "errors": [],
+      "timestamp": "2025-09-07T03:46:41.497Z",
+      "duration": 4367
+    },
+    {
+      "index": 20,
+      "companyCode": "happy",
+      "username": "manager1@happy.com",
+      "role": "MANAGER",
+      "label": "해피 매니저1",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Quick login button not found"
+      ],
+      "timestamp": "2025-09-07T03:46:46.971Z",
+      "duration": 1744
+    },
+    {
+      "index": 21,
+      "companyCode": "happy",
+      "username": "manager2@happy.com",
+      "role": "MANAGER",
+      "label": "해피 매니저2",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Quick login button not found"
+      ],
+      "timestamp": "2025-09-07T03:46:49.820Z",
+      "duration": 1750
+    },
+    {
+      "index": 22,
+      "companyCode": "happy",
+      "username": "user1@happy.com",
+      "role": "USER",
+      "label": "해피 직원1",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Quick login button not found"
+      ],
+      "timestamp": "2025-09-07T03:46:52.677Z",
+      "duration": 1746
+    },
+    {
+      "index": 23,
+      "companyCode": "happy",
+      "username": "user2@happy.com",
+      "role": "USER",
+      "label": "해피 직원2",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Quick login button not found"
+      ],
+      "timestamp": "2025-09-07T03:46:55.534Z",
+      "duration": 1747
+    },
+    {
+      "index": 24,
+      "companyCode": "happy",
+      "username": "user3@happy.com",
+      "role": "USER",
+      "label": "해피 직원3",
+      "loginSuccess": false,
+      "dashboardAccess": false,
+      "bookingCount": 0,
+      "bookingData": [],
+      "calendarAccess": false,
+      "dataIsolation": true,
+      "errors": [
+        "Quick login button not found"
+      ],
+      "timestamp": "2025-09-07T03:46:58.390Z",
+      "duration": 1750
+    }
+  ]
+}

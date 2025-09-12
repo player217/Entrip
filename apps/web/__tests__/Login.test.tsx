@@ -1,8 +1,6 @@
-import { vi } from 'vitest';
-
 // Mock next/navigation
-const mockPush = vi.fn();
-vi.mock('next/navigation', () => ({
+const mockPush = jest.fn();
+jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
