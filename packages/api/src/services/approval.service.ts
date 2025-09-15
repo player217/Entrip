@@ -1,6 +1,5 @@
-import { PrismaClient, Approval, ApprovalStep, ApprovalStatus, ApprovalTargetType, ApprovalAction } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Approval, ApprovalStep, ApprovalStatus, ApprovalTargetType, ApprovalAction } from '@prisma/client';
+import prisma from '../lib/prisma';
 
 // ============================================
 // TYPES

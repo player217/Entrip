@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { calendarController } from './calendar.controller';
 import { authMiddleware } from '../../middlewares/auth.middleware';
+import { extractCompanyCode, validateCompanyAccess } from '../../middlewares/multitenancy.middleware';
 import { validateBody, validateQuery } from '../../middlewares/validation.middleware';
 import { CalendarCreateDto } from './dtos/CalendarCreate.dto';
 import { CalendarUpdateDto } from './dtos/CalendarUpdate.dto';
@@ -9,8 +10,10 @@ import { CalendarStatusPatchDto } from './dtos/CalendarStatusPatch.dto';
 
 const router: Router = Router();
 
-// All calendar routes require authentication
+// All calendar routes require authentication and multi-tenancy
 router.use(authMiddleware);
+router.use(extractCompanyCode);
+router.use(validateCompanyAccess);
 
 /**
  * @route GET /api/calendar

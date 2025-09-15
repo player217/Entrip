@@ -1,17 +1,50 @@
 import { Request, Response, NextFunction } from 'express';
+import { AuthRequest } from '../../middlewares/auth.middleware';
 import { bookingsService } from './bookings.service';
 import { BookingCreateInput } from './dtos/BookingCreate.dto';
 import { BookingUpdateInput } from './dtos/BookingUpdate.dto';
 import { BookingStatusPatchInput } from './dtos/BookingStatusPatch.dto';
+import { PaginationOptions } from '../../services/base.service';
 
 export class BookingsController {
-  list = async (req: Request, res: Response, next: NextFunction) => {
+  list = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 20;
-      
-      const result = await bookingsService.findAll(page, limit);
-      
+      const { companyCode, userId } = req;
+      if (!companyCode || !userId) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
+      const options: PaginationOptions = {
+        page: parseInt(req.query.page as string) || 1,
+        limit: parseInt(req.query.limit as string) || 20,
+        orderBy: (req.query.orderBy as string) || 'createdAt',
+        order: (req.query.order as 'asc' | 'desc') || 'desc',
+      };
+
+      // Extract filters from query params
+      const filters: any = {};
+      if (req.query.status) {
+        filters.status = req.query.status;
+      }
+      if (req.query.teamName) {
+        filters.teamName = {
+          contains: req.query.teamName as string,
+          mode: 'insensitive',
+        };
+      }
+      if (req.query.customerName) {
+        filters.customerName = {
+          contains: req.query.customerName as string,
+          mode: 'insensitive',
+        };
+      }
+
+      const result = await bookingsService.findAll(companyCode, filters, options);
+
       res.json({
         success: true,
         ...result,
@@ -21,10 +54,19 @@ export class BookingsController {
     }
   }
 
-  getById = async (req: Request, res: Response, next: NextFunction) => {
+  getById = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const booking = await bookingsService.findById(req.params.id!);
-      
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
+      const booking = await bookingsService.findById(req.params.id!, companyCode);
+
       res.json({
         success: true,
         data: booking,
@@ -34,11 +76,20 @@ export class BookingsController {
     }
   }
 
-  create = async (req: Request, res: Response, next: NextFunction) => {
+  create = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode, userId } = req;
+      if (!companyCode || !userId) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const input: BookingCreateInput = req.body;
-      const booking = await bookingsService.create(input);
-      
+      const booking = await bookingsService.createBooking(companyCode, userId, input);
+
       res.status(201).json({
         success: true,
         data: booking,
@@ -48,11 +99,20 @@ export class BookingsController {
     }
   }
 
-  update = async (req: Request, res: Response, next: NextFunction) => {
+  update = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const input: BookingUpdateInput = req.body;
-      const booking = await bookingsService.update(req.params.id!, input);
-      
+      const booking = await bookingsService.updateBooking(req.params.id!, companyCode, input);
+
       res.json({
         success: true,
         data: booking,
@@ -62,11 +122,20 @@ export class BookingsController {
     }
   }
 
-  updateStatus = async (req: Request, res: Response, next: NextFunction) => {
+  updateStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const input: BookingStatusPatchInput = req.body;
-      const booking = await bookingsService.updateStatus(req.params.id!, input);
-      
+      const booking = await bookingsService.updateBookingStatus(req.params.id!, companyCode, input);
+
       res.json({
         success: true,
         data: booking,
@@ -76,11 +145,74 @@ export class BookingsController {
     }
   }
 
-  delete = async (req: Request, res: Response, next: NextFunction) => {
+  delete = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      await bookingsService.delete(req.params.id!);
-      
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
+      await bookingsService.delete(req.params.id!, companyCode);
+
       res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Additional endpoints
+  getStats = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
+      const stats = await bookingsService.getStats(companyCode);
+
+      res.json({
+        success: true,
+        data: stats,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  search = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
+      const query = req.query.q as string;
+      if (!query) {
+        return res.status(400).json({
+          success: false,
+          error: 'BAD_REQUEST',
+          message: 'Search query required',
+        });
+      }
+
+      const bookings = await bookingsService.search(companyCode, query);
+
+      res.json({
+        success: true,
+        data: bookings,
+      });
     } catch (error) {
       next(error);
     }

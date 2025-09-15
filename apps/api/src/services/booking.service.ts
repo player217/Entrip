@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { BookingStatus, BookingType, UserRole } from '@entrip/shared';
+import { BookingStatus, BookingType, UserRole, mapSharedStatusToPrisma } from '@entrip/shared';
 import { fromApiCreateRequest, fromApiUpdateRequest } from './booking.mapper';
 
 const prisma = new PrismaClient();
@@ -500,7 +500,7 @@ export const changeStatus = async (id: string, status: BookingStatus, companyCod
   
   const booking = await prisma.booking.update({ 
     where, 
-    data: { status },
+    data: { status: mapSharedStatusToPrisma(status) as any },
     include: {
       user: {
         select: { id: true, email: true, name: true, role: true }

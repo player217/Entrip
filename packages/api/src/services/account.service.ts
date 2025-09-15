@@ -1,6 +1,5 @@
-import { PrismaClient, Account, AccountRole, AccountStatus } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Account, AccountRole, AccountStatus } from '@prisma/client';
+import prisma from '../lib/prisma';
 
 // ============================================
 // TYPES
@@ -386,9 +385,3 @@ export const bulkUpdateAccountStatus = async (ids: string[], status: AccountStat
   return result.count;
 };
 
-/**
- * Clean up function to close Prisma connection
- */
-export const closePrismaConnection = async () => {
-  await prisma.$disconnect();
-};

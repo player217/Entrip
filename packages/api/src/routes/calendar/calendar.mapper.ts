@@ -1,4 +1,4 @@
-import { CalendarEvent } from './calendar.service';
+import { CalendarEvent } from '@prisma/client';
 
 /**
  * Map CalendarEvent to response DTO
@@ -14,7 +14,6 @@ export function mapEventToResponse(event: CalendarEvent) {
     color: event.color,
     description: event.description,
     location: event.location,
-    teamId: event.teamId,
     status: event.status,
     createdBy: event.createdBy,
     createdAt: event.createdAt,

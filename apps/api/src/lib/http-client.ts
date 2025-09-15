@@ -32,7 +32,10 @@ export function createHttpClient(baseURL: string, timeoutMs = 3000): AxiosInstan
   // Request interceptor for logging
   inst.interceptors.request.use(
     (config) => {
-      config.metadata = { startTime: Date.now() };
+      config.metadata = { 
+        startTime: Date.now(), 
+        requestId: `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      };
       return config;
     },
     (error) => Promise.reject(error)

@@ -364,7 +364,7 @@ export class FlightService {
       await prisma.flightStatusCache.upsert({
         where: { flightNo_date: { flightNo: key, date: new Date() } },
         update: {
-          payload: JSON.parse(JSON.stringify(data)) as Prisma.JsonArray,
+          payload: JSON.parse(JSON.stringify(data)) as Prisma.JsonValue,
           status: 'CACHED',
           source,
           fetchedAt: new Date(),
@@ -373,7 +373,7 @@ export class FlightService {
         create: {
           flightNo: key,
           date: new Date(),
-          payload: JSON.parse(JSON.stringify(data)) as Prisma.JsonArray,
+          payload: JSON.parse(JSON.stringify(data)) as Prisma.JsonValue,
           status: 'CACHED',
           source,
           fetchedAt: new Date(),

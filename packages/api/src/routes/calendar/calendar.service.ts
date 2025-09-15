@@ -1,29 +1,11 @@
-import { v4 as uuidv4 } from 'uuid';
+import { CalendarEvent, CalendarEventStatus } from '@prisma/client';
+import { BaseService } from '../../services/base.service';
+import prisma from '../../lib/prisma';
 import { CalendarCreateInput } from './dtos/CalendarCreate.dto';
 import { CalendarUpdateInput } from './dtos/CalendarUpdate.dto';
 import { CalendarQueryInput } from './dtos/CalendarQuery.dto';
+import { CalendarStatusPatchInput } from './dtos/CalendarStatusPatch.dto';
 import { ApiError } from '../../middlewares/error.middleware';
-
-export interface CalendarEvent {
-  id: string;
-  title: string;
-  start: string;
-  end: string;
-  allDay: boolean;
-  color: string;
-  description?: string;
-  location?: string;
-  teamId?: string;
-  status: 'confirmed' | 'pending' | 'cancelled';
-  createdBy: string;
-  createdAt: string;
-  updatedBy?: string;
-  updatedAt?: string;
-  deletedAt?: string | null;
-}
-
-// In-memory storage
-const events: CalendarEvent[] = [];
 
 // Default colors from design tokens (brand colors)
 const DEFAULT_COLORS = [
@@ -35,133 +17,272 @@ const DEFAULT_COLORS = [
   '#06B6D4', // info.500 - cyan
 ];
 
-export class CalendarService {
+export class CalendarService extends BaseService<CalendarEvent> {
+  constructor() {
+    super(prisma.calendarEvent);
+  }
+
   /**
-   * Get events for a specific month
+   * Get events for a specific month with company isolation
    */
-  async list(query: CalendarQueryInput): Promise<CalendarEvent[]> {
-    const { year, month, team } = query;
-    
+  async list(companyCode: string, query: CalendarQueryInput): Promise<CalendarEvent[]> {
+    const { year, month, teamId } = query;
+
     // Create date range for the month in UTC
     const startOfMonth = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
     const endOfMonth = new Date(Date.UTC(year, month - 1 + 1, 0, 23, 59, 59, 999));
-    
-    return events.filter(event => {
-      // Skip soft-deleted events
-      if (event.deletedAt) return false;
-      
-      // Filter by team if specified
-      if (team && event.teamId !== team) return false;
-      
-      // Check if event overlaps with the month
-      const eventStart = new Date(event.start);
-      const eventEnd = new Date(event.end);
-      
-      return (
-        (eventStart >= startOfMonth && eventStart <= endOfMonth) ||
-        (eventEnd >= startOfMonth && eventEnd <= endOfMonth) ||
-        (eventStart < startOfMonth && eventEnd > endOfMonth)
-      );
-    }).sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-  }
 
-  /**
-   * Find a single event by ID
-   */
-  async findById(id: string): Promise<CalendarEvent> {
-    const event = events.find(e => e.id === id && !e.deletedAt);
-    if (!event) {
-      throw new ApiError(404, 'Event not found');
+    const whereClause: any = {
+      companyCode,
+      deletedAt: null,
+      OR: [
+        {
+          startTime: {
+            gte: startOfMonth,
+            lte: endOfMonth,
+          },
+        },
+        {
+          endTime: {
+            gte: startOfMonth,
+            lte: endOfMonth,
+          },
+        },
+        {
+          AND: [
+            { startTime: { lt: startOfMonth } },
+            { endTime: { gt: endOfMonth } },
+          ],
+        },
+      ],
+    };
+
+    // Filter by team if specified
+    if (teamId) {
+      whereClause.teamId = teamId;
     }
-    return event;
+
+    return this.model.findMany({
+      where: whereClause,
+      orderBy: {
+        startTime: 'asc',
+      },
+      include: {
+        booking: {
+          select: {
+            id: true,
+            bookingNumber: true,
+            customerName: true,
+            teamName: true,
+          },
+        },
+      },
+    });
   }
 
   /**
-   * Create a new calendar event
+   * Create a calendar event with company code
    */
-  async create(input: CalendarCreateInput, user: { id: string; email: string }): Promise<CalendarEvent> {
-    const event: CalendarEvent = {
-      id: uuidv4(),
+  async createEvent(
+    companyCode: string,
+    userId: string,
+    input: CalendarCreateInput
+  ): Promise<CalendarEvent> {
+    const eventData: any = {
       title: input.title,
-      start: input.start,
-      end: input.end,
+      startTime: new Date(input.start),
+      endTime: new Date(input.end),
       allDay: input.allDay || false,
       color: input.color || this.getRandomColor(),
       description: input.description,
       location: input.location,
-      teamId: input.teamId,
-      status: 'confirmed',
-      createdBy: user.id,
-      createdAt: new Date().toISOString(),
-      deletedAt: null,
+      status: CalendarEventStatus.confirmed,
+      companyCode,
+      createdById: userId,
     };
-    
-    events.push(event);
-    return event;
+
+    // If teamId is provided, verify it exists
+    if (input.teamId) {
+      eventData.teamId = input.teamId;
+    }
+
+    // If bookingId is provided, link to booking
+    if (input.bookingId) {
+      const booking = await prisma.booking.findFirst({
+        where: {
+          id: input.bookingId,
+          companyCode,
+          deletedAt: null,
+        },
+      });
+
+      if (!booking) {
+        throw new ApiError(404, 'Booking not found or access denied');
+      }
+
+      eventData.bookingId = input.bookingId;
+    }
+
+    return this.model.create({
+      data: eventData,
+      include: {
+        booking: true,
+      },
+    });
   }
 
   /**
-   * Update an existing calendar event
+   * Update calendar event with company validation
    */
-  async update(
-    id: string, 
-    input: CalendarUpdateInput, 
-    user: { id: string; email: string }
+  async updateEvent(
+    id: string,
+    companyCode: string,
+    userId: string,
+    input: CalendarUpdateInput
   ): Promise<CalendarEvent> {
-    const eventIndex = events.findIndex(e => e.id === id && !e.deletedAt);
-    if (eventIndex === -1) {
-      throw new ApiError(404, 'Event not found');
-    }
-    
-    const updatedEvent: CalendarEvent = {
-      ...events[eventIndex],
+    // First validate the event exists and belongs to company
+    await this.findById(id, companyCode);
+
+    const updateData: any = {
       title: input.title,
-      start: input.start,
-      end: input.end,
+      startTime: new Date(input.start),
+      endTime: new Date(input.end),
       allDay: input.allDay || false,
-      color: input.color || events[eventIndex].color,
+      color: input.color,
       description: input.description,
       location: input.location,
-      teamId: input.teamId,
-      status: input.status || 'confirmed',
-      updatedBy: user.id,
-      updatedAt: new Date().toISOString(),
+      updatedAt: new Date(),
     };
-    
-    events[eventIndex] = updatedEvent;
-    return updatedEvent;
+
+    if (input.status) {
+      updateData.status = input.status as CalendarEventStatus;
+    }
+
+    if (input.teamId !== undefined) {
+      updateData.teamId = input.teamId;
+    }
+
+    return this.model.update({
+      where: { id },
+      data: updateData,
+      include: {
+        booking: true,
+      },
+    });
   }
 
   /**
-   * Update only the status of a calendar event
+   * Update event status with company validation
    */
-  async updateStatus(
-    id: string, 
-    status: 'confirmed' | 'pending' | 'cancelled',
-    user: { id: string; email: string }
+  async updateEventStatus(
+    id: string,
+    companyCode: string,
+    input: CalendarStatusPatchInput
   ): Promise<CalendarEvent> {
-    const eventIndex = events.findIndex(e => e.id === id && !e.deletedAt);
-    if (eventIndex === -1) {
-      throw new ApiError(404, 'Event not found');
-    }
-    
-    events[eventIndex].status = status;
-    events[eventIndex].updatedBy = user.id;
-    events[eventIndex].updatedAt = new Date().toISOString();
-    
-    return events[eventIndex];
+    // First validate the event exists and belongs to company
+    await this.findById(id, companyCode);
+
+    return this.model.update({
+      where: { id },
+      data: {
+        status: input.status as CalendarEventStatus,
+        updatedAt: new Date(),
+      },
+      include: {
+        booking: true,
+      },
+    });
   }
 
   /**
-   * Soft delete a calendar event
+   * Get events for a date range
    */
-  async delete(id: string): Promise<void> {
-    const eventIndex = events.findIndex(e => e.id === id && !e.deletedAt);
-    if (eventIndex === -1) {
-      throw new ApiError(404, 'Event not found');
-    }
-    
-    events[eventIndex].deletedAt = new Date().toISOString();
+  async findByDateRange(
+    companyCode: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<CalendarEvent[]> {
+    return this.model.findMany({
+      where: {
+        companyCode,
+        deletedAt: null,
+        OR: [
+          {
+            startTime: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+          {
+            endTime: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        ],
+      },
+      orderBy: {
+        startTime: 'asc',
+      },
+      include: {
+        booking: true,
+      },
+    });
+  }
+
+  /**
+   * Get events for a specific booking
+   */
+  async findByBookingId(
+    companyCode: string,
+    bookingId: string
+  ): Promise<CalendarEvent[]> {
+    return this.model.findMany({
+      where: {
+        companyCode,
+        bookingId,
+        deletedAt: null,
+      },
+      orderBy: {
+        startTime: 'asc',
+      },
+    });
+  }
+
+  /**
+   * Get calendar statistics
+   */
+  async getStats(companyCode: string) {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    const [total, thisMonth, confirmed, pending, cancelled] = await Promise.all([
+      this.count(companyCode),
+      this.model.count({
+        where: {
+          companyCode,
+          deletedAt: null,
+          startTime: {
+            gte: startOfMonth,
+            lte: endOfMonth,
+          },
+        },
+      }),
+      this.count(companyCode, { status: CalendarEventStatus.confirmed }),
+      this.count(companyCode, { status: CalendarEventStatus.pending }),
+      this.count(companyCode, { status: CalendarEventStatus.cancelled }),
+    ]);
+
+    return {
+      total,
+      thisMonth,
+      byStatus: {
+        confirmed,
+        pending,
+        cancelled,
+      },
+    };
   }
 
   /**
@@ -169,20 +290,6 @@ export class CalendarService {
    */
   private getRandomColor(): string {
     return DEFAULT_COLORS[Math.floor(Math.random() * DEFAULT_COLORS.length)];
-  }
-
-  /**
-   * Clear all events (for testing)
-   */
-  async clearAll(): Promise<void> {
-    events.length = 0;
-  }
-
-  /**
-   * Get all events (for testing)
-   */
-  async getAll(): Promise<CalendarEvent[]> {
-    return events.filter(e => !e.deletedAt);
   }
 }
 

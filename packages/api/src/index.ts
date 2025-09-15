@@ -1,4 +1,5 @@
 import express, { Application } from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -7,6 +8,9 @@ import dotenv from 'dotenv';
 
 // Middleware imports
 import { errorHandler } from './middlewares/error.middleware';
+
+// WebSocket import
+import { initializeWebSocket } from './ws';
 
 // Route imports
 import authRoutes from './routes/auth/auth.route';
@@ -64,14 +68,22 @@ setupSwagger(app);
 // Error handling middleware (must be last)
 app.use(errorHandler);
 
-// Start server
-const PORT = process.env.PORT || 4002;
+// Start server with WebSocket support
+const PORT = 4000; // Hard-coded port to bypass environment variable issues
 
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
+  const server = createServer(app);
+
+  // Initialize WebSocket
+  const io = initializeWebSocket(server);
+  app.set('io', io); // Store io instance in app for routes to use
+
+  server.listen(PORT, () => {
     // eslint-disable-next-line no-console
-    console.log(`🚀 API Server running on http://localhost:${PORT}`);
+    console.log(`🚀 API v2 Server running on http://localhost:${PORT}`);
     // eslint-disable-next-line no-console
     console.log(`📚 API Documentation available at http://localhost:${PORT}/api-docs`);
+    // eslint-disable-next-line no-console
+    console.log(`🔗 WebSocket available at ws://localhost:${PORT}`);
   });
 }

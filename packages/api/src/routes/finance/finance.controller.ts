@@ -1,9 +1,10 @@
 import { Response, NextFunction } from 'express';
+import { AuthRequest } from '../../middlewares/auth.middleware';
 import { financeService } from './finance.service';
-import { AuthRequest } from '../../types/auth';
 import { FinanceCreateInput } from './dtos/FinanceCreate.dto';
 import { FinanceUpdateInput } from './dtos/FinanceUpdate.dto';
 import { FinanceQueryInput } from './dtos/FinanceQuery.dto';
+import { FinanceApproveInput } from './dtos/FinanceApprove.dto';
 
 export class FinanceController {
   /**
@@ -11,8 +12,17 @@ export class FinanceController {
    */
   list = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const query = req.query as unknown as FinanceQueryInput;
-      const result = await financeService.list(query);
+      const result = await financeService.listFinanceRecords(companyCode, query);
 
       res.json({
         success: true,
@@ -28,8 +38,17 @@ export class FinanceController {
    */
   findById = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const { id } = req.params;
-      const record = await financeService.findById(id);
+      const record = await financeService.findById(id, companyCode);
 
       res.json({
         success: true,
@@ -45,8 +64,17 @@ export class FinanceController {
    */
   create = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode, userId } = req;
+      if (!companyCode || !userId) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const input = req.body as FinanceCreateInput;
-      const record = await financeService.create(input, req.user!);
+      const record = await financeService.createFinanceRecord(companyCode, userId, input);
 
       res.status(201).json({
         success: true,
@@ -62,9 +90,18 @@ export class FinanceController {
    */
   update = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const { id } = req.params;
       const input = req.body as FinanceUpdateInput;
-      const record = await financeService.update(id, input, req.user!);
+      const record = await financeService.updateFinanceRecord(id, companyCode, input);
 
       res.json({
         success: true,
@@ -80,8 +117,17 @@ export class FinanceController {
    */
   delete = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const { id } = req.params;
-      await financeService.delete(id);
+      await financeService.delete(id, companyCode);
 
       res.json({
         success: true,
@@ -93,22 +139,44 @@ export class FinanceController {
   };
 
   /**
-   * Get finance statistics by month
+   * Get finance statistics
    */
   getStats = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      // Query is already validated and transformed by FinanceStatsQueryDto
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
+      // Query is already validated and transformed
       const { year, month } = req.query as { year?: number; month?: number };
-      
+
       const yearNum = year || new Date().getFullYear();
-      const monthNum = month;
 
-      const stats = await financeService.getStatsByMonth(yearNum, monthNum);
+      // Get both general stats and monthly stats
+      if (month) {
+        const monthlyStats = await financeService.getStatsByMonth(
+          companyCode,
+          yearNum,
+          month
+        );
 
-      res.json({
-        success: true,
-        data: stats,
-      });
+        res.json({
+          success: true,
+          data: monthlyStats,
+        });
+      } else {
+        const stats = await financeService.getStats(companyCode);
+
+        res.json({
+          success: true,
+          data: stats,
+        });
+      }
     } catch (error) {
       next(error);
     }
@@ -119,20 +187,29 @@ export class FinanceController {
    */
   approve = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
-      const { status, remarks } = req.body;
+      const { companyCode, userId } = req;
+      if (!companyCode || !userId) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
 
-      const updated = await financeService.updateApprovalStatus(
-        id, 
-        status, 
-        req.user!,
-        remarks
+      const { id } = req.params;
+      const input = req.body as FinanceApproveInput;
+
+      const updated = await financeService.approveFinanceRecord(
+        id,
+        companyCode,
+        userId,
+        input
       );
 
       res.json({
         success: true,
         data: updated,
-        message: `Finance record ${status} successfully`,
+        message: `Finance record ${input.status === 'approved' ? 'approved' : 'rejected'} successfully`,
       });
     } catch (error) {
       next(error);
