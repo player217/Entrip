@@ -1,276 +1,140 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { authService } from '../auth.service';
+import { UserRole } from '@prisma/client';
+import { AuthService } from '../auth.service';
+import { prisma } from '../../../test/setup';
+import { UserFactory } from '../../../test/factories/user.factory';
 import { ApiError } from '../../../middlewares/error.middleware';
 
-// Mock bcrypt and jwt
-jest.mock('bcryptjs');
-jest.mock('jsonwebtoken');
-
 describe('AuthService', () => {
+  let authService: AuthService;
+
+  beforeAll(() => {
+    // Initialize UserFactory with prisma
+    UserFactory.initialize(prisma);
+  });
+
   beforeEach(() => {
-    jest.clearAllMocks();
-    authService.clearAllUsers();
+    authService = new AuthService();
   });
 
   describe('register', () => {
-    it('should register a new user successfully', async () => {
-      const mockInput = {
-        email: 'test@example.com',
-        password: 'password123',
-        name: 'Test User',
-        role: 'staff' as const,
+    it('should create a new user with hashed password', async () => {
+      const input = {
+        email: 'newuser@example.com',
+        password: 'SecurePass123!',
+        name: 'New User',
+        role: UserRole.USER,
+        department: 'Engineering',
       };
 
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
+      const result = await authService.register(input, 'TEST_COMPANY');
 
-      const result = await authService.register(mockInput);
+      // Check user was created
+      expect(result.user.email).toBe(input.email);
+      expect(result.user.name).toBe(input.name);
+      expect(result.user.companyCode).toBe('TEST_COMPANY');
+      expect('password' in result.user).toBe(false); // Should be sanitized
 
-      expect(result).toMatchObject({
-        id: '1',
-        email: mockInput.email,
-        name: mockInput.name,
-        role: mockInput.role,
+      // Check tokens were generated
+      expect(result.tokens.accessToken).toBeDefined();
+      expect(result.tokens.refreshToken).toBeDefined();
+
+      // Verify password was hashed in database
+      const dbUser = await prisma.user.findFirst({
+        where: { email: input.email },
       });
-      expect(result).not.toHaveProperty('password');
-      expect(bcrypt.hash).toHaveBeenCalledWith(mockInput.password, 10);
+      expect(dbUser).toBeDefined();
+      const isPasswordValid = await bcrypt.compare(input.password, dbUser!.password);
+      expect(isPasswordValid).toBe(true);
     });
 
-    it('should throw error if user already exists', async () => {
-      const mockInput = {
-        email: 'test@example.com',
-        password: 'password123',
-        name: 'Test User',
-        role: 'staff' as const,
+    it('should reject duplicate email within same company', async () => {
+      const input = {
+        email: 'duplicate@example.com',
+        password: 'Password123!',
+        name: 'First User',
+        role: UserRole.USER,
       };
 
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
+      // First registration should succeed
+      await authService.register(input, 'TEST_COMPANY');
 
-      // Register first user
-      await authService.register(mockInput);
-
-      // Try to register same email
-      await expect(authService.register(mockInput)).rejects.toThrow(
-        new ApiError(409, 'User already exists')
-      );
-    });
-
-    it('should use default role if not provided', async () => {
-      const mockInput = {
-        email: 'test@example.com',
-        password: 'password123',
-        name: 'Test User',
-        role: undefined as unknown as 'admin' | 'staff',
-      };
-
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
-
-      const result = await authService.register(mockInput);
-
-      expect(result.role).toBe('staff');
+      // Second registration with same email and company should fail
+      await expect(
+        authService.register(input, 'TEST_COMPANY')
+      ).rejects.toThrow('User with this email already exists in this company');
     });
   });
 
   describe('login', () => {
-    beforeEach(async () => {
-      // Setup a test user
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
-      await authService.register({
-        email: 'test@example.com',
-        password: 'password123',
-        name: 'Test User',
-        role: 'staff',
-      });
-    });
-
-    it('should login successfully with correct credentials', async () => {
-      const mockInput = {
-        email: 'test@example.com',
-        password: 'password123',
-      };
-
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      (jwt.sign as jest.Mock)
-        .mockReturnValueOnce('access-token')
-        .mockReturnValueOnce('refresh-token');
-
-      const result = await authService.login(mockInput);
-
-      expect(result).toMatchObject({
-        accessToken: 'access-token',
-        refreshToken: 'refresh-token',
-        user: {
-          email: mockInput.email,
-          name: 'Test User',
-          role: 'staff',
-        },
-      });
-      expect(result.user).not.toHaveProperty('password');
-      expect(bcrypt.compare).toHaveBeenCalledWith(
-        mockInput.password,
-        'hashed-password'
-      );
-    });
-
-    it('should throw error for non-existent user', async () => {
-      const mockInput = {
-        email: 'nonexistent@example.com',
-        password: 'password123',
-      };
-
-      await expect(authService.login(mockInput)).rejects.toThrow(
-        new ApiError(401, 'Invalid credentials')
-      );
-    });
-
-    it('should throw error for incorrect password', async () => {
-      const mockInput = {
-        email: 'test@example.com',
-        password: 'wrong-password',
-      };
-
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
-
-      await expect(authService.login(mockInput)).rejects.toThrow(
-        new ApiError(401, 'Invalid credentials')
-      );
-    });
-  });
-
-  describe('refreshTokens', () => {
-    it('should refresh tokens successfully', async () => {
-      // Setup user
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
-      await authService.register({
-        email: 'test@example.com',
-        password: 'password123',
-        name: 'Test User',
-        role: 'admin',
+    it('should authenticate valid credentials', async () => {
+      // Create a user first
+      const user = await UserFactory.create({
+        email: 'login@example.com',
+        companyCode: 'TEST_COMPANY',
       });
 
-      const mockPayload = {
-        id: '1',
-        email: 'test@example.com',
-        role: 'admin',
-      };
+      const result = await authService.login({
+        email: 'login@example.com',
+        password: 'password123', // Factory default password
+      }, 'TEST_COMPANY');
 
-      (jwt.verify as jest.Mock).mockReturnValue(mockPayload);
-      (jwt.sign as jest.Mock)
-        .mockReturnValueOnce('new-access-token')
-        .mockReturnValueOnce('new-refresh-token');
-
-      const result = await authService.refreshTokens('old-refresh-token');
-
-      expect(result).toEqual({
-        accessToken: 'new-access-token',
-        refreshToken: 'new-refresh-token',
-      });
-      expect(jwt.verify).toHaveBeenCalledWith(
-        'old-refresh-token',
-        expect.any(String)
-      );
+      expect(result.user.id).toBe(user.id);
+      expect(result.user.email).toBe(user.email);
+      expect(result.tokens.accessToken).toBeDefined();
+      expect(result.tokens.refreshToken).toBeDefined();
     });
 
-    it('should throw error for invalid refresh token', async () => {
-      (jwt.verify as jest.Mock).mockImplementation(() => {
-        throw new Error('Invalid token');
+    it('should reject invalid password', async () => {
+      await UserFactory.create({
+        email: 'wrongpass@example.com',
+        companyCode: 'TEST_COMPANY',
       });
 
       await expect(
-        authService.refreshTokens('invalid-token')
-      ).rejects.toThrow(new ApiError(401, 'Invalid refresh token'));
+        authService.login({
+          email: 'wrongpass@example.com',
+          password: 'wrongpassword',
+        }, 'TEST_COMPANY')
+      ).rejects.toThrow('Invalid email or password');
     });
 
-    it('should throw error if user not found', async () => {
-      const mockPayload = {
-        id: '999',
-        email: 'deleted@example.com',
-        role: 'staff',
-      };
+    it('should enforce company isolation during login', async () => {
+      await UserFactory.create({
+        email: 'company@example.com',
+        companyCode: 'COMPANY_A',
+      });
 
-      (jwt.verify as jest.Mock).mockReturnValue(mockPayload);
-
-      // Since the service catches all errors and returns 'Invalid refresh token',
-      // we expect that message instead
+      // Try to login with correct email/password but wrong company
       await expect(
-        authService.refreshTokens('valid-but-user-deleted')
-      ).rejects.toThrow(new ApiError(401, 'Invalid refresh token'));
+        authService.login({
+          email: 'company@example.com',
+          password: 'password123',
+        }, 'COMPANY_B')
+      ).rejects.toThrow('Invalid email or password');
     });
   });
 
   describe('verifyAccessToken', () => {
     it('should verify valid access token', async () => {
-      const mockPayload = {
-        id: '1',
-        email: 'test@example.com',
-        role: 'admin',
-      };
-
-      (jwt.verify as jest.Mock).mockReturnValue(mockPayload);
-
-      const result = await authService.verifyAccessToken('valid-token');
-
-      expect(result).toEqual(mockPayload);
-      expect(jwt.verify).toHaveBeenCalledWith('valid-token', expect.any(String));
-    });
-
-    it('should throw error for invalid access token', async () => {
-      (jwt.verify as jest.Mock).mockImplementation(() => {
-        throw new Error('Invalid token');
+      const user = await UserFactory.create({
+        companyCode: 'TEST_COMPANY',
+        role: UserRole.MANAGER,
       });
 
+      const tokens = authService.generateTokens(user);
+      const payload = await authService.verifyAccessToken(tokens.accessToken);
+
+      expect(payload.id).toBe(user.id);
+      expect(payload.email).toBe(user.email);
+      expect(payload.companyCode).toBe(user.companyCode);
+      expect(payload.role).toBe(UserRole.MANAGER);
+    });
+
+    it('should reject invalid access token', async () => {
       await expect(
-        authService.verifyAccessToken('invalid-token')
-      ).rejects.toThrow(new ApiError(401, 'Invalid access token'));
-    });
-  });
-
-  describe('utility methods', () => {
-    it('should find user by email', async () => {
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
-      await authService.register({
-        email: 'test@example.com',
-        password: 'password123',
-        name: 'Test User',
-        role: 'staff',
-      });
-
-      const user = await authService.findUserByEmail('test@example.com');
-      expect(user).toBeDefined();
-      expect(user?.email).toBe('test@example.com');
-    });
-
-    it('should return undefined for non-existent email', async () => {
-      const user = await authService.findUserByEmail('notfound@example.com');
-      expect(user).toBeUndefined();
-    });
-
-    it('should clear all users', async () => {
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
-      
-      // Add multiple users
-      await authService.register({
-        email: 'user1@example.com',
-        password: 'password123',
-        name: 'User 1',
-        role: 'staff',
-      });
-      await authService.register({
-        email: 'user2@example.com',
-        password: 'password123',
-        name: 'User 2',
-        role: 'admin',
-      });
-
-      // Clear all
-      await authService.clearAllUsers();
-
-      // Verify all cleared
-      const user1 = await authService.findUserByEmail('user1@example.com');
-      const user2 = await authService.findUserByEmail('user2@example.com');
-      
-      expect(user1).toBeUndefined();
-      expect(user2).toBeUndefined();
+        authService.verifyAccessToken('invalid.access.token')
+      ).rejects.toThrow('Invalid access token');
     });
   });
 });

@@ -31,7 +31,7 @@ interface BookingState {
   // Filter actions
   setFilters: (filters: Partial<BookingFilters>) => void;
   resetFilters: () => void;
-  updateFilter: (key: keyof BookingFilters, value: any) => void;
+  updateFilter: (key: keyof BookingFilters, value: unknown) => void;
   
   // Modal actions
   selectBooking: (id: string | null) => void;

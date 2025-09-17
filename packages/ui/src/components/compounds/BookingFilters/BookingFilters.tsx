@@ -1,18 +1,8 @@
 import React from 'react';
 import type { BookingFilters } from '@entrip/shared';
+import { BookingStatus, BookingType } from '@entrip/shared';
 
-enum BookingType {
-  PACKAGE = 'PACKAGE',
-  FIT = 'FIT',
-  GROUP = 'GROUP',
-  BUSINESS = 'BUSINESS'
-}
-
-enum BookingStatus {
-  PENDING = 'PENDING',
-  CONFIRMED = 'CONFIRMED',
-  CANCELLED = 'CANCELLED'
-}
+// BookingType and BookingStatus are now imported from @entrip/shared
 
 interface BookingFiltersProps {
   filters: BookingFilters;
@@ -30,6 +20,8 @@ const typeLabels: Record<BookingType, string> = {
 const statusLabels: Record<BookingStatus, string> = {
   [BookingStatus.PENDING]: '대기중',
   [BookingStatus.CONFIRMED]: '확정',
+  [BookingStatus.IN_PROGRESS]: '진행중',
+  [BookingStatus.COMPLETED]: '완료',
   [BookingStatus.CANCELLED]: '취소',
 };
 

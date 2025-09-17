@@ -1,0 +1,375 @@
+{
+  "companies": [
+    {
+      "code": "ENTRIP_MAIN",
+      "name": "엔트립 본사",
+      "logo": "/images/companies/entrip_main-logo.png",
+      "isActive": true,
+      "settings": {
+        "maxUsers": 100,
+        "features": [
+          "booking",
+          "calendar",
+          "reports",
+          "messenger"
+        ]
+      }
+    },
+    {
+      "code": "j1",
+      "name": "J1 여행사",
+      "logo": "/images/companies/j1-logo.png",
+      "isActive": true,
+      "settings": {
+        "maxUsers": 50,
+        "features": [
+          "booking",
+          "calendar",
+          "reports",
+          "messenger"
+        ]
+      }
+    },
+    {
+      "code": "star",
+      "name": "스타투어",
+      "logo": "/images/companies/star-logo.png",
+      "isActive": true,
+      "settings": {
+        "maxUsers": 50,
+        "features": [
+          "booking",
+          "calendar",
+          "reports"
+        ]
+      }
+    },
+    {
+      "code": "happy",
+      "name": "해피트래블",
+      "logo": "/images/companies/happy-logo.png",
+      "isActive": true,
+      "settings": {
+        "maxUsers": 30,
+        "features": [
+          "booking",
+          "calendar"
+        ]
+      }
+    }
+  ],
+  "users": [
+    {
+      "id": "entrip_main-admin",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "admin@entrip.com",
+      "email": "admin@entrip.com",
+      "name": "엔트립 본사 관리자",
+      "role": "ADMIN",
+      "department": "경영지원팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.352Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "entrip_main-manager1",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "manager1@entrip.com",
+      "email": "manager1@entrip.com",
+      "name": "엔트립 본사 김민수",
+      "role": "MANAGER",
+      "department": "영업1팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "entrip_main-manager2",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "manager2@entrip.com",
+      "email": "manager2@entrip.com",
+      "name": "엔트립 본사 이지영",
+      "role": "MANAGER",
+      "department": "영업2팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "entrip_main-user1",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "user1@entrip.com",
+      "email": "user1@entrip.com",
+      "name": "엔트립 본사 박준혁",
+      "role": "USER",
+      "department": "영업1팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "entrip_main-user2",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "user2@entrip.com",
+      "email": "user2@entrip.com",
+      "name": "엔트립 본사 최서연",
+      "role": "USER",
+      "department": "영업2팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "entrip_main-user3",
+      "companyCode": "ENTRIP_MAIN",
+      "username": "user3@entrip.com",
+      "email": "user3@entrip.com",
+      "name": "엔트립 본사 정태호",
+      "role": "USER",
+      "department": "마케팅팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "j1-admin",
+      "companyCode": "j1",
+      "username": "admin@j1.com",
+      "email": "admin@j1.com",
+      "name": "J1 여행사 관리자",
+      "role": "ADMIN",
+      "department": "경영지원팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "j1-manager1",
+      "companyCode": "j1",
+      "username": "manager1@j1.com",
+      "email": "manager1@j1.com",
+      "name": "J1 여행사 김민수",
+      "role": "MANAGER",
+      "department": "영업1팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "j1-manager2",
+      "companyCode": "j1",
+      "username": "manager2@j1.com",
+      "email": "manager2@j1.com",
+      "name": "J1 여행사 이지영",
+      "role": "MANAGER",
+      "department": "영업2팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "j1-user1",
+      "companyCode": "j1",
+      "username": "user1@j1.com",
+      "email": "user1@j1.com",
+      "name": "J1 여행사 박준혁",
+      "role": "USER",
+      "department": "영업1팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "j1-user2",
+      "companyCode": "j1",
+      "username": "user2@j1.com",
+      "email": "user2@j1.com",
+      "name": "J1 여행사 최서연",
+      "role": "USER",
+      "department": "영업2팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "j1-user3",
+      "companyCode": "j1",
+      "username": "user3@j1.com",
+      "email": "user3@j1.com",
+      "name": "J1 여행사 정태호",
+      "role": "USER",
+      "department": "마케팅팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "star-admin",
+      "companyCode": "star",
+      "username": "admin@star.com",
+      "email": "admin@star.com",
+      "name": "스타투어 관리자",
+      "role": "ADMIN",
+      "department": "경영지원팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "star-manager1",
+      "companyCode": "star",
+      "username": "manager1@star.com",
+      "email": "manager1@star.com",
+      "name": "스타투어 김민수",
+      "role": "MANAGER",
+      "department": "영업1팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "star-manager2",
+      "companyCode": "star",
+      "username": "manager2@star.com",
+      "email": "manager2@star.com",
+      "name": "스타투어 이지영",
+      "role": "MANAGER",
+      "department": "영업2팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "star-user1",
+      "companyCode": "star",
+      "username": "user1@star.com",
+      "email": "user1@star.com",
+      "name": "스타투어 박준혁",
+      "role": "USER",
+      "department": "영업1팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "star-user2",
+      "companyCode": "star",
+      "username": "user2@star.com",
+      "email": "user2@star.com",
+      "name": "스타투어 최서연",
+      "role": "USER",
+      "department": "영업2팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "star-user3",
+      "companyCode": "star",
+      "username": "user3@star.com",
+      "email": "user3@star.com",
+      "name": "스타투어 정태호",
+      "role": "USER",
+      "department": "마케팅팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "happy-admin",
+      "companyCode": "happy",
+      "username": "admin@happy.com",
+      "email": "admin@happy.com",
+      "name": "해피트래블 관리자",
+      "role": "ADMIN",
+      "department": "경영지원팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "happy-manager1",
+      "companyCode": "happy",
+      "username": "manager1@happy.com",
+      "email": "manager1@happy.com",
+      "name": "해피트래블 김민수",
+      "role": "MANAGER",
+      "department": "영업1팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "happy-manager2",
+      "companyCode": "happy",
+      "username": "manager2@happy.com",
+      "email": "manager2@happy.com",
+      "name": "해피트래블 이지영",
+      "role": "MANAGER",
+      "department": "영업2팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "happy-user1",
+      "companyCode": "happy",
+      "username": "user1@happy.com",
+      "email": "user1@happy.com",
+      "name": "해피트래블 박준혁",
+      "role": "USER",
+      "department": "영업1팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "happy-user2",
+      "companyCode": "happy",
+      "username": "user2@happy.com",
+      "email": "user2@happy.com",
+      "name": "해피트래블 최서연",
+      "role": "USER",
+      "department": "영업2팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    },
+    {
+      "id": "happy-user3",
+      "companyCode": "happy",
+      "username": "user3@happy.com",
+      "email": "user3@happy.com",
+      "name": "해피트래블 정태호",
+      "role": "USER",
+      "department": "마케팅팀",
+      "isActive": true,
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "lastLoginAt": "2025-09-13T21:57:18.354Z",
+      "passwordHash": "$2b$10$rgtOxa4F/tO2tJWER3.EPenGmggZyVFOIL2dJJLrTcZjafutHQ4UC"
+    }
+  ]
+}

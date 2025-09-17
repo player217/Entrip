@@ -10,6 +10,14 @@ import type {
 } from '../../types/booking';
 
 /**
+ * Socket.io-like interface for WebSocket functionality
+ */
+export interface SocketLike {
+  on<T = unknown>(event: string, callback: (data: T) => void): void;
+  off<T = unknown>(event: string, callback?: (data: T) => void): void;
+}
+
+/**
  * Configuration options for the useBookings hook
  */
 export interface BookingHookConfig {
@@ -18,7 +26,7 @@ export interface BookingHookConfig {
   
   // Real-time
   enableWebSocket?: boolean;
-  socketInstance?: any; // Socket.io instance
+  socketInstance?: SocketLike; // Socket.io instance
   
   // Performance
   revalidateOnFocus?: boolean;
@@ -31,7 +39,7 @@ export interface BookingHookConfig {
   pageSize?: number;
   
   // API Client
-  apiClient?: any; // Will be injected or use default
+  apiClient?: unknown; // Will be injected or use default
 }
 
 /**
@@ -63,7 +71,7 @@ export interface BookingHookReturn<T = Booking> {
   update: (id: string, data: UpdateBookingDto) => Promise<T>;
   delete: (id: string) => Promise<void>;
   bulkDelete: (ids: string[]) => Promise<void>;
-  bulkRestore: (bookings: any[]) => Promise<void>;
+  bulkRestore: (bookings: Booking[]) => Promise<void>;
   
   // Utilities
   findById: (id: string) => T | undefined;
@@ -72,7 +80,7 @@ export interface BookingHookReturn<T = Booking> {
   
   // SWR compatibility
   mutate: () => Promise<void>;
-  rawData?: any;
+  rawData?: unknown;
   requestUrl?: string;
 }
 
@@ -80,8 +88,8 @@ export interface BookingHookReturn<T = Booking> {
  * Data provider interface for abstraction
  */
 export interface DataProvider<T> {
-  fetch: (url: string, options?: any) => Promise<T>;
-  mutate: (key: string | ((key: any) => boolean)) => Promise<void>;
+  fetch: (url: string, options?: unknown) => Promise<T>;
+  mutate: (key: string | ((key: unknown) => boolean)) => Promise<void>;
   subscribe?: (key: string, callback: () => void) => () => void;
 }
 

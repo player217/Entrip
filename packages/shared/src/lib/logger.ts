@@ -20,23 +20,52 @@ class Logger {
     return Logger.instance;
   }
 
-  private formatLog(entry: LogEntry): string {
-    const { timestamp, level, component, message, data, error, stack } = entry;
-    let logMessage = `[${timestamp}] [${level.toUpperCase()}] [${component}] ${message}`;
+  private formatTimestamp(timestamp: string): string {
+    const date = new Date(timestamp);
+    return date.toLocaleString('ko-KR', {
+      year: '2-digit',
+      month: '2-digit', 
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  }
+
+  private getLogColor(level: LogLevel): string {
+    if (typeof window === 'undefined') return ''; // Node.js 환경
     
-    if (data) {
-      logMessage += `\nData: ${JSON.stringify(data, null, 2)}`;
+    switch (level) {
+      case 'debug': return 'color: #6B7280; font-weight: normal;'; // Gray
+      case 'info': return 'color: #3B82F6; font-weight: bold;';   // Blue
+      case 'warn': return 'color: #F59E0B; font-weight: bold;';   // Amber
+      case 'error': return 'color: #EF4444; font-weight: bold;';  // Red
+      default: return '';
+    }
+  }
+
+  private formatLog(entry: LogEntry): { message: string; style?: string } {
+    const { timestamp, level, component, message, data, error, stack } = entry;
+    const formattedTime = this.formatTimestamp(timestamp);
+    let logMessage = `[${formattedTime}] [${level.toUpperCase()}] [${component}] ${message}`;
+    
+    if (data && this.isDevelopment) {
+      logMessage += `\n📊 Data: ${JSON.stringify(data, null, 2)}`;
     }
     
     if (error) {
-      logMessage += `\nError: ${error.message}`;
+      logMessage += `\n❌ Error: ${error.message}`;
     }
     
-    if (stack) {
-      logMessage += `\nStack: ${stack}`;
+    if (stack && this.isDevelopment && level === 'error') {
+      logMessage += `\n📍 Stack: ${stack}`;
     }
     
-    return logMessage;
+    return {
+      message: logMessage,
+      style: this.getLogColor(level)
+    };
   }
 
   private log(level: LogLevel, component: string, message: string, data?: unknown, error?: Error) {
@@ -58,19 +87,37 @@ class Logger {
 
     const formattedLog = this.formatLog(entry);
 
-    // 콘솔 출력
+    // 콘솔 출력 (개선된 색상 지원)
     switch (level) {
       case 'debug':
-        if (this.isDevelopment) console.debug(formattedLog);
+        if (this.isDevelopment) {
+          if (formattedLog.style) {
+            console.debug(`%c${formattedLog.message}`, formattedLog.style);
+          } else {
+            console.debug(formattedLog.message);
+          }
+        }
         break;
       case 'info':
-        console.info(formattedLog);
+        if (formattedLog.style) {
+          console.info(`%c${formattedLog.message}`, formattedLog.style);
+        } else {
+          console.info(formattedLog.message);
+        }
         break;
       case 'warn':
-        console.warn(formattedLog);
+        if (formattedLog.style) {
+          console.warn(`%c${formattedLog.message}`, formattedLog.style);
+        } else {
+          console.warn(formattedLog.message);
+        }
         break;
       case 'error':
-        console.error(formattedLog);
+        if (formattedLog.style) {
+          console.error(`%c${formattedLog.message}`, formattedLog.style);
+        } else {
+          console.error(formattedLog.message);
+        }
         break;
     }
 
@@ -144,20 +191,68 @@ class Logger {
     }
   }
 
+  // 성능 메트릭 로깅
+  performance(component: string, operation: string, duration: number, metadata?: Record<string, unknown>) {
+    const performanceData = {
+      operation,
+      duration,
+      timestamp: Date.now(),
+      ...metadata
+    };
+
+    if (duration > 1000) {
+      this.warn(component, `Slow operation detected: ${operation} (${duration}ms)`, performanceData);
+    } else if (this.isDevelopment) {
+      this.debug(component, `⚡ ${operation} completed in ${duration}ms`, performanceData);
+    }
+  }
+
+  // API 호출 메트릭 로깅
+  apiCall(component: string, method: string, url: string, duration: number, status?: number, error?: Error) {
+    const apiData = {
+      method,
+      url,
+      duration,
+      status,
+      timestamp: Date.now()
+    };
+
+    if (error) {
+      this.error(component, `API call failed: ${method} ${url} (${duration}ms)`, error, apiData);
+    } else if (status && status >= 400) {
+      this.warn(component, `API call warning: ${method} ${url} - ${status} (${duration}ms)`, apiData);
+    } else if (duration > 2000) {
+      this.warn(component, `Slow API call: ${method} ${url} (${duration}ms)`, apiData);
+    } else if (this.isDevelopment) {
+      this.debug(component, `🌐 API: ${method} ${url} - ${status} (${duration}ms)`, apiData);
+    }
+  }
+
+  // 사용자 행동 추적
+  userAction(component: string, action: string, metadata?: Record<string, unknown>) {
+    this.info(component, `👤 User Action: ${action}`, {
+      action,
+      timestamp: Date.now(),
+      ...metadata
+    });
+  }
+
   // 로그를 파일로 다운로드 (브라우저 환경)
   downloadLogs() {
     if (typeof window === 'undefined') return;
 
     const allLogs = {
       memoryLogs: this.logs,
-      storedErrors: this.getStoredErrorLogs()
+      storedErrors: this.getStoredErrorLogs(),
+      exportedAt: new Date().toISOString(),
+      environment: this.isDevelopment ? 'development' : 'production'
     };
 
     const blob = new Blob([JSON.stringify(allLogs, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `entrip-logs-${new Date().toISOString()}.json`;
+    a.download = `entrip-logs-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

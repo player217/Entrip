@@ -37,6 +37,7 @@ function generateTestBookings(count: number) {
       status: selectedStatus,
       totalPrice: (Math.floor(Math.random() * 500) + 100) * 10000,
       currency: 'KRW',
+      companyCode: 'PERFORMANCE_TEST',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       createdBy: `user-${Math.floor(Math.random() * 5) + 1}`,

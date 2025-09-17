@@ -79,7 +79,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
       return res.status(400).json({
         code: 400,
         message: '잘못된 요청 파라미터입니다',
-        details: error instanceof ZodError ? error.errors : undefined,
+        details: error instanceof ZodError ? error.issues : undefined,
       });
     }
     logger.error('Error listing bookings:', error);
@@ -179,7 +179,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
       return res.status(400).json({
         code: 400,
         message: '잘못된 요청 데이터입니다',
-        details: error instanceof ZodError ? error.errors : undefined,
+        details: error instanceof ZodError ? error.issues : undefined,
       });
     }
     logger.error('Error creating booking:', error);
@@ -245,7 +245,7 @@ router.patch('/:id',
       return res.status(400).json({
         code: 400,
         message: '잘못된 요청 데이터입니다',
-        details: error instanceof ZodError ? error.errors : undefined,
+        details: error instanceof ZodError ? error.issues : undefined,
       });
     }
     if (error instanceof Error && 'code' in error && (error as PrismaError).code === 'P2025') {

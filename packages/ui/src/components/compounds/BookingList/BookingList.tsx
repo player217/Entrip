@@ -12,6 +12,8 @@ interface BookingListProps {
 const statusColors: Record<BookingStatus, string> = {
   [BookingStatus.CONFIRMED]: 'bg-green-100 text-green-800',
   [BookingStatus.PENDING]: 'bg-yellow-100 text-yellow-800',
+  [BookingStatus.IN_PROGRESS]: 'bg-blue-100 text-blue-800',
+  [BookingStatus.COMPLETED]: 'bg-purple-100 text-purple-800',
   [BookingStatus.CANCELLED]: 'bg-red-100 text-red-800',
 };
 
@@ -74,7 +76,7 @@ export function BookingList({
                 <div>
                   <div className="font-medium text-gray-900">고객정보</div>
                   <div>{booking.customerName}</div>
-                  <div className="text-gray-500">{typeLabels[booking.bookingType]}</div>
+                  <div className="text-gray-500">{booking.bookingType ? typeLabels[booking.bookingType] : '미정'}</div>
                 </div>
                 <div>
                   <div className="font-medium text-gray-900">여행정보</div>

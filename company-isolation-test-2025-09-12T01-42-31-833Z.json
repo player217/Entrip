@@ -1,0 +1,48 @@
+{
+  "timestamp": "2025-09-12T01:40:12.478Z",
+  "summary": {
+    "companiesTested": 4,
+    "successfulLogins": 0,
+    "totalPageTests": 0,
+    "dataVisibilityIssues": [],
+    "isolationIssues": []
+  },
+  "companyResults": {
+    "J1": {
+      "companyCode": "j1",
+      "expectedBookings": 151,
+      "loginResult": {
+        "success": false,
+        "error": "Login process error: locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"email\"], input[name=\"email\"], #email')\u001b[22m\n"
+      },
+      "pageTests": {}
+    },
+    "HAPPY": {
+      "companyCode": "happy",
+      "expectedBookings": 150,
+      "loginResult": {
+        "success": false,
+        "error": "Login process error: locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"email\"], input[name=\"email\"], #email')\u001b[22m\n"
+      },
+      "pageTests": {}
+    },
+    "STAR": {
+      "companyCode": "star",
+      "expectedBookings": 183,
+      "loginResult": {
+        "success": false,
+        "error": "Login process error: locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"email\"], input[name=\"email\"], #email')\u001b[22m\n"
+      },
+      "pageTests": {}
+    },
+    "ENTRIP_MAIN": {
+      "companyCode": "ENTRIP_MAIN",
+      "expectedBookings": 50,
+      "loginResult": {
+        "success": false,
+        "error": "Login process error: locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"email\"], input[name=\"email\"], #email')\u001b[22m\n"
+      },
+      "pageTests": {}
+    }
+  }
+}

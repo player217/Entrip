@@ -1,6 +1,5 @@
-import { PrismaClient, Booking, BookingStatus, BookingType } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Booking, BookingStatus, BookingType } from '@prisma/client';
+import prisma from '../lib/prisma';
 
 // ============================================
 // TYPES

@@ -44,9 +44,9 @@ export class ApprovalsService {
     // Validate finance target if specified
     if (input.targetType === 'finance' && input.targetId) {
       try {
-        const financeRecord = await financeService.findById(input.targetId);
+        const financeRecord = await financeService.findById(input.targetId, user.companyCode);
         // Sync amount and currency from finance record
-        input.amount = financeRecord.amount;
+        input.amount = Number(financeRecord.amount);
         input.currency = financeRecord.currency;
       } catch (error) {
         throw new ApiError(404, 'Invalid finance record ID');

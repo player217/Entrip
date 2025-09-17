@@ -83,10 +83,7 @@ export class AccountsController {
       const { id } = req.params;
       await accountsService.delete(id);
 
-      res.json({
-        success: true,
-        message: 'Account deleted successfully',
-      });
+      res.status(204).send();
     } catch (error) {
       next(error);
     }

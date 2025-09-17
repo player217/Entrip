@@ -1,0 +1,90 @@
+{
+  "timestamp": "2025-09-12T01:44:58.798Z",
+  "testEnvironment": {
+    "webApp": "http://localhost:3000",
+    "apiServer": "http://localhost:4001",
+    "testDate": "2025-09-12T01:44:58.800Z"
+  },
+  "summary": {
+    "companiesTested": 4,
+    "successfulLogins": 0,
+    "totalPageTests": 0,
+    "pagesWithData": 0,
+    "dataIsolationIssues": [],
+    "bookingVisibilityIssues": [],
+    "overallAssessment": "CANNOT_ASSESS"
+  },
+  "companyResults": {
+    "J1": {
+      "companyCode": "j1",
+      "expectedBookings": 151,
+      "demoButtonText": "J1 관리자",
+      "loginResult": {
+        "success": false,
+        "error": "Login error displayed",
+        "currentUrl": "http://localhost:3000/login"
+      },
+      "pageTests": {},
+      "summary": {
+        "loginSuccess": false,
+        "pagesWithData": 0,
+        "totalPages": 4,
+        "avgBookingsPerPage": 0,
+        "hasDataIsolationIssues": false
+      }
+    },
+    "HAPPY": {
+      "companyCode": "happy",
+      "expectedBookings": 150,
+      "demoButtonText": "해피 관리자",
+      "loginResult": {
+        "success": false,
+        "error": "Login error displayed",
+        "currentUrl": "http://localhost:3000/login"
+      },
+      "pageTests": {},
+      "summary": {
+        "loginSuccess": false,
+        "pagesWithData": 0,
+        "totalPages": 4,
+        "avgBookingsPerPage": 0,
+        "hasDataIsolationIssues": false
+      }
+    },
+    "STAR": {
+      "companyCode": "star",
+      "expectedBookings": 183,
+      "demoButtonText": "스타 관리자",
+      "loginResult": {
+        "success": false,
+        "error": "Demo login error: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"스타 관리자\")') to be visible\u001b[22m\n"
+      },
+      "pageTests": {},
+      "summary": {
+        "loginSuccess": false,
+        "pagesWithData": 0,
+        "totalPages": 4,
+        "avgBookingsPerPage": 0,
+        "hasDataIsolationIssues": false
+      }
+    },
+    "ENTRIP_MAIN": {
+      "companyCode": "ENTRIP_MAIN",
+      "expectedBookings": 50,
+      "demoButtonText": "본사 관리자",
+      "loginResult": {
+        "success": false,
+        "error": "Login error displayed",
+        "currentUrl": "http://localhost:3000/login"
+      },
+      "pageTests": {},
+      "summary": {
+        "loginSuccess": false,
+        "pagesWithData": 0,
+        "totalPages": 4,
+        "avgBookingsPerPage": 0,
+        "hasDataIsolationIssues": false
+      }
+    }
+  }
+}

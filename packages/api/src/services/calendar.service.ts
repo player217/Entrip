@@ -1,6 +1,5 @@
-import { PrismaClient, CalendarEvent, CalendarEventStatus } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { CalendarEvent, CalendarEventStatus } from '@prisma/client';
+import prisma from '../lib/prisma';
 
 // ============================================
 // TYPES

@@ -1,9 +1,10 @@
 import { Response, NextFunction } from 'express';
+import { AuthRequest } from '../../middlewares/auth.middleware';
 import { calendarService } from './calendar.service';
 import { CalendarCreateInput } from './dtos/CalendarCreate.dto';
 import { CalendarUpdateInput } from './dtos/CalendarUpdate.dto';
 import { CalendarQueryInput } from './dtos/CalendarQuery.dto';
-import { AuthRequest } from '../../types/auth';
+import { CalendarStatusPatchInput } from './dtos/CalendarStatusPatch.dto';
 import { mapEventToResponse, mapEventsToResponse } from './calendar.mapper';
 
 export class CalendarController {
@@ -12,9 +13,18 @@ export class CalendarController {
    */
   list = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const query = req.query as unknown as CalendarQueryInput;
-      const events = await calendarService.list(query);
-      
+      const events = await calendarService.list(companyCode, query);
+
       res.json({
         success: true,
         data: mapEventsToResponse(events),
@@ -30,9 +40,18 @@ export class CalendarController {
    */
   findById = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const { id } = req.params;
-      const event = await calendarService.findById(id);
-      
+      const event = await calendarService.findById(id, companyCode);
+
       res.json({
         success: true,
         data: mapEventToResponse(event),
@@ -47,9 +66,18 @@ export class CalendarController {
    */
   create = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode, userId } = req;
+      if (!companyCode || !userId) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const input = req.body as CalendarCreateInput;
-      const event = await calendarService.create(input, req.user!);
-      
+      const event = await calendarService.createEvent(companyCode, userId, input);
+
       res.status(201).json({
         success: true,
         data: mapEventToResponse(event),
@@ -64,10 +92,19 @@ export class CalendarController {
    */
   update = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode, userId } = req;
+      if (!companyCode || !userId) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const { id } = req.params;
       const input = req.body as CalendarUpdateInput;
-      const event = await calendarService.update(id, input, req.user!);
-      
+      const event = await calendarService.updateEvent(id, companyCode, userId, input);
+
       res.json({
         success: true,
         data: mapEventToResponse(event),
@@ -82,10 +119,19 @@ export class CalendarController {
    */
   updateStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const { id } = req.params;
-      const { status } = req.body;
-      const event = await calendarService.updateStatus(id, status, req.user!);
-      
+      const input = req.body as CalendarStatusPatchInput;
+      const event = await calendarService.updateEventStatus(id, companyCode, input);
+
       res.json({
         success: true,
         data: mapEventToResponse(event),
@@ -100,12 +146,43 @@ export class CalendarController {
    */
   delete = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
       const { id } = req.params;
-      await calendarService.delete(id);
-      
+      await calendarService.delete(id, companyCode);
+
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Get calendar statistics
+   */
+  getStats = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { companyCode } = req;
+      if (!companyCode) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN',
+          message: 'Company context required',
+        });
+      }
+
+      const stats = await calendarService.getStats(companyCode);
+
       res.json({
         success: true,
-        message: 'Event deleted successfully',
+        data: stats,
       });
     } catch (error) {
       next(error);

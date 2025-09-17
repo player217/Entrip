@@ -1,0 +1,52 @@
+{
+  "timestamp": "2025-09-12T01:35:16.867Z",
+  "summary": {
+    "totalTests": 0,
+    "passed": 0,
+    "failed": 4,
+    "issues": [
+      "J1: Company test error: browserContext.addCookies: Cookie should have either url or domain",
+      "HAPPY: Company test error: browserContext.addCookies: Cookie should have either url or domain",
+      "STAR: Company test error: browserContext.addCookies: Cookie should have either url or domain",
+      "ENTRIP_MAIN: Company test error: browserContext.addCookies: Cookie should have either url or domain"
+    ]
+  },
+  "companyResults": {
+    "J1": {
+      "companyCode": "j1",
+      "expectedBookings": 151,
+      "loginSuccess": false,
+      "pageResults": {},
+      "issues": [
+        "Company test error: browserContext.addCookies: Cookie should have either url or domain"
+      ]
+    },
+    "HAPPY": {
+      "companyCode": "happy",
+      "expectedBookings": 150,
+      "loginSuccess": false,
+      "pageResults": {},
+      "issues": [
+        "Company test error: browserContext.addCookies: Cookie should have either url or domain"
+      ]
+    },
+    "STAR": {
+      "companyCode": "star",
+      "expectedBookings": 183,
+      "loginSuccess": false,
+      "pageResults": {},
+      "issues": [
+        "Company test error: browserContext.addCookies: Cookie should have either url or domain"
+      ]
+    },
+    "ENTRIP_MAIN": {
+      "companyCode": "ENTRIP_MAIN",
+      "expectedBookings": 50,
+      "loginSuccess": false,
+      "pageResults": {},
+      "issues": [
+        "Company test error: browserContext.addCookies: Cookie should have either url or domain"
+      ]
+    }
+  }
+}

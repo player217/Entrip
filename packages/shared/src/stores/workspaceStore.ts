@@ -5,6 +5,31 @@ import { logger } from '../lib/logger';
 // 탭이 표시할 콘텐츠 타입을 정의
 export type WorkspaceContentType = 'flow' | 'calendar' | 'monthlyCalendar' | 'monthlyList' | 'list' | 'empty';
 
+// 탭 상태 타입들
+export interface TabState {
+  [key: string]: unknown;
+}
+
+export interface FormTabState extends TabState {
+  formData?: Record<string, unknown>;
+  isDirty?: boolean;
+}
+
+export interface FilterTabState extends TabState {
+  filters?: Record<string, unknown>;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface CalendarTabState extends TabState {
+  selectedDate?: string;
+  viewType?: 'month' | 'week' | 'day';
+  filters?: {
+    companyCode?: string;
+    status?: string[];
+  };
+}
+
 export interface WorkspaceTab {
   key: string;
   label: string;
@@ -14,7 +39,7 @@ export interface WorkspaceTab {
   contentType?: WorkspaceContentType; // workspace 전용일 때만 사용
   closable?: boolean;
   // 탭별 상태 보존을 위한 새로운 필드들
-  state?: any; // 탭별 상태 데이터 (폼 데이터, 필터 등)
+  state?: TabState; // 탭별 상태 데이터 (폼 데이터, 필터 등)
   scrollPosition?: number; // 스크롤 위치
   isLoaded?: boolean; // 콘텐츠 로드 여부
 }
@@ -28,7 +53,7 @@ interface WorkspaceState {
   setActiveTab: (key: string) => void;
   updateTab: (key: string, patch: Partial<WorkspaceTab>) => void;
   updateActiveTabContent: (contentType: WorkspaceContentType, label?: string, icon?: string) => void;
-  updateTabState: (key: string, state: any) => void; // 탭 상태 업데이트
+  updateTabState: (key: string, state: TabState) => void; // 탭 상태 업데이트
   toggleSidebar: () => void;
 }
 
@@ -155,7 +180,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     });
   },
 
-  updateTabState: (key: string, state: any) => {
+  updateTabState: (key: string, state: TabState) => {
     set((store) => ({
       tabs: store.tabs.map(tab => 
         tab.key === key 

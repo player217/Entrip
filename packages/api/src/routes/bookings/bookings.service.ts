@@ -1,113 +1,165 @@
+import { Booking, BookingStatus } from '@prisma/client';
+import { BaseService } from '../../services/base.service';
+import prisma from '../../lib/prisma';
 import { BookingCreateInput } from './dtos/BookingCreate.dto';
 import { BookingUpdateInput } from './dtos/BookingUpdate.dto';
 import { BookingStatusPatchInput } from './dtos/BookingStatusPatch.dto';
 import { ApiError } from '../../middlewares/error.middleware';
 
-// Temporary in-memory storage (replace with database)
-interface Booking {
-  id: string;
-  teamName: string;
-  type: string;
-  origin: string;
-  destination: string;
-  startDate: string;
-  endDate: string;
-  totalPax: number;
-  coordinator: string;
-  revenue?: number;
-  notes?: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
-  createdAt: Date;
-  updatedAt: Date;
-}
+export class BookingsService extends BaseService<Booking> {
+  constructor() {
+    super(prisma.booking);
+  }
 
-let bookings: Booking[] = [];
-let idCounter = 1;
+  /**
+   * Create booking with company code from context
+   */
+  async createBooking(
+    companyCode: string,
+    userId: string,
+    input: BookingCreateInput
+  ): Promise<Booking> {
+    // Generate booking number
+    const bookingNumber = `BK${Date.now()}`;
 
-export class BookingsService {
-  async findAll(page: number = 1, limit: number = 20) {
-    const start = (page - 1) * limit;
-    const end = start + limit;
-    const paginatedBookings = bookings.slice(start, end);
+    return this.create(companyCode, userId, {
+      ...input,
+      bookingNumber,
+      status: BookingStatus.pending,
+      startDate: new Date(input.startDate),
+      endDate: new Date(input.endDate),
+    });
+  }
+
+  /**
+   * Update booking with company validation
+   */
+  async updateBooking(
+    id: string,
+    companyCode: string,
+    input: BookingUpdateInput
+  ): Promise<Booking> {
+    const updateData: any = { ...input };
+
+    // Convert date strings to Date objects if present
+    if (input.startDate) {
+      updateData.startDate = new Date(input.startDate);
+    }
+    if (input.endDate) {
+      updateData.endDate = new Date(input.endDate);
+    }
+
+    return this.update(id, companyCode, updateData);
+  }
+
+  /**
+   * Update booking status with company validation
+   */
+  async updateBookingStatus(
+    id: string,
+    companyCode: string,
+    input: BookingStatusPatchInput
+  ): Promise<Booking> {
+    // First validate the booking exists and belongs to company
+    await this.findById(id, companyCode);
+
+    return this.model.update({
+      where: { id },
+      data: {
+        status: input.status as BookingStatus,
+        notes: input.notes,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * Get booking statistics for a company
+   */
+  async getStats(companyCode: string) {
+    const [total, pending, confirmed, completed, cancelled] = await Promise.all([
+      this.count(companyCode),
+      this.count(companyCode, { status: BookingStatus.pending }),
+      this.count(companyCode, { status: BookingStatus.confirmed }),
+      this.count(companyCode, { status: BookingStatus.done }),
+      this.count(companyCode, { status: BookingStatus.cancelled }),
+    ]);
 
     return {
-      data: paginatedBookings,
-      pagination: {
-        page,
-        limit,
-        total: bookings.length,
-        pages: Math.ceil(bookings.length / limit),
+      total,
+      byStatus: {
+        pending,
+        confirmed,
+        completed,
+        cancelled,
       },
     };
   }
 
-  async findById(id: string) {
-    const booking = bookings.find(b => b.id === id);
-    if (!booking) {
-      throw new ApiError(404, 'Booking not found');
-    }
-    return booking;
+  /**
+   * Get bookings for a specific date range
+   */
+  async findByDateRange(
+    companyCode: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Booking[]> {
+    return this.model.findMany({
+      where: {
+        companyCode,
+        deletedAt: null,
+        OR: [
+          {
+            startDate: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+          {
+            endDate: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        ],
+      },
+      orderBy: {
+        startDate: 'asc',
+      },
+    });
   }
 
-  async create(input: BookingCreateInput) {
-    const newBooking: Booking = {
-      id: String(idCounter++),
-      ...input,
-      status: 'pending',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    bookings.push(newBooking);
-    return newBooking;
-  }
-
-  async update(id: string, input: BookingUpdateInput) {
-    const index = bookings.findIndex(b => b.id === id);
-    if (index === -1) {
-      throw new ApiError(404, 'Booking not found');
-    }
-
-    bookings[index] = {
-      ...bookings[index],
-      ...input,
-      updatedAt: new Date(),
-    };
-
-    return bookings[index];
-  }
-
-  async updateStatus(id: string, input: BookingStatusPatchInput) {
-    const index = bookings.findIndex(b => b.id === id);
-    if (index === -1) {
-      throw new ApiError(404, 'Booking not found');
-    }
-
-    bookings[index] = {
-      ...bookings[index],
-      status: input.status,
-      notes: input.notes || bookings[index].notes,
-      updatedAt: new Date(),
-    };
-
-    return bookings[index];
-  }
-
-  async delete(id: string) {
-    const index = bookings.findIndex(b => b.id === id);
-    if (index === -1) {
-      throw new ApiError(404, 'Booking not found');
-    }
-
-    const deleted = bookings[index];
-    bookings = bookings.filter(b => b.id !== id);
-    return deleted;
-  }
-
-  // Utility method for testing
-  async clearAll() {
-    bookings = [];
-    idCounter = 1;
+  /**
+   * Search bookings by customer name or team name
+   */
+  async search(
+    companyCode: string,
+    query: string
+  ): Promise<Booking[]> {
+    return this.model.findMany({
+      where: {
+        companyCode,
+        deletedAt: null,
+        OR: [
+          {
+            customerName: {
+              contains: query,
+              mode: 'insensitive',
+            },
+          },
+          {
+            teamName: {
+              contains: query,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 20,
+    });
   }
 }
 

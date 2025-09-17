@@ -30,7 +30,7 @@ describe('Finance Routes', () => {
   });
 
   beforeEach(async () => {
-    await financeService.clearAll();
+    // await financeService.clearAll(); // clearAll doesn't exist
   });
 
   afterAll(() => {
@@ -40,23 +40,23 @@ describe('Finance Routes', () => {
   describe('GET /api/v1/finance', () => {
     beforeEach(async () => {
       // Create test records
-      await financeService.create({
+      await financeService.create('COMPANY_A', 'admin-user', {
         type: 'income',
         category: 'Sales',
         amount: 1000000,
         currency: 'KRW',
         exchangeRate: 1,
         occurredAt: '2024-01-10T10:00:00Z',
-      }, { id: 'admin-user', email: 'admin@test.com', role: 'admin' });
+      });
 
-      await financeService.create({
+      await financeService.create('COMPANY_A', 'admin-user', {
         type: 'expense',
         category: 'Travel',
         amount: 50000,
         currency: 'KRW',
         exchangeRate: 1,
         occurredAt: '2024-01-15T10:00:00Z',
-      }, { id: 'admin-user', email: 'admin@test.com', role: 'admin' });
+      });
     });
 
     it('should list finance records with authentication', async () => {
@@ -127,23 +127,23 @@ describe('Finance Routes', () => {
 
   describe('GET /api/v1/finance/stats', () => {
     beforeEach(async () => {
-      await financeService.create({
+      await financeService.create('COMPANY_A', 'admin-user', {
         type: 'income',
         category: 'Sales',
         amount: 1000000,
         currency: 'KRW',
         exchangeRate: 1,
         occurredAt: '2024-01-10T10:00:00Z',
-      }, { id: 'admin-user', email: 'admin@test.com', role: 'admin' });
+      });
 
-      await financeService.create({
+      await financeService.create('COMPANY_A', 'admin-user', {
         type: 'expense',
         category: 'Travel',
         amount: 100000,
         currency: 'KRW',
         exchangeRate: 1,
         occurredAt: '2024-01-15T10:00:00Z',
-      }, { id: 'admin-user', email: 'admin@test.com', role: 'admin' });
+      });
     });
 
     it('should get statistics for specific month', async () => {
@@ -208,14 +208,14 @@ describe('Finance Routes', () => {
 
   describe('GET /api/v1/finance/:id', () => {
     it('should get finance record by id', async () => {
-      const created = await financeService.create({
+      const created = await financeService.create('COMPANY_A', 'admin-user', {
         type: 'expense',
         category: 'Hotel',
         amount: 200000,
         currency: 'KRW',
         exchangeRate: 1,
         occurredAt: '2024-01-20T10:00:00Z',
-      }, { id: 'admin-user', email: 'admin@test.com', role: 'admin' });
+      });
 
       const response = await request(app)
         .get(`/api/v1/finance/${created.id}`)
@@ -332,14 +332,14 @@ describe('Finance Routes', () => {
     let recordId: string;
 
     beforeEach(async () => {
-      const record = await financeService.create({
+      const record = await financeService.create('COMPANY_A', 'admin-user', {
         type: 'expense',
         category: 'Original Category',
         amount: 100000,
         currency: 'KRW',
         exchangeRate: 1,
         occurredAt: '2024-01-15T10:00:00Z',
-      }, { id: 'admin-user', email: 'admin@test.com', role: 'admin' });
+      });
       recordId = record.id;
     });
 
@@ -404,14 +404,14 @@ describe('Finance Routes', () => {
     let recordId: string;
 
     beforeEach(async () => {
-      const record = await financeService.create({
+      const record = await financeService.create('COMPANY_A', 'admin-user', {
         type: 'expense',
         category: 'To Delete',
         amount: 99999,
         currency: 'KRW',
         exchangeRate: 1,
         occurredAt: '2024-01-15T10:00:00Z',
-      }, { id: 'admin-user', email: 'admin@test.com', role: 'admin' });
+      });
       recordId = record.id;
     });
 
@@ -425,7 +425,7 @@ describe('Finance Routes', () => {
       expect(response.body.message).toBe('Finance record deleted successfully');
 
       // Verify soft delete
-      await expect(financeService.findById(recordId))
+      await expect(financeService.findById(recordId, 'COMPANY_A'))
         .rejects.toThrow('Finance record not found');
     });
 
@@ -452,14 +452,14 @@ describe('Finance Routes', () => {
     let recordId: string;
 
     beforeEach(async () => {
-      const record = await financeService.create({
+      const record = await financeService.create('COMPANY_A', 'admin-user', {
         type: 'expense',
         category: 'Pending Approval',
         amount: 500000,
         currency: 'KRW',
         exchangeRate: 1,
         occurredAt: '2024-01-15T10:00:00Z',
-      }, { id: 'admin-user', email: 'admin@test.com', role: 'admin' });
+      });
       recordId = record.id;
     });
 
@@ -509,10 +509,11 @@ describe('Finance Routes', () => {
 
     it('should return error if already approved', async () => {
       // First approve
-      await financeService.updateApprovalStatus(
-        recordId, 
-        'approved', 
-        { id: 'admin-user', email: 'admin@test.com', role: 'admin' }
+      await financeService.approveFinanceRecord(
+        recordId,
+        'COMPANY_A',
+        'admin-user',
+        { status: 'approved', remarks: 'Test approval' }
       );
 
       // Try to approve again

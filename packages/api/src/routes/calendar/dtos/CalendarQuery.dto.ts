@@ -7,7 +7,7 @@ export const CalendarQueryDto = z.object({
   month: z.string().transform(val => parseInt(val, 10)).pipe(
     z.number().int().min(1).max(12)
   ),
-  team: z.string().optional(),
+  teamId: z.string().optional(),
 });
 
 export type CalendarQueryInput = z.infer<typeof CalendarQueryDto>;

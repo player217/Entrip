@@ -8,24 +8,24 @@ export function isJsonObject(value: Prisma.JsonValue): value is Prisma.JsonObjec
 }
 
 /**
- * Type guard to check if a JsonValue is a JsonArray
+ * Type guard to check if a JsonValue is a JsonArray (array of JsonValue)
  */
-export function isJsonArray(value: Prisma.JsonValue): value is Prisma.JsonArray {
+export function isJsonArray(value: Prisma.JsonValue): value is Prisma.JsonValue[] {
   return Array.isArray(value);
 }
 
 /**
- * Safely convert any value to Prisma.InputJsonValue
+ * Safely convert any value to Prisma.JsonValue for input
  */
-export function toInputJsonValue(value: unknown): Prisma.InputJsonValue {
+export function toInputJsonValue(value: unknown): Prisma.JsonValue {
   return JSON.parse(JSON.stringify(value));
 }
 
 /**
- * Convert an array to Prisma.JsonArray safely
+ * Convert an array to JsonValue array safely
  */
-export function toJsonArray<T extends Record<string, unknown>>(arr: T[]): Prisma.JsonArray {
-  return JSON.parse(JSON.stringify(arr)) as Prisma.JsonArray;
+export function toJsonArray<T extends Record<string, unknown>>(arr: T[]): Prisma.JsonValue[] {
+  return JSON.parse(JSON.stringify(arr)) as Prisma.JsonValue[];
 }
 
 /**

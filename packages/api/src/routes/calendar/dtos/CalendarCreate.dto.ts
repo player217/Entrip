@@ -9,6 +9,7 @@ export const CalendarCreateDto = z.object({
   description: z.string().optional(),
   location: z.string().optional(),
   teamId: z.string().optional(),
+  bookingId: z.string().optional(),
 }).refine(data => new Date(data.end) >= new Date(data.start), {
   message: 'End date must be after or equal to start date',
   path: ['end'],

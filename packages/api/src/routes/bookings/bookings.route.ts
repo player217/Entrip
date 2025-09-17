@@ -2,11 +2,18 @@ import { Router } from 'express';
 import { bookingsController } from './bookings.controller';
 import { validateBody } from '../../middlewares/validate.middleware';
 import { cacheMiddleware, invalidateCacheMiddleware } from '../../middlewares/cache.middleware';
+import { authMiddleware } from '../../middlewares/auth.middleware';
+import { extractCompanyCode, validateCompanyAccess } from '../../middlewares/multitenancy.middleware';
 import { BookingCreateDto } from './dtos/BookingCreate.dto';
 import { BookingUpdateDto } from './dtos/BookingUpdate.dto';
 import { BookingStatusPatchDto } from './dtos/BookingStatusPatch.dto';
 
 const router: Router = Router();
+
+// Apply authentication and multi-tenancy to all routes
+router.use(authMiddleware);
+router.use(extractCompanyCode);
+router.use(validateCompanyAccess);
 
 // GET /api/v2/bookings (with caching)
 router.get('/', cacheMiddleware({ ttl: 300 }), bookingsController.list);

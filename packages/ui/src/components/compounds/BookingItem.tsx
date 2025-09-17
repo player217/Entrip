@@ -7,12 +7,16 @@ import { BookingEntry } from '@entrip/shared';
 const statusColors: Record<BookingEntry['status'], string> = {
   PENDING: '#FEF3C7',    // 연한 노란색
   CONFIRMED: '#D1FAE5',  // 연한 초록색
+  IN_PROGRESS: '#DBEAFE', // 연한 파란색
+  COMPLETED: '#E0E7FF', // 연한 보라색
   CANCELLED: '#FEE2E2'   // 연한 빨간색
 };
 
 const statusTextColors: Record<BookingEntry['status'], string> = {
   PENDING: '#92400E',    // 진한 노란색
   CONFIRMED: '#065F46',  // 진한 초록색
+  IN_PROGRESS: '#1E40AF', // 진한 파란색
+  COMPLETED: '#3730A3', // 진한 보라색
   CANCELLED: '#991B1B'   // 진한 빨간색
 };
 

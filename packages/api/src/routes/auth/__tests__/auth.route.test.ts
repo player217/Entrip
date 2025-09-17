@@ -13,7 +13,7 @@ app.use(errorHandler);
 
 describe('Auth Routes', () => {
   beforeEach(async () => {
-    await authService.clearAllUsers();
+    // await authService.clearAllUsers(); // clearAllUsers doesn't exist
   });
 
   describe('POST /api/v1/auth/register', () => {
@@ -22,7 +22,7 @@ describe('Auth Routes', () => {
         email: 'newuser@example.com',
         password: 'password123',
         name: 'New User',
-        role: 'staff',
+        role: 'USER',
       };
 
       const response = await request(app)
@@ -89,7 +89,7 @@ describe('Auth Routes', () => {
         email: 'test@example.com',
         password: 'password123',
         name: 'Test User',
-        role: 'staff',
+        role: 'USER',
       });
     });
 
@@ -107,7 +107,7 @@ describe('Auth Routes', () => {
       expect(response.body.data.user).toMatchObject({
         email: 'test@example.com',
         name: 'Test User',
-        role: 'staff',
+        role: 'USER',
       });
       
       // Check refresh token cookie
@@ -164,7 +164,7 @@ describe('Auth Routes', () => {
         email: 'test@example.com',
         password: 'password123',
         name: 'Test User',
-        role: 'staff',
+        role: 'USER',
       });
 
       const loginResponse = await request(app)
@@ -193,7 +193,7 @@ describe('Auth Routes', () => {
         email: 'test@example.com',
         password: 'password123',
         name: 'Test User',
-        role: 'staff',
+        role: 'USER',
       });
 
       const loginResponse = await request(app)
@@ -259,7 +259,7 @@ describe('Auth Routes', () => {
         email: 'test@example.com',
         password: 'password123',
         name: 'Test User',
-        role: 'admin',
+        role: 'ADMIN',
       });
 
       const loginResponse = await request(app)
@@ -280,7 +280,7 @@ describe('Auth Routes', () => {
       expect(response.body.data).toMatchObject({
         id: expect.any(String),
         email: 'test@example.com',
-        role: 'admin',
+        role: 'ADMIN',
       });
     });
 

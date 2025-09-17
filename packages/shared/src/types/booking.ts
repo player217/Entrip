@@ -10,6 +10,8 @@ export enum BookingType {
 export enum BookingStatus {
   PENDING = 'PENDING',
   CONFIRMED = 'CONFIRMED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED'
 }
 
@@ -70,26 +72,38 @@ export interface Booking {
   bookingNumber: string;
   customerName: string; // Maps to API schema
   teamName: string;
-  bookingType: BookingType;
+  bookingType?: BookingType; // Made optional for compatibility
   destination: string;
   startDate: string;
   endDate: string;
   paxCount: number;
-  nights: number;
-  days: number;
+  nights?: number; // Made optional for compatibility
+  days?: number; // Made optional for compatibility
   status: BookingStatus;
   totalPrice: number;
   depositAmount?: number;
-  currency: string;
+  currency?: string; // Made optional for compatibility
   notes?: string;
   createdAt: string;
   updatedAt: string;
-  createdBy: string;
+  createdBy?: string; // Made optional for compatibility
   updatedBy?: string;
   
+  // Additional fields from Prisma schema
+  companyCode: string; // Required field from Prisma
+  purpose?: string; // Optional field from Prisma
+  managerName?: string; // Optional field from Prisma
+  managerContact?: string; // Optional field from Prisma
+  costPrice?: number; // Optional cost price field
+  numberOfPeople?: number; // Alternative field for paxCount
+  departureDate?: string; // Alternative field for startDate
+  returnDate?: string; // Alternative field for endDate  
+  date?: string; // Alternative generic date field
+  version?: number; // For optimistic locking
+  
   // Mapped fields for frontend compatibility
-  client: string; // Maps to customerName
-  price: number;  // Maps to totalPrice
+  client?: string; // Maps to customerName
+  price?: number;  // Maps to totalPrice
   
   // Relations
   user?: {

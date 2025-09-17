@@ -44,14 +44,14 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 10.15.0
+          version: 10.13.1
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Run linting
         run: |
-          pnpm lint:check
+          pnpm lint:ci
           pnpm format:check
 
       - name: Run type checking

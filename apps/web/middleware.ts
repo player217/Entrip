@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Public routes that don't require authentication
-const publicPaths = ['/login', '/api/auth/login', '/api/exchange', '/api/health', '/_next/static', '/_next/image', '/favicon.ico']
+const publicPaths = ['/login', '/api/auth/login', '/api/exchange', '/api/health', '/api/v2', '/_next/static', '/_next/image', '/favicon.ico']
 
 /**
  * D2.1: Enhanced Token Validation

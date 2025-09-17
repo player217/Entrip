@@ -3,7 +3,7 @@ import type { Router as ExpressRouter } from 'express';
 import * as jwt from 'jsonwebtoken';
 import type { SignOptions } from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
-import { LoginRequest, LoginResponse, JWTPayload, User } from '@entrip/shared';
+import { LoginRequest, LoginResponse, JWTPayload, User, mapPrismaUserToShared, mapPrismaRoleToShared } from '@entrip/shared';
 import { authRateLimiter } from '../middleware/security.middleware';
 import prisma from '../lib/prisma';
 
@@ -67,11 +67,11 @@ router.post('/login', authRateLimiter, async (req, res) => {
       userId: user.id,
       companyCode: user.companyCode,
       username: user.email, // use email as username
-      role: user.role
+      role: mapPrismaRoleToShared(user.role)
     };
 
-    const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN };
-    const token = jwt.sign(payload, JWT_SECRET, signOptions);
+    const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN as any };
+    const token = jwt.sign(payload as object, JWT_SECRET, signOptions);
 
     // Update last login time (User model doesn't have lastLoginAt field, skip for now)
 
@@ -82,7 +82,7 @@ router.post('/login', authRateLimiter, async (req, res) => {
       username: user.email, // use email as username
       email: user.email,
       name: user.name,
-      role: user.role,
+      role: mapPrismaRoleToShared(user.role),
       department: user.department || undefined,
       isActive: user.isActive,
       createdAt: user.createdAt.toISOString(),
@@ -154,8 +154,8 @@ router.post('/refresh', authRateLimiter, async (req, res) => {
         role: decoded.role
       };
       
-      const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN };
-      const newToken = jwt.sign(newPayload, JWT_SECRET, signOptions);
+      const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN as any };
+      const newToken = jwt.sign(newPayload as object, JWT_SECRET, signOptions);
       
       // Set new HttpOnly cookie
       res.cookie('auth-token', newToken, {
@@ -218,7 +218,7 @@ router.get('/verify', async (req, res) => {
       username: user.email, // use email as username
       email: user.email,
       name: user.name,
-      role: user.role,
+      role: mapPrismaRoleToShared(user.role),
       department: user.department || undefined,
       isActive: user.isActive,
       createdAt: user.createdAt.toISOString(),

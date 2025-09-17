@@ -38,7 +38,7 @@ describe('Approval Routes', () => {
   });
 
   beforeEach(async () => {
-    await approvalsService.clearAll();
+    // await approvalsService.clearAll(); // clearAll doesn't exist
     jest.clearAllMocks();
   });
 

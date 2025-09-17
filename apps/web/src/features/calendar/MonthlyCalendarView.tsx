@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { useModalStore } from '@entrip/shared/client';
-import { BookingEvent, MonthlySummary, BookingStatus } from '@entrip/shared';
+import { Booking, BookingEvent, MonthlySummary, BookingStatus } from '@entrip/shared';
 import { CalendarMonth, QuickBookingModal, EditBookingModal, MonthlySummaryFooter } from '@entrip/ui';
 import type { QuickBookingFormData } from '@entrip/ui';
 import { useBookings } from '../../hooks/useBookings';
@@ -11,7 +11,7 @@ import { useMainContentHeight } from '../../hooks/useViewportHeight';
 import { ensureValidDate } from '../../utils/dateValidation';
 
 // 실제 API 데이터를 BookingEvent 형식으로 변환
-const convertToBookingEvent = (booking: any): BookingEvent => {
+const convertToBookingEvent = (booking: Booking): BookingEvent => {
   // 간단한 타입 코드 매핑
   const getTypeCode = (destination: string): 'GF' | 'IN' | 'HM' | 'AT' => {
     if (destination.includes('일본') || destination.includes('태국') || destination.includes('베트남') || 
@@ -22,13 +22,12 @@ const convertToBookingEvent = (booking: any): BookingEvent => {
     return 'AT';
   };
 
-  // 매니저 이름 생성 (실제로는 user 테이블과 조인해야 하지만 임시로)
-  const managers = ['김민수', '이지영', '박준혁', '최서연', '정태호'];
-  const manager = managers[Math.floor(Math.random() * managers.length)];
+  // 실제 매니저 정보 사용 (managerName 필드 우선, 없으면 기본값)
+  const manager = booking.managerName || '담당자 미지정';
 
-  // 원가는 총가격의 70-85% 정도로 계산
-  const totalPrice = Number(booking.totalPrice) || Number(booking.price) || 0;
-  const cost = Math.floor(totalPrice * (0.7 + Math.random() * 0.15));
+  // 실제 원가 데이터 사용 (costPrice 필드 우선, 없으면 계산)
+  const totalPrice = Number(booking.totalPrice) || 0;
+  const cost = booking.costPrice ? Number(booking.costPrice) : Math.floor(totalPrice * 0.75); // 기본 75% 마진
 
   return {
     id: booking.id,
@@ -98,8 +97,8 @@ export function MonthlyCalendarView(props: MonthlyCalendarViewProps = {}) {
     
     // API 데이터를 월별로 필터링하고 변환
     const monthlyBookings = apiBookings
-      .filter((booking: any) => {
-        const bookingDate = new Date(booking.startDate || booking.departureDate || booking.date || new Date());
+      .filter((booking: Booking) => {
+        const bookingDate = new Date(booking.startDate || booking.endDate || new Date());
         return bookingDate >= monthStart && bookingDate <= monthEnd;
       })
       .map(convertToBookingEvent);
@@ -160,11 +159,11 @@ export function MonthlyCalendarView(props: MonthlyCalendarViewProps = {}) {
       typeCode: data.teamType as 'GF' | 'IN' | 'HM' | 'AT' | undefined,
       name: data.teamName,
       status: BookingStatus.PENDING,
-      manager: '김민수', // 임시 담당자
+      manager: data.managerName || '담당자 미지정',
       paxCount: data.pax,
       date: data.departureDate,
-      revenue: data.pax * 500000, // 임시 계산
-      cost: data.pax * 350000 // 임시 계산
+      revenue: data.totalPrice || (data.pax * 500000), // 실제 가격 우선, 없으면 추정
+      cost: data.costPrice || (data.totalPrice ? Math.floor(data.totalPrice * 0.75) : data.pax * 350000)
     };
     
     setBookingData(prev => ({
@@ -194,8 +193,8 @@ export function MonthlyCalendarView(props: MonthlyCalendarViewProps = {}) {
         name: data.teamName,
         paxCount: data.pax,
         date: data.departureDate,
-        revenue: data.pax * 500000, // 임시 계산
-        cost: data.pax * 350000 // 임시 계산
+        revenue: data.totalPrice || (data.pax * 500000), // 실제 가격 우선, 없으면 추정
+        cost: data.costPrice || (data.totalPrice ? Math.floor(data.totalPrice * 0.75) : data.pax * 350000)
       };
       
       setBookingData(prev => {

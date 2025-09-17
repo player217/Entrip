@@ -26,15 +26,15 @@ export function useTabState<T = any>(initialState?: T) {
       }
       
       // 새 탭의 상태 복원
-      if (activeTab?.state?.componentState) {
-        setLocalState(activeTab.state.componentState)
+      if (activeTab?.state) {
+        setLocalState(activeTab.state as T)
       } else {
         setLocalState(initialState)
       }
       
       previousTabKey.current = activeTabKey
     }
-  }, [activeTabKey, activeTab?.state?.componentState]) // localState 제거하여 무한 루프 방지
+  }, [activeTabKey, activeTab?.state]) // localState 제거하여 무한 루프 방지
   
   // 상태 업데이트 함수
   const setState = useCallback((newState: T | ((prev: T | undefined) => T)) => {
@@ -73,8 +73,8 @@ export function useTabScroll(elementRef: React.RefObject<HTMLElement>) {
     
     // 탭 전환 시 스크롤 위치 복원
     if (activeTabKey !== previousTabKey.current) {
-      if (activeTab?.state?.scrollPosition !== undefined) {
-        element.scrollTop = activeTab.state.scrollPosition
+      if (activeTab?.scrollPosition !== undefined) {
+        element.scrollTop = activeTab.scrollPosition
       } else {
         element.scrollTop = 0
       }
