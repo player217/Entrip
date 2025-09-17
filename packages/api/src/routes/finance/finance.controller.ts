@@ -129,10 +129,7 @@ export class FinanceController {
       const { id } = req.params;
       await financeService.delete(id, companyCode);
 
-      res.json({
-        success: true,
-        message: 'Finance record deleted successfully',
-      });
+      res.status(204).send();
     } catch (error) {
       next(error);
     }

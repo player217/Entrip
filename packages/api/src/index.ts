@@ -4,16 +4,24 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
+
+// Configuration
+import { appConfig, validateConfig } from './config';
+
+// Logging
+import { logger } from './lib/logger';
 
 // Middleware imports
 import { errorHandler } from './middlewares/error.middleware';
+import { loggingMiddleware, errorLoggingMiddleware } from './middlewares/logging.middleware';
+import { apiRateLimit } from './middlewares/rateLimit.middleware';
 
 // WebSocket import
 import { initializeWebSocket } from './ws';
 
 // Route imports
 import authRoutes from './routes/auth/auth.route';
+import usersRoutes from './routes/users/users.route';
 import bookingRoutes from './routes/bookings/bookings.route';
 import calendarRoutes from './routes/calendar/calendar.route';
 import accountsRoutes from './routes/accounts/accounts.route';
@@ -25,15 +33,131 @@ import metricsRoutes from './routes/metrics/metrics.route';
 // Swagger
 import { setupSwagger } from './docs/swagger';
 
-// Load environment variables
-dotenv.config();
+// Validate configuration on startup
+validateConfig();
 
 // Create Express app
 export const app: Application = express();
 
 // Global middlewares
-app.use(helmet());
-app.use(cors());
+app.use(loggingMiddleware);
+
+// Enhanced Helmet security configuration - All TypeScript errors resolved
+app.use(helmet({
+  // Content Security Policy - Prevents XSS attacks
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      baseUri: ["'self'"],
+      blockAllMixedContent: [],
+      fontSrc: ["'self'", "https:", "data:"],
+      frameAncestors: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      objectSrc: ["'none'"],
+      scriptSrc: appConfig.server.isProduction
+        ? ["'self'"]
+        : ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Development only
+      scriptSrcAttr: ["'none'"],
+      styleSrc: ["'self'", "https:", "'unsafe-inline'"],
+      upgradeInsecureRequests: appConfig.server.isProduction ? [] : null,
+    },
+  },
+
+  // Cross-Origin Embedder Policy - Enables SharedArrayBuffer and high-resolution timers
+  crossOriginEmbedderPolicy: appConfig.server.isProduction
+    ? { policy: "require-corp" }
+    : false,
+
+  // Cross-Origin Opener Policy - Prevents certain cross-origin attacks
+  crossOriginOpenerPolicy: { policy: "same-origin" },
+
+  // Cross-Origin Resource Policy - Prevents certain cross-origin attacks
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+
+  // DNS Prefetch Control - Controls DNS prefetching
+  dnsPrefetchControl: { allow: false },
+
+  // Referrer Policy - Controls referrer header
+  referrerPolicy: { policy: ["no-referrer", "strict-origin-when-cross-origin"] },
+
+  // HTTP Strict Transport Security - Forces HTTPS
+  hsts: appConfig.server.isProduction
+    ? {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true
+      }
+    : false,
+
+  // IE No Open - Sets X-Download-Options for IE8+
+  ieNoOpen: true,
+
+  // No Sniff - Prevents MIME sniffing
+  noSniff: true,
+
+  // Origin Agent Cluster - Enables origin-keyed agent clustering
+  originAgentCluster: true,
+
+  // Permissions Policy - Controls browser features
+  permittedCrossDomainPolicies: false,
+
+  // X-Frame-Options - Prevents clickjacking
+  frameguard: { action: 'deny' },
+
+  // Hide X-Powered-By header
+  hidePoweredBy: true,
+
+  // Additional production-only security enhancements
+  ...(appConfig.server.isProduction && {
+    contentSecurityPolicyReportOnly: false,
+    // HSTS settings already configured above, no need to duplicate
+  })
+}));
+// Enhanced CORS Configuration with Security Validation
+const getAllowedOrigins = (): string[] => {
+  const origins = [appConfig.cors.clientUrl];
+
+  // Add environment-specific origins
+  if (appConfig.server.isDevelopment) {
+    origins.push('http://localhost:3000', 'http://127.0.0.1:3000');
+  } else if (appConfig.server.isProduction) {
+    // Add production domains here
+    // origins.push('https://your-production-domain.com');
+  }
+
+  return origins;
+};
+
+app.use(cors({
+  origin: (origin, callback) => {
+    const allowedOrigins = getAllowedOrigins();
+
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin && appConfig.server.isDevelopment) {
+      return callback(null, true);
+    }
+
+    // Check if origin is allowed
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      logger.warn('CORS blocked request from unauthorized origin', {
+        origin,
+        allowedOrigins,
+        userAgent: 'Unknown',
+        timestamp: new Date().toISOString(),
+      });
+      callback(new Error('Not allowed by CORS policy'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
+  // Security headers
+  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+  maxAge: appConfig.server.isProduction ? 86400 : 3600, // Cache preflight for 24h (prod) or 1h (dev)
+  preflightContinue: false, // Pass control to next handler
+}));
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -46,11 +170,16 @@ app.get('/health', (req, res) => {
 
 // API Routes with v2 prefix for new API
 const apiV2 = express.Router();
+
+// Apply rate limiting to all API routes
+apiV2.use(apiRateLimit);
+
 app.use('/api/v2', apiV2);
 
 // Mount routes
 apiV2.use('/health', healthRoutes);
 apiV2.use('/auth', authRoutes);
+apiV2.use('/users', usersRoutes);
 apiV2.use('/bookings', bookingRoutes);
 apiV2.use('/calendar', calendarRoutes);
 apiV2.use('/accounts', accountsRoutes);
@@ -66,12 +195,13 @@ apiV2.use('/metrics', metricsRoutes);
 setupSwagger(app);
 
 // Error handling middleware (must be last)
+app.use(errorLoggingMiddleware);
 app.use(errorHandler);
 
 // Start server with WebSocket support
-const PORT = 4000; // Hard-coded port to bypass environment variable issues
+const PORT = appConfig.server.port;
 
-if (process.env.NODE_ENV !== 'test') {
+if (!appConfig.server.isTest) {
   const server = createServer(app);
 
   // Initialize WebSocket
@@ -79,11 +209,12 @@ if (process.env.NODE_ENV !== 'test') {
   app.set('io', io); // Store io instance in app for routes to use
 
   server.listen(PORT, () => {
-    // eslint-disable-next-line no-console
-    console.log(`🚀 API v2 Server running on http://localhost:${PORT}`);
-    // eslint-disable-next-line no-console
-    console.log(`📚 API Documentation available at http://localhost:${PORT}/api-docs`);
-    // eslint-disable-next-line no-console
-    console.log(`🔗 WebSocket available at ws://localhost:${PORT}`);
+    logger.info('🚀 API v2 Server started successfully', {
+      port: PORT,
+      environment: appConfig.server.nodeEnv,
+      apiVersion: appConfig.server.apiVersion,
+      docsUrl: `http://localhost:${PORT}/api-docs`,
+      wsUrl: `ws://localhost:${PORT}`,
+    });
   });
 }

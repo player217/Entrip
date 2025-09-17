@@ -1,17 +1,23 @@
-const baseConfig = require('../../jest.base.config');
-
+/** @type {import('jest').Config} */
 module.exports = {
-  ...baseConfig,
   displayName: '@entrip/shared',
-  preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'jsdom',
+  testTimeout: 60000,
+  
+  // Test discovery
   testMatch: ['<rootDir>/src/**/__tests__/*.test.ts'],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   testPathIgnorePatterns: ['<rootDir>/dist'],
+  
+  // Setup
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  
+  // Module resolution
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  
+  // Coverage configuration
   coverageDirectory: '<rootDir>/coverage',
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
@@ -20,7 +26,8 @@ module.exports = {
     '!src/generated/**',
     '!src/mocks/**',
   ],
-  coverageReporters: ['text', 'lcov', 'html'],
+  
+  // TypeScript transformation - modern config
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
       tsconfig: {

@@ -37,7 +37,46 @@
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "no-console": ["warn", { "allow": ["warn", "error"] }]
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          "./apiClient",
+          "../apiClient",
+          "../../lib/apiClient",
+          "apps/web/lib/api",
+          "apps/web/src/lib/api",
+          "apps/web/lib/axios",
+          "apps/web/src/lib/axios",
+          "@/lib/api",
+          "@/lib/axios",
+          "@web/lib/api",
+          "@entrip/shared/lib/apiClient"
+        ],
+        "paths": [
+          {
+            "name": "axios",
+            "message": "Use @entrip/shared/unified-api-client instead of direct axios"
+          },
+          {
+            "name": "../lib/apiClient",
+            "message": "Use @entrip/shared/unified-api-client instead"
+          },
+          {
+            "name": "./apiClient",
+            "message": "Use @entrip/shared/unified-api-client instead"
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "ImportDeclaration[source.value=/api|axios|fetcher/]:not([source.value=/unified-api-client/])",
+        "message": "Legacy API client detected. Migrate to unified-api-client"
+      }
+    ]
   },
   "overrides": [
     {
@@ -52,6 +91,13 @@
       "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
       "env": {
         "jest": true
+      }
+    },
+    {
+      "files": ["**/unified-api-client.ts", "**/migration-adapter.ts"],
+      "rules": {
+        "no-restricted-imports": "off",
+        "no-restricted-syntax": "off"
       }
     }
   ],

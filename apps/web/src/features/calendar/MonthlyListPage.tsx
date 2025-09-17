@@ -21,12 +21,12 @@ const convertToBookingEntry = (booking: any): BookingEntry => {
     return 'AT';
   };
 
-  // 매니저 이름 생성 (실제로는 user 테이블과 조인해야 하지만 임시로)
-  const managers = ['김민수', '이지영', '박준혁', '최서연', '정태호'];
-  const manager = managers[Math.floor(Math.random() * managers.length)];
+  // 실제 매니저 정보 사용 (managerName 필드 우선, 없으면 기본값)
+  const manager = booking.managerName || '담당자 미지정';
 
-  // 원가는 총가격의 70-85% 정도로 계산
-  const cost = Math.floor(Number(booking.totalPrice) * (0.7 + Math.random() * 0.15));
+  // 실제 원가 데이터 사용 (costPrice 필드 우선, 없으면 계산)
+  const totalPrice = Number(booking.totalPrice) || 0;
+  const cost = booking.costPrice ? Number(booking.costPrice) : Math.floor(totalPrice * 0.75);
 
   return {
     id: booking.id,

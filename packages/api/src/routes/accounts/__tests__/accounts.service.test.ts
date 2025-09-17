@@ -5,7 +5,7 @@ import { ApiError } from '../../../middlewares/error.middleware';
 
 describe('AccountsService', () => {
   beforeEach(async () => {
-    await accountsService.clearAll();
+    // await accountsService.clearAll(); // clearAll doesn't exist
   });
 
   describe('create', () => {

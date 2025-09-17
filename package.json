@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "if [ \"$NODE_ENV\" != \"production\" ]; then pnpm --filter @entrip/api exec prisma generate; fi",
+    "postinstall": "pnpm --filter @entrip/api exec prisma generate || true",
     "dev": "cross-env NODE_OPTIONS=--no-warnings NEXT_TELEMETRY_DISABLED=1 pnpm run build:tokens && turbo run dev",
     "dev:web": "pnpm --filter @entrip/web dev",
     "dev:api": "pnpm --filter @entrip/api dev",

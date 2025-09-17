@@ -9,7 +9,9 @@ import useSWR from 'swr';
 import type { 
   BookingHookConfig, 
   BookingHookReturn,
-  BookingEventCallbacks 
+  BookingEventCallbacks,
+  BookingEventData,
+  BulkEventData
 } from './types';
 import type { Booking, CreateBookingDto, UpdateBookingDto } from '../../types/booking';
 import { BookingService } from './BookingService';
@@ -105,19 +107,19 @@ export function useBookings(
     };
     
     // Register event handlers
-    if (callbacks.onCreate) socketInstance.on('booking:create', callbacks.onCreate);
-    if (callbacks.onUpdate) socketInstance.on('booking:update', callbacks.onUpdate);
-    if (callbacks.onDelete) socketInstance.on('booking:delete', callbacks.onDelete);
-    if (callbacks.onBulkCreate) socketInstance.on('booking:bulk-create', callbacks.onBulkCreate);
-    if (callbacks.onBulkDelete) socketInstance.on('booking:bulk-delete', callbacks.onBulkDelete);
+    if (callbacks.onCreate) socketInstance.on<BookingEventData>('booking:create', callbacks.onCreate);
+    if (callbacks.onUpdate) socketInstance.on<BookingEventData>('booking:update', callbacks.onUpdate);
+    if (callbacks.onDelete) socketInstance.on<BookingEventData>('booking:delete', callbacks.onDelete);
+    if (callbacks.onBulkCreate) socketInstance.on<BulkEventData>('booking:bulk-create', callbacks.onBulkCreate);
+    if (callbacks.onBulkDelete) socketInstance.on<BulkEventData>('booking:bulk-delete', callbacks.onBulkDelete);
     
     // Cleanup
     return () => {
-      if (callbacks.onCreate) socketInstance.off('booking:create', callbacks.onCreate);
-      if (callbacks.onUpdate) socketInstance.off('booking:update', callbacks.onUpdate);
-      if (callbacks.onDelete) socketInstance.off('booking:delete', callbacks.onDelete);
-      if (callbacks.onBulkCreate) socketInstance.off('booking:bulk-create', callbacks.onBulkCreate);
-      if (callbacks.onBulkDelete) socketInstance.off('booking:bulk-delete', callbacks.onBulkDelete);
+      if (callbacks.onCreate) socketInstance.off<BookingEventData>('booking:create', callbacks.onCreate);
+      if (callbacks.onUpdate) socketInstance.off<BookingEventData>('booking:update', callbacks.onUpdate);
+      if (callbacks.onDelete) socketInstance.off<BookingEventData>('booking:delete', callbacks.onDelete);
+      if (callbacks.onBulkCreate) socketInstance.off<BulkEventData>('booking:bulk-create', callbacks.onBulkCreate);
+      if (callbacks.onBulkDelete) socketInstance.off<BulkEventData>('booking:bulk-delete', callbacks.onBulkDelete);
     };
   }, [enableWebSocket, socketInstance, mutate]);
   

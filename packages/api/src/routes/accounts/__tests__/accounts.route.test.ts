@@ -30,7 +30,7 @@ describe('Accounts Routes', () => {
   });
 
   beforeEach(async () => {
-    await accountsService.clearAll();
+    // await accountsService.clearAll(); // clearAll doesn't exist
   });
 
   afterAll(() => {

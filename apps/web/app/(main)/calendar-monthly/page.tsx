@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { useModalStore } from '@entrip/shared/client';
-import { Booking, BookingEvent, BookingStatus, MonthlySummary } from '@entrip/shared';
+import { Booking, BookingExtended, BookingEvent, BookingStatus, MonthlySummary } from '@entrip/shared';
 import { QuickBookingModal, EditBookingModal, MonthlySummaryFooter } from '@entrip/ui';
 import type { QuickBookingFormData } from '@entrip/ui';
 import MonthlyCalendarView from '@/features/calendar/MonthlyCalendarView';
@@ -214,17 +214,13 @@ export default function CalendarMonthlyPage() {
         startDate: data.departureDate,
         endDate: data.departureDate,
         destination: data.destination || '미정',
-        teamSize: data.pax,
-        estimatedTotalCost: data.pax * 500000,
+        paxCount: data.pax,
+        totalPrice: data.pax * 500000,
+        companyCode: user?.companyCode || 'ENTRIP',
         managerName: '김민수',
-        managerEmail: `manager@${user?.companyCode?.toLowerCase() || 'entrip'}.com`,
-        managerPhone: '010-1234-5678',
-        transportation: '버스',
-        accommodation: '호텔',
-        purpose: '워크샵',
-        paymentMethod: '계좌이체',
-        paymentStatus: 'PENDING' as any
-      });
+        managerContact: '010-1234-5678',
+        purpose: '워크샵'
+      } as Partial<Booking>);
 
       if (createdBooking) {
         // Refresh the booking data to show the new booking
@@ -253,8 +249,8 @@ export default function CalendarMonthlyPage() {
           startDate: data.departureDate,
           endDate: data.departureDate,
           destination: data.destination || '미정',
-          teamSize: data.pax,
-          estimatedTotalCost: data.pax * 500000
+          paxCount: data.pax,
+          totalPrice: data.pax * 500000
         });
 
         // Refresh the booking data to show the updated booking

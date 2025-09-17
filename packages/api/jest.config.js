@@ -1,20 +1,31 @@
-const baseConfig = require('../../jest.base.config');
-
+/** @type {import('jest').Config} */
 module.exports = {
-  ...baseConfig,
   displayName: '@entrip/api',
-  preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'node',
+  testTimeout: 60000,
   rootDir: '.',
+
+  // Setup files
+  setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
+
+  // Test discovery
   testMatch: ['<rootDir>/src/**/__tests__/**/*.test.ts'],
   testPathIgnorePatterns: ['<rootDir>/dist'],
+  
+  // Module resolution
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  
+  // Coverage configuration
+  coverageDirectory: 'coverage',
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
     '!src/index.ts',
   ],
-  coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
     global: {
@@ -24,16 +35,15 @@ module.exports = {
       statements: 80,
     },
   },
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-  },
-  globals: {
-    'ts-jest': {
+  
+  // TypeScript transformation - modern config
+  transform: {
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: {
         esModuleInterop: true,
         allowSyntheticDefaultImports: true,
         verbatimModuleSyntax: false,
       },
-    },
+    }],
   },
 };

@@ -8,8 +8,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Get the API URL based on environment
 const getApiUrl = () => {
+  // Use environment variable first, then fallback to defaults
+  if (process.env.INTERNAL_API_V2_URL) {
+    return process.env.INTERNAL_API_V2_URL;
+  }
+
   if (process.env.NODE_ENV === 'production') {
-    return process.env.INTERNAL_API_V2_URL || 'http://api-v2:4002';
+    return 'http://api-v2:4002';
   }
   return 'http://localhost:4002';
 };
@@ -19,6 +24,13 @@ async function handler(request: NextRequest, { params }: { params: { path: strin
   const apiUrl = getApiUrl();
   const path = params.path?.join('/') || '';
   const url = `${apiUrl}/api/v2/${path}${request.nextUrl.search}`;
+
+  console.log('[V2 Proxy Debug]', {
+    INTERNAL_API_V2_URL: process.env.INTERNAL_API_V2_URL,
+    apiUrl,
+    targetUrl: url,
+    method: request.method,
+  });
 
   try {
     // Convert headers to plain object

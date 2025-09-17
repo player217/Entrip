@@ -142,9 +142,11 @@ const nextConfig = {
   // API Proxy Routes
   async rewrites() {
     return [
+      // v2 API routes should be handled by app/api/v2/[...path]/route.ts
+      // Only rewrite v1 API routes to legacy server
       {
-        source: '/api/:path*',
-        destination: 'http://localhost:4001/api/:path*',
+        source: '/api/((?!v2).*)', // Negative lookahead: match all except v2
+        destination: 'http://localhost:4001/api/$1',
       },
     ];
   },

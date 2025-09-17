@@ -1,0 +1,34 @@
+{
+  "timestamp": "2025-09-12T01:38:39.378Z",
+  "authenticationResults": {
+    "J1": {
+      "companyCode": "j1",
+      "expectedBookings": 151,
+      "cookieSet": true,
+      "authenticationSuccess": false,
+      "pageTests": {}
+    },
+    "HAPPY": {
+      "companyCode": "happy",
+      "expectedBookings": 150,
+      "cookieSet": true,
+      "authenticationSuccess": false,
+      "pageTests": {}
+    },
+    "STAR": {
+      "companyCode": "star",
+      "expectedBookings": 183,
+      "cookieSet": true,
+      "authenticationSuccess": false,
+      "pageTests": {}
+    },
+    "ENTRIP_MAIN": {
+      "companyCode": "ENTRIP_MAIN",
+      "expectedBookings": 50,
+      "cookieSet": true,
+      "authenticationSuccess": false,
+      "pageTests": {}
+    }
+  },
+  "dataIsolationResults": {}
+}

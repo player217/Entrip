@@ -1,23 +1,31 @@
-const baseConfig = require('../../jest.base.config');
-
+/** @type {import('jest').Config} */
 module.exports = {
-  ...baseConfig,
   displayName: '@entrip/ui',
-  preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'jsdom',
+  testTimeout: 60000,
+  
+  // Setup
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  
+  // Test discovery  
   testPathIgnorePatterns: ['<rootDir>/dist', '<rootDir>/node_modules'],
+  
+  // Module resolution
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
+  
+  // Coverage configuration
   coverageDirectory: '<rootDir>/coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
-  globals: {
-    'ts-jest': {
+  
+  // React/TypeScript transformation - modern config
+  transform: {
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: {
         jsx: 'react',
         verbatimModuleSyntax: false,
       },
-    },
+    }],
   },
 };

@@ -105,10 +105,7 @@ export class ApprovalsController {
       const { id } = req.params;
       await approvalsService.delete(id);
 
-      res.json({
-        success: true,
-        message: 'Approval deleted successfully',
-      });
+      res.status(204).send();
     } catch (error) {
       next(error);
     }

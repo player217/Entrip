@@ -14,16 +14,17 @@ const swaggerDocument = {
   },
   servers: [
     {
-      url: 'http://localhost:3001/api/v1',
+      url: 'http://localhost:4005/api/v2',
       description: 'Development server',
     },
     {
-      url: 'https://api.entrip.co.kr/v1',
+      url: 'https://api.entrip.co.kr/v2',
       description: 'Production server',
     },
   ],
   tags: [
     { name: 'Auth', description: 'Authentication endpoints' },
+    { name: 'Users', description: 'User management' },
     { name: 'Bookings', description: 'Booking management' },
     { name: 'Calendar', description: 'Calendar and scheduling' },
     { name: 'Accounts', description: 'Account management' },
@@ -496,6 +497,98 @@ const swaggerDocument = {
             type: 'number', 
             description: 'Average approval time in hours',
             example: 24 
+          },
+        },
+      },
+      // User schemas
+      User: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'user-123' },
+          email: { type: 'string', format: 'email', example: 'user@entrip.com' },
+          name: { type: 'string', example: 'John Doe' },
+          role: {
+            type: 'string',
+            enum: ['ADMIN', 'MANAGER', 'USER'],
+            example: 'USER'
+          },
+          department: { type: 'string', nullable: true, example: 'Sales' },
+          isActive: { type: 'boolean', example: true },
+          companyCode: { type: 'string', example: 'ENTRIP' },
+          createdAt: { type: 'string', format: 'date-time', example: '2024-01-01T00:00:00Z' },
+          updatedAt: { type: 'string', format: 'date-time', nullable: true },
+        },
+      },
+      UserCreate: {
+        type: 'object',
+        required: ['email', 'name', 'password'],
+        properties: {
+          email: { type: 'string', format: 'email' },
+          name: { type: 'string', minLength: 2, maxLength: 100 },
+          password: { type: 'string', minLength: 6, maxLength: 100 },
+          role: {
+            type: 'string',
+            enum: ['ADMIN', 'MANAGER', 'USER'],
+            default: 'USER'
+          },
+          department: { type: 'string', maxLength: 100, nullable: true },
+        },
+      },
+      UserUpdate: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', minLength: 2, maxLength: 100 },
+          role: {
+            type: 'string',
+            enum: ['ADMIN', 'MANAGER', 'USER']
+          },
+          department: { type: 'string', maxLength: 100, nullable: true },
+          isActive: { type: 'boolean' },
+        },
+      },
+      UserPasswordUpdate: {
+        type: 'object',
+        required: ['currentPassword', 'newPassword'],
+        properties: {
+          currentPassword: { type: 'string' },
+          newPassword: { type: 'string', minLength: 6, maxLength: 100 },
+        },
+      },
+      UserPasswordReset: {
+        type: 'object',
+        required: ['newPassword'],
+        properties: {
+          newPassword: { type: 'string', minLength: 6, maxLength: 100 },
+        },
+      },
+      UserBulkCreate: {
+        type: 'object',
+        required: ['users'],
+        properties: {
+          users: {
+            type: 'array',
+            minItems: 1,
+            items: { $ref: '#/components/schemas/UserCreate' },
+          },
+        },
+      },
+      UserStatistics: {
+        type: 'object',
+        properties: {
+          total: { type: 'integer', example: 100 },
+          active: { type: 'integer', example: 85 },
+          inactive: { type: 'integer', example: 15 },
+          byRole: {
+            type: 'object',
+            properties: {
+              ADMIN: { type: 'integer', example: 5 },
+              MANAGER: { type: 'integer', example: 15 },
+              USER: { type: 'integer', example: 80 },
+            },
+          },
+          byDepartment: {
+            type: 'object',
+            additionalProperties: { type: 'integer' },
           },
         },
       },
@@ -1115,19 +1208,8 @@ const swaggerDocument = {
           },
         ],
         responses: {
-          200: {
+          204: {
             description: 'Event deleted successfully',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean' },
-                    message: { type: 'string' },
-                  },
-                },
-              },
-            },
           },
           404: {
             description: 'Event not found',
@@ -1397,19 +1479,8 @@ const swaggerDocument = {
           { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
         ],
         responses: {
-          200: {
+          204: {
             description: 'Account deleted',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean' },
-                    message: { type: 'string' },
-                  },
-                },
-              },
-            },
           },
           403: {
             description: 'Forbidden',
@@ -1649,19 +1720,8 @@ const swaggerDocument = {
           { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
         ],
         responses: {
-          200: {
+          204: {
             description: 'Finance record deleted',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean' },
-                    message: { type: 'string' },
-                  },
-                },
-              },
-            },
           },
           403: {
             description: 'Forbidden',
@@ -1971,19 +2031,8 @@ const swaggerDocument = {
           { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
         ],
         responses: {
-          200: {
+          204: {
             description: 'Approval deleted',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean' },
-                    message: { type: 'string' },
-                  },
-                },
-              },
-            },
           },
           403: {
             description: 'Forbidden - Admin only',
@@ -2065,6 +2114,468 @@ const swaggerDocument = {
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    // Users endpoints
+    '/users/profile': {
+      get: {
+        tags: ['Users'],
+        summary: 'Get current user profile',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Current user profile',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: { $ref: '#/components/schemas/User' },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Unauthorized',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/users/statistics': {
+      get: {
+        tags: ['Users'],
+        summary: 'Get user statistics (Admin/Manager only)',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'User statistics',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: { $ref: '#/components/schemas/UserStatistics' },
+                  },
+                },
+              },
+            },
+          },
+          403: {
+            description: 'Forbidden - Admin/Manager only',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/users': {
+      get: {
+        tags: ['Users'],
+        summary: 'Get all users with filtering and pagination',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { in: 'query', name: 'role', schema: { type: 'string', enum: ['ADMIN', 'MANAGER', 'USER'] } },
+          { in: 'query', name: 'department', schema: { type: 'string' } },
+          { in: 'query', name: 'isActive', schema: { type: 'string', enum: ['true', 'false'] } },
+          { in: 'query', name: 'search', schema: { type: 'string' } },
+          { in: 'query', name: 'page', schema: { type: 'integer', minimum: 1, default: 1 } },
+          { in: 'query', name: 'limit', schema: { type: 'integer', minimum: 1, maximum: 100, default: 50 } },
+          { in: 'query', name: 'sortBy', schema: { type: 'string', enum: ['name', 'email', 'role', 'department', 'createdAt'], default: 'name' } },
+          { in: 'query', name: 'sortOrder', schema: { type: 'string', enum: ['asc', 'desc'], default: 'asc' } },
+        ],
+        responses: {
+          200: {
+            description: 'Users list',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/User' },
+                    },
+                    total: { type: 'integer' },
+                    page: { type: 'integer' },
+                    limit: { type: 'integer' },
+                    totalPages: { type: 'integer' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ['Users'],
+        summary: 'Create new user (Admin only)',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserCreate' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'User created',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: { $ref: '#/components/schemas/User' },
+                  },
+                },
+              },
+            },
+          },
+          403: {
+            description: 'Forbidden - Admin only',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/users/bulk': {
+      post: {
+        tags: ['Users'],
+        summary: 'Bulk create users (Admin only)',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserBulkCreate' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Users created',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        created: { type: 'integer' },
+                        failed: { type: 'integer' },
+                        users: {
+                          type: 'array',
+                          items: { $ref: '#/components/schemas/User' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          403: {
+            description: 'Forbidden - Admin only',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/users/{id}': {
+      get: {
+        tags: ['Users'],
+        summary: 'Get user by ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: 'User details',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: { $ref: '#/components/schemas/User' },
+                  },
+                },
+              },
+            },
+          },
+          404: {
+            description: 'User not found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: ['Users'],
+        summary: 'Update user information',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserUpdate' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'User updated',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: { $ref: '#/components/schemas/User' },
+                  },
+                },
+              },
+            },
+          },
+          403: {
+            description: 'Forbidden - Can only update own profile unless admin',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          404: {
+            description: 'User not found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        tags: ['Users'],
+        summary: 'Deactivate user (Admin only)',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          204: {
+            description: 'User deactivated',
+          },
+          400: {
+            description: 'Cannot deactivate own account',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          403: {
+            description: 'Forbidden - Admin only',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          404: {
+            description: 'User not found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/users/{id}/password': {
+      put: {
+        tags: ['Users'],
+        summary: 'Update user password',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserPasswordUpdate' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Password updated successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    message: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+          403: {
+            description: 'Forbidden - Can only update own password',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/users/{id}/reset-password': {
+      post: {
+        tags: ['Users'],
+        summary: 'Reset user password (Admin only)',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserPasswordReset' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Password reset successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    message: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+          403: {
+            description: 'Forbidden - Admin only',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/users/{id}/reactivate': {
+      post: {
+        tags: ['Users'],
+        summary: 'Reactivate user (Admin only)',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: 'User reactivated',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: { $ref: '#/components/schemas/User' },
+                  },
+                },
+              },
+            },
+          },
+          403: {
+            description: 'Forbidden - Admin only',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          404: {
+            description: 'User not found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/users/department/{department}': {
+      get: {
+        tags: ['Users'],
+        summary: 'Get users by department',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { in: 'path', name: 'department', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: 'Users in department',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/User' },
+                    },
+                  },
+                },
               },
             },
           },

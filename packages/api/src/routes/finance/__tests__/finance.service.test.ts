@@ -7,7 +7,7 @@ describe('FinanceService', () => {
   const mockUser = { id: 'user-123', email: 'test@example.com', role: 'admin' };
   
   beforeEach(async () => {
-    await financeService.clearAll();
+    // await financeService.clearAll(); // clearAll doesn't exist
   });
 
   describe('create', () => {
@@ -23,7 +23,7 @@ describe('FinanceService', () => {
         accountId: 'acc-123',
       };
 
-      const record = await financeService.create(input, mockUser);
+      const record = await financeService.createFinanceRecord('TEST_COMPANY', mockUser.id, input);
 
       expect(record).toMatchObject({
         type: input.type,
@@ -52,7 +52,7 @@ describe('FinanceService', () => {
         occurredAt: '2024-01-15T10:00:00Z',
       };
 
-      const record = await financeService.create(input, mockUser);
+      const record = await financeService.createFinanceRecord('TEST_COMPANY', mockUser.id, input);
       
       expect(record.currency).toBe('KRW');
       expect(record.exchangeRate).toBe(1);
@@ -69,7 +69,7 @@ describe('FinanceService', () => {
         projectId: 'proj-456',
       };
 
-      const record = await financeService.create(input, mockUser);
+      const record = await financeService.createFinanceRecord('TEST_COMPANY', mockUser.id, input);
       
       expect(record.currency).toBe('USD');
       expect(record.exchangeRate).toBe(1300);
@@ -129,12 +129,12 @@ describe('FinanceService', () => {
       ];
 
       for (const record of records) {
-        await financeService.create(record, mockUser);
+        await financeService.createFinanceRecord('TEST_COMPANY', mockUser.id, record);
       }
     });
 
     it('should return paginated records', async () => {
-      const result = await financeService.list({ page: 1, limit: 2 });
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { page: 1, limit: 2 });
 
       expect(result.data).toHaveLength(2);
       expect(result.pagination).toEqual({
@@ -146,7 +146,7 @@ describe('FinanceService', () => {
     });
 
     it('should filter by type', async () => {
-      const result = await financeService.list({ 
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { 
         page: 1, 
         limit: 20, 
         type: 'income' 
@@ -157,7 +157,7 @@ describe('FinanceService', () => {
     });
 
     it('should filter by category', async () => {
-      const result = await financeService.list({ 
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { 
         page: 1, 
         limit: 20, 
         category: 'Travel' 
@@ -168,7 +168,7 @@ describe('FinanceService', () => {
     });
 
     it('should filter by date range', async () => {
-      const result = await financeService.list({ 
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { 
         page: 1, 
         limit: 20, 
         dateFrom: '2024-01-15T00:00:00Z',
@@ -179,7 +179,7 @@ describe('FinanceService', () => {
     });
 
     it('should filter by amount range', async () => {
-      const result = await financeService.list({ 
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { 
         page: 1, 
         limit: 20, 
         minAmount: 100000,
@@ -191,7 +191,7 @@ describe('FinanceService', () => {
     });
 
     it('should search by keyword', async () => {
-      const result = await financeService.list({ 
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { 
         page: 1, 
         limit: 20, 
         keyword: 'taxi' 
@@ -202,7 +202,7 @@ describe('FinanceService', () => {
     });
 
     it('should filter by accountId', async () => {
-      const result = await financeService.list({ 
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { 
         page: 1, 
         limit: 20, 
         accountId: 'acc-123' 
@@ -213,7 +213,7 @@ describe('FinanceService', () => {
     });
 
     it('should filter by projectId', async () => {
-      const result = await financeService.list({ 
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { 
         page: 1, 
         limit: 20, 
         projectId: 'proj-456' 
@@ -228,7 +228,7 @@ describe('FinanceService', () => {
       const toDelete = records[0];
       await financeService.delete(toDelete.id);
 
-      const result = await financeService.list({ page: 1, limit: 20 });
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { page: 1, limit: 20 });
       
       expect(result.data.length).toBe(4);
       expect(result.data.find(r => r.id === toDelete.id)).toBeUndefined();
@@ -239,7 +239,7 @@ describe('FinanceService', () => {
       const toDelete = records[0];
       await financeService.delete(toDelete.id);
 
-      const result = await financeService.list({ 
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { 
         page: 1, 
         limit: 20, 
         status: 'deleted' 
@@ -250,7 +250,7 @@ describe('FinanceService', () => {
     });
 
     it('should sort by occurredAt descending', async () => {
-      const result = await financeService.list({ page: 1, limit: 20 });
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { page: 1, limit: 20 });
       
       const dates = result.data.map(r => new Date(r.occurredAt).getTime());
       const sortedDates = [...dates].sort((a, b) => b - a);
@@ -563,7 +563,7 @@ describe('FinanceService', () => {
         occurredAt: '2024-01-15T10:00:00Z',
       }, mockUser);
 
-      const result = await financeService.list({ 
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { 
         page: 1, 
         limit: 20, 
         keyword: '' 
@@ -582,7 +582,7 @@ describe('FinanceService', () => {
         occurredAt: '2024-01-15T10:00:00Z',
       }, mockUser);
 
-      const result = await financeService.list({ page: 2, limit: 20 });
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { page: 2, limit: 20 });
 
       expect(result.data).toHaveLength(0);
       expect(result.pagination.total).toBe(1);
@@ -599,7 +599,7 @@ describe('FinanceService', () => {
         description: '택시 요금',
       }, mockUser);
 
-      const result = await financeService.list({ 
+      const result = await financeService.listFinanceRecords('TEST_COMPANY', { 
         page: 1, 
         limit: 20, 
         keyword: '택시' 

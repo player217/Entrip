@@ -22,6 +22,8 @@ declare module '@entrip/ui' {
     totalPrice: number;
     currency: string;
     notes?: string;
+    managerName?: string;
+    costPrice?: number;
     flights?: Array<{
       id?: string;
       airlineCode: string;

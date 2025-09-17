@@ -1,1 +1,0 @@
-export { BookingFilters } from './BookingFilters';

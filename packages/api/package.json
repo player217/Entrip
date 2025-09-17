@@ -17,7 +17,7 @@
   "scripts": {
     "dev": "nodemon --watch src --exec ts-node src/index.ts",
     "prisma:generate": "prisma generate",
-    "build": "npm run prisma:generate && tsc",
+    "build": "npm run prisma:generate && tsc --build --force",
     "lint": "eslint 'src/**/*.{ts,tsx}' --max-warnings 0",
     "test": "jest",
     "test:watch": "jest --watch",

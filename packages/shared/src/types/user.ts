@@ -1,4 +1,5 @@
 export enum UserRole {
+  SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
   MANAGER = 'MANAGER', 
   USER = 'USER'
@@ -12,8 +13,9 @@ export interface User {
   name: string;
   role: UserRole;
   department?: string;
-  isActive: boolean;
+  isActive?: boolean;
   createdAt: string;
+  updatedAt?: string;
   lastLoginAt?: string;
 }
 

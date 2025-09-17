@@ -33,7 +33,7 @@ describe('Calendar Routes', () => {
 
   beforeEach(async () => {
     // Clear all events before each test
-    await calendarService.clearAll();
+    // await calendarService.clearAll(); // clearAll doesn't exist
   });
 
   describe('GET /api/v1/calendar', () => {

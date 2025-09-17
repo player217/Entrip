@@ -3,47 +3,80 @@ import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import RootLayout from '../layout';
 
-// Mock components
-jest.mock('../../../src/components/layout/Sidebar', () => ({
-  Sidebar: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="sidebar">Sidebar {children}</div>
+// Mock SWR to avoid network calls in tests
+jest.mock('swr', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    data: { user: { id: 1, email: 'test@example.com', role: 'USER' } },
+    isLoading: false,
+    error: null,
+  })),
+}));
+
+// Mock Next.js redirect
+jest.mock('next/navigation', () => ({
+  redirect: jest.fn(),
+}));
+
+// Mock Google Fonts
+jest.mock('next/font/google', () => ({
+  Inter: jest.fn(() => ({
+    className: 'mocked-inter-font',
+  })),
+}));
+
+// Mock components used in layout
+jest.mock('@/components/layout/AppFrame', () => ({
+  __esModule: true,
+  default: ({ children, user }: { children: React.ReactNode; user: any }) => (
+    <div data-testid="app-frame">
+      <div data-testid="user-info">{user?.email}</div>
+      {children}
+    </div>
   ),
 }));
 
-jest.mock('../../../src/components/layout/GlobalTabBar', () => ({
-  GlobalTabBar: () => <div data-testid="global-tab-bar">GlobalTabBar</div>,
+jest.mock('@/components/debug/LogViewer', () => ({
+  LogViewer: () => <div data-testid="log-viewer">LogViewer</div>,
 }));
 
-jest.mock('../../../src/components/chrome-tabs/ChromeTabContainer', () => ({
-  ChromeTabContainer: () => <div data-testid="chrome-tab-container">ChromeTabContainer</div>,
+jest.mock('@/providers/ToastProvider', () => ({
+  ToastProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="toast-provider">{children}</div>
+  ),
 }));
 
-describe('RootLayout', () => {
-  it('renders all layout components', () => {
+jest.mock('@/components/messenger/MessengerContainer', () => ({
+  MessengerContainer: () => <div data-testid="messenger">MessengerContainer</div>,
+}));
+
+describe('MainLayout', () => {
+  it('renders all layout components when authenticated', () => {
     render(
       <RootLayout>
         <div>Test Content</div>
       </RootLayout>
     );
 
-    expect(screen.getByTestId('sidebar')).toBeInTheDocument();
-    expect(screen.getByTestId('global-tab-bar')).toBeInTheDocument();
+    expect(screen.getByTestId('app-frame')).toBeInTheDocument();
+    expect(screen.getByTestId('toast-provider')).toBeInTheDocument();
+    expect(screen.getByTestId('messenger')).toBeInTheDocument();
+    expect(screen.getByTestId('log-viewer')).toBeInTheDocument();
     expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
 
-  it('applies correct layout structure', () => {
-    const { container } = render(
+  it('displays user information', () => {
+    render(
       <RootLayout>
         <div>Test Content</div>
       </RootLayout>
     );
 
-    const mainContainer = container.querySelector('.flex.h-screen');
-    expect(mainContainer).toBeInTheDocument();
-    expect(mainContainer).toHaveClass('bg-gray-50');
+    expect(screen.getByTestId('user-info')).toBeInTheDocument();
+    expect(screen.getByText('test@example.com')).toBeInTheDocument();
   });
 
-  it('renders children inside content area', () => {
+  it('renders children inside app frame', () => {
     render(
       <RootLayout>
         <h1>Page Title</h1>
@@ -55,69 +88,41 @@ describe('RootLayout', () => {
     expect(screen.getByText('Page content')).toBeInTheDocument();
   });
 
-  it('has correct flex layout', () => {
-    const { container } = render(
-      <RootLayout>
-        <div>Content</div>
-      </RootLayout>
-    );
-
-    const flexContainer = container.querySelector('.flex-1.flex.flex-col');
-    expect(flexContainer).toBeInTheDocument();
-  });
-
-  it('content area has overflow auto', () => {
-    const { container } = render(
-      <RootLayout>
-        <div>Content</div>
-      </RootLayout>
-    );
-
-    const contentArea = container.querySelector('.flex-1.overflow-auto');
-    expect(contentArea).toBeInTheDocument();
-  });
-
-  it('maintains layout structure with multiple children', () => {
-    render(
-      <RootLayout>
-        <header>Header</header>
-        <main>Main Content</main>
-        <footer>Footer</footer>
-      </RootLayout>
-    );
-
-    expect(screen.getByText('Header')).toBeInTheDocument();
-    expect(screen.getByText('Main Content')).toBeInTheDocument();
-    expect(screen.getByText('Footer')).toBeInTheDocument();
-  });
-
-  it('sidebar receives GlobalTabBar as child', () => {
+  it('includes toast provider for notifications', () => {
     render(
       <RootLayout>
         <div>Content</div>
       </RootLayout>
     );
 
-    const sidebar = screen.getByTestId('sidebar');
-    expect(sidebar.textContent).toContain('GlobalTabBar');
+    expect(screen.getByTestId('toast-provider')).toBeInTheDocument();
   });
 
-  it('applies full height to layout', () => {
-    const { container } = render(
+  it('includes messenger container', () => {
+    render(
       <RootLayout>
         <div>Content</div>
       </RootLayout>
     );
 
-    const layoutContainer = container.firstChild;
-    expect(layoutContainer).toHaveClass('h-screen');
+    expect(screen.getByTestId('messenger')).toBeInTheDocument();
+  });
+
+  it('includes log viewer for debugging', () => {
+    render(
+      <RootLayout>
+        <div>Content</div>
+      </RootLayout>
+    );
+
+    expect(screen.getByTestId('log-viewer')).toBeInTheDocument();
   });
 
   it('renders empty content gracefully', () => {
     render(<RootLayout>{null}</RootLayout>);
 
-    expect(screen.getByTestId('sidebar')).toBeInTheDocument();
-    expect(screen.getByTestId('global-tab-bar')).toBeInTheDocument();
+    expect(screen.getByTestId('app-frame')).toBeInTheDocument();
+    expect(screen.getByTestId('toast-provider')).toBeInTheDocument();
   });
 
   it('renders with fragment children', () => {

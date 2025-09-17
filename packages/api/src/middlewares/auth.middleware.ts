@@ -5,6 +5,7 @@ import { ApiError } from './error.middleware';
 
 export interface AuthRequest extends Request {
   user?: AuthTokenPayload;
+  companyCode?: string;
 }
 
 /**
@@ -41,6 +42,7 @@ export const authMiddleware = async (
 
     // Attach user payload to request
     req.user = payload;
+    req.companyCode = payload.companyCode;
 
     next();
   } catch (error) {
@@ -146,9 +148,11 @@ export const optionalAuth = async (
       try {
         const payload = await authService.verifyAccessToken(token);
         req.user = payload;
+        req.companyCode = payload.companyCode;
       } catch {
         // Token is invalid, but continue without authentication
         req.user = undefined;
+        req.companyCode = undefined;
       }
     }
 

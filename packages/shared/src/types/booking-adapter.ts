@@ -26,6 +26,7 @@ export function bookingEventToBooking(event: BookingEvent): Booking {
     status: event.status,
     totalPrice: event.revenue || event.amount || 0,
     currency: 'KRW',
+    companyCode: 'ENTRIP', // Default company code
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     createdBy: event.manager || 'system',

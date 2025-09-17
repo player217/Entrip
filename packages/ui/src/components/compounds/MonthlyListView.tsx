@@ -73,12 +73,16 @@ export const MonthlyListView: React.FC<MonthlyListViewProps> = ({
     const styles = {
       [BookingStatus.CONFIRMED]: 'bg-green-100 text-green-800',
       [BookingStatus.PENDING]: 'bg-yellow-100 text-yellow-800',
+      [BookingStatus.IN_PROGRESS]: 'bg-blue-100 text-blue-800',
+      [BookingStatus.COMPLETED]: 'bg-gray-100 text-gray-800',
       [BookingStatus.CANCELLED]: 'bg-red-100 text-red-800'
     };
     
     const labels = {
       [BookingStatus.CONFIRMED]: '확정',
       [BookingStatus.PENDING]: '대기',
+      [BookingStatus.IN_PROGRESS]: '진행중',
+      [BookingStatus.COMPLETED]: '완료',
       [BookingStatus.CANCELLED]: '취소'
     };
 

@@ -88,43 +88,117 @@ describe('logger', () => {
       (logger as any).isDevelopment = true;
     });
 
-    it('formats debug messages correctly', () => {
+    it('formats debug messages correctly with style', () => {
       logger.debug('test', 'test message', { data: 'value' });
       
       expect(console.debug).toHaveBeenCalledWith(
-        expect.stringContaining('[DEBUG]')
+        expect.stringContaining('[DEBUG]'),
+        expect.stringContaining('color: #6B7280')
       );
     });
 
-    it('formats info messages correctly', () => {
+    it('formats info messages correctly with style', () => {
       logger.info('test', 'test message', { data: 'value' });
       
       expect(console.info).toHaveBeenCalledWith(
-        expect.stringContaining('[INFO]')
+        expect.stringContaining('[INFO]'),
+        expect.stringContaining('color: #3B82F6')
       );
     });
 
-    it('formats warn messages correctly', () => {
+    it('formats warn messages correctly with style', () => {
       logger.warn('test', 'test message', { data: 'value' });
       
       expect(console.warn).toHaveBeenCalledWith(
-        expect.stringContaining('[WARN]')
+        expect.stringContaining('[WARN]'),
+        expect.stringContaining('color: #F59E0B')
       );
     });
 
-    it('formats error messages correctly', () => {
+    it('formats error messages correctly with style', () => {
       logger.error('test', 'test message', new Error('test error'));
       
       expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining('[ERROR]')
+        expect.stringContaining('[ERROR]'),
+        expect.stringContaining('color: #EF4444')
       );
     });
 
-    it('includes timestamp in log messages', () => {
+    it('includes Korean timestamp format in log messages', () => {
       logger.info('test', 'test message');
       
       expect(console.info).toHaveBeenCalledWith(
-        expect.stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)
+        expect.stringMatching(/\[\d{2}\. \d{2}\. \d{2}\. \d{2}:\d{2}:\d{2}\]/),
+        expect.any(String)
+      );
+    });
+
+    it('includes data with emoji in development', () => {
+      logger.info('test', 'test message', { key: 'value' });
+      
+      expect(console.info).toHaveBeenCalledWith(
+        expect.stringContaining('📊 Data:'),
+        expect.any(String)
+      );
+    });
+
+    it('includes error with emoji', () => {
+      logger.error('test', 'test message', new Error('test error'));
+      
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining('❌ Error:'),
+        expect.any(String)
+      );
+    });
+  });
+
+  describe('performance and API logging', () => {
+    beforeEach(() => {
+      (logger as any).isDevelopment = true;
+    });
+
+    it('logs performance metrics with emoji', () => {
+      logger.performance('TestComponent', 'data-fetch', 500, { recordCount: 100 });
+      
+      expect(console.debug).toHaveBeenCalledWith(
+        expect.stringContaining('⚡ data-fetch completed in 500ms'),
+        expect.any(String)
+      );
+    });
+
+    it('warns about slow performance', () => {
+      logger.performance('TestComponent', 'slow-operation', 1500);
+      
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Slow operation detected'),
+        expect.any(String)
+      );
+    });
+
+    it('logs API calls with emoji', () => {
+      logger.apiCall('TestComponent', 'GET', '/api/users', 200, 200);
+      
+      expect(console.debug).toHaveBeenCalledWith(
+        expect.stringContaining('🌐 API: GET /api/users - 200'),
+        expect.any(String)
+      );
+    });
+
+    it('warns about slow API calls', () => {
+      logger.apiCall('TestComponent', 'POST', '/api/slow', 3000, 200);
+      
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Slow API call'),
+        expect.any(String)
+      );
+    });
+
+    it('logs user actions with emoji', () => {
+      logger.userAction('TestComponent', 'button-click', { buttonId: 'submit' });
+      
+      expect(console.info).toHaveBeenCalledWith(
+        expect.stringContaining('👤 User Action: button-click'),
+        expect.any(String)
       );
     });
   });

@@ -1,0 +1,44 @@
+{
+  "timestamp": "2025-09-12T01:36:55.751Z",
+  "summary": {
+    "totalCompanies": 4,
+    "totalTests": 0,
+    "successfulLogins": 0,
+    "dataIsolationIssues": [],
+    "bookingVisibilityIssues": []
+  },
+  "companyResults": {
+    "J1": {
+      "companyCode": "j1",
+      "expectedBookings": 151,
+      "loginAttempted": true,
+      "loginSuccess": false,
+      "authTokenValid": true,
+      "pageTests": {}
+    },
+    "HAPPY": {
+      "companyCode": "happy",
+      "expectedBookings": 150,
+      "loginAttempted": true,
+      "loginSuccess": false,
+      "authTokenValid": true,
+      "pageTests": {}
+    },
+    "STAR": {
+      "companyCode": "star",
+      "expectedBookings": 183,
+      "loginAttempted": true,
+      "loginSuccess": false,
+      "authTokenValid": true,
+      "pageTests": {}
+    },
+    "ENTRIP_MAIN": {
+      "companyCode": "ENTRIP_MAIN",
+      "expectedBookings": 50,
+      "loginAttempted": true,
+      "loginSuccess": false,
+      "authTokenValid": true,
+      "pageTests": {}
+    }
+  }
+}

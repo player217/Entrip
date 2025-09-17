@@ -11,7 +11,14 @@ export * from './stores/modalStore';
 
 // Hooks (client-only)
 export * from './hooks/useTeamBooking';
+
+// Legacy useBookings (deprecated - use unified-use-bookings)
 export * from './hooks/useBookings';
+
+// New unified useBookings hook
+export { useBookings as useUnifiedBookings } from './hooks/unified-use-bookings';
+export { default as useBookingsUnified } from './hooks/unified-use-bookings';
+
 export * from './hooks/useDebounce';
 export * from './hooks/useAuth';
 

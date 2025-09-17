@@ -158,10 +158,7 @@ export class CalendarController {
       const { id } = req.params;
       await calendarService.delete(id, companyCode);
 
-      res.json({
-        success: true,
-        message: 'Event deleted successfully',
-      });
+      res.status(204).send();
     } catch (error) {
       next(error);
     }

@@ -1,6 +1,8 @@
 import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
-import jwt from 'jsonwebtoken';
+import { jwtService } from './lib/jwt.service';
+import { AuthTokenPayload } from './routes/auth/auth.service';
+import { logger } from './lib/logger';
 
 let io: Server;
 
@@ -36,7 +38,7 @@ export const initializeWebSocket = (server: HttpServer): Server => {
     if (!token) {
       // In development, allow connection without token but with limited features
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[WS] Connection without token - limited features available');
+        logger.warn('[WS] Connection without token - limited features available');
         socket.data.user = { id: 'anonymous', email: 'anonymous@entrip.com' };
         return next();
       }
@@ -44,14 +46,20 @@ export const initializeWebSocket = (server: HttpServer): Server => {
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+      const decoded = jwtService.verifyAccessToken<AuthTokenPayload>(token);
       socket.data.user = decoded;
       next();
     } catch (err) {
       // In development, allow connection with invalid token
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[WS] Invalid token - using anonymous user');
-        socket.data.user = { id: 'anonymous', email: 'anonymous@entrip.com' };
+        logger.warn('[WS] Invalid token - using anonymous user');
+        socket.data.user = {
+          id: 'anonymous',
+          email: 'anonymous@entrip.com',
+          companyCode: 'ENTRIP_MAIN',
+          name: 'Anonymous',
+          role: 'USER' as any
+        };
         return next();
       }
       next(new Error('Authentication error'));
@@ -61,31 +69,34 @@ export const initializeWebSocket = (server: HttpServer): Server => {
   io.on('connection', (socket: any) => {
     const userId = socket.data.user?.id;
     const userEmail = socket.data.user?.email;
-    console.log(`[WS] Client connected: ${socket.id}, User: ${userEmail}`);
+    const companyCode = socket.data.user?.companyCode;
+    logger.ws('Client connected', socket.id, { userId, userEmail, companyCode });
 
     // 사용자별 룸 참가 (메시징용)
-    if (userId) {
+    if (userId && userId !== 'anonymous') {
       socket.join(`user:${userId}`);
     }
 
-    // 예약 룸에 참가
-    socket.join('bookings');
-
-    // 항공편 감시 룸에 참가
-    socket.join('flights');
+    // 회사별 룸 참가 (multi-tenancy support)
+    if (companyCode) {
+      socket.join(`company:${companyCode}`);
+      socket.join(`company:${companyCode}:bookings`);
+      socket.join(`company:${companyCode}:users`);
+      socket.join(`company:${companyCode}:flights`);
+    }
 
     // === 메시징 이벤트 핸들러 ===
 
     // 대화방 참가
     socket.on('conversation:join', (conversationId: string) => {
       socket.join(`conversation:${conversationId}`);
-      console.log(`[WS] User ${userEmail} joined conversation ${conversationId}`);
+      logger.ws('User joined conversation', socket.id, { userEmail, conversationId });
     });
 
     // 대화방 나가기
     socket.on('conversation:leave', (conversationId: string) => {
       socket.leave(`conversation:${conversationId}`);
-      console.log(`[WS] User ${userEmail} left conversation ${conversationId}`);
+      logger.ws('User left conversation', socket.id, { userEmail, conversationId });
     });
 
     // 메시지 전송
@@ -94,7 +105,7 @@ export const initializeWebSocket = (server: HttpServer): Server => {
         const { conversationId, content, type, attachments, replyToId } = data;
 
         // TODO: 메시징 서비스 연동 (Phase 1.2에서 구현)
-        console.log(`[WS] Message sent in conversation ${conversationId}`);
+        logger.ws('Message sent', socket.id, { conversationId, userId });
         socket.emit('message:sent', { success: true });
       } catch (error: any) {
         socket.emit('message:error', { error: error.message });
@@ -107,7 +118,7 @@ export const initializeWebSocket = (server: HttpServer): Server => {
         const { messageId, content } = data;
 
         // TODO: 메시징 서비스 연동 (Phase 1.2에서 구현)
-        console.log(`[WS] Message edited: ${messageId}`);
+        logger.ws('Message edited', socket.id, { messageId, userId });
         socket.emit('message:edited', { success: true });
       } catch (error: any) {
         socket.emit('message:error', { error: error.message });
@@ -118,7 +129,7 @@ export const initializeWebSocket = (server: HttpServer): Server => {
     socket.on('message:delete', async (messageId: string) => {
       try {
         // TODO: 메시징 서비스 연동 (Phase 1.2에서 구현)
-        console.log(`[WS] Message deleted: ${messageId}`);
+        logger.ws('Message deleted', socket.id, { messageId, userId });
         socket.emit('message:deleted', { messageId });
       } catch (error: any) {
         socket.emit('message:error', { error: error.message });
@@ -129,9 +140,9 @@ export const initializeWebSocket = (server: HttpServer): Server => {
     socket.on('typing:start', async (conversationId: string) => {
       try {
         // TODO: 메시징 서비스 연동 (Phase 1.2에서 구현)
-        console.log(`[WS] Typing started in conversation ${conversationId}`);
+        logger.ws('Typing started', socket.id, { conversationId, userId });
       } catch (error: any) {
-        console.error('[WS] Typing start error:', error);
+        logger.error('[WS] Typing start error', { error: error.message });
       }
     });
 
@@ -139,32 +150,32 @@ export const initializeWebSocket = (server: HttpServer): Server => {
     socket.on('typing:stop', async (conversationId: string) => {
       try {
         // TODO: 메시징 서비스 연동 (Phase 1.2에서 구현)
-        console.log(`[WS] Typing stopped in conversation ${conversationId}`);
+        logger.ws('Typing stopped', socket.id, { conversationId, userId });
       } catch (error: any) {
-        console.error('[WS] Typing stop error:', error);
+        logger.error('[WS] Typing stop error', { error: error.message });
       }
     });
 
     // 항공편 감시 요청
     socket.on('watch:flight', (flightNo: string) => {
       // TODO: 항공편 감시 서비스 연동
-      console.log(`[WS] Watching flight: ${flightNo}`);
+      logger.ws('Watching flight', socket.id, { flightNo, userId });
       socket.emit('watch:flight:ack', { flightNo, watching: true });
     });
 
     socket.on('unwatch:flight', (flightNo: string) => {
       // TODO: 항공편 감시 서비스 연동
-      console.log(`[WS] Unwatching flight: ${flightNo}`);
+      logger.ws('Unwatching flight', socket.id, { flightNo, userId });
       socket.emit('watch:flight:ack', { flightNo, watching: false });
     });
 
     // 연결 해제
     socket.on('disconnect', async () => {
-      console.log(`[WS] Client disconnected: ${socket.id}`);
+      logger.ws('Client disconnected', socket.id, { userId, userEmail });
     });
   });
 
-  console.log('[WS] WebSocket server initialized on v2');
+  logger.info('[WS] WebSocket server initialized on v2');
   return io;
 };
 
@@ -173,7 +184,7 @@ export const broadcastBookingUpdate = (type: 'create' | 'update' | 'delete', boo
   if (!io) return;
 
   const event = `booking:${type}`;
-  console.log(`[WS] Broadcasting ${event} for booking ${bookingId}`);
+  logger.ws('Broadcasting booking event', 'broadcast', { event, bookingId });
 
   io.to('bookings').emit(event, {
     bookingId,
@@ -187,7 +198,7 @@ export const broadcastBulkOperation = (type: 'delete' | 'create', count: number,
   if (!io) return;
 
   const event = `booking:bulk-${type}`;
-  console.log(`[WS] Broadcasting ${event} for ${count} bookings`);
+  logger.ws('Broadcasting bulk operation', 'broadcast', { event, count });
 
   io.to('bookings').emit(event, {
     count,
@@ -200,7 +211,7 @@ export const broadcastBulkOperation = (type: 'delete' | 'create', count: number,
 export const broadcastFlightDelay = (delayInfo: any) => {
   if (!io) return;
 
-  console.log(`[WS] Broadcasting flight delay: ${delayInfo.flightNo} - ${delayInfo.delay}min`);
+  logger.ws('Broadcasting flight delay', 'broadcast', { flightNo: delayInfo.flightNo, delay: delayInfo.delay });
   io.to('flights').emit('delay', delayInfo);
 };
 
@@ -210,7 +221,7 @@ export const broadcastFlightDelay = (delayInfo: any) => {
 export const broadcastMessage = (conversationId: string, message: any) => {
   if (!io) return;
 
-  console.log(`[WS] Broadcasting new message in conversation ${conversationId}`);
+  logger.ws('Broadcasting new message', 'broadcast', { conversationId });
   io.to(`conversation:${conversationId}`).emit('message:new', message);
 };
 
@@ -218,7 +229,7 @@ export const broadcastMessage = (conversationId: string, message: any) => {
 export const broadcastMessageEdit = (conversationId: string, message: any) => {
   if (!io) return;
 
-  console.log(`[WS] Broadcasting message edit in conversation ${conversationId}`);
+  logger.ws('Broadcasting message edit', 'broadcast', { conversationId });
   io.to(`conversation:${conversationId}`).emit('message:edited', message);
 };
 
@@ -226,7 +237,7 @@ export const broadcastMessageEdit = (conversationId: string, message: any) => {
 export const broadcastMessageDelete = (conversationId: string, messageId: string) => {
   if (!io) return;
 
-  console.log(`[WS] Broadcasting message delete in conversation ${conversationId}`);
+  logger.ws('Broadcasting message delete', 'broadcast', { conversationId, messageId });
   io.to(`conversation:${conversationId}`).emit('message:deleted', { messageId });
 };
 
