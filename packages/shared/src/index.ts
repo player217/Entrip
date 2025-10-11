@@ -2,6 +2,8 @@
 // Re-export everything from server for backwards compatibility
 export * from './types/user';
 export * from './types/auth';
+// Ensure runtime enums are exported (avoid folder index shadowing)
+export { BookingStatus, BookingType } from './types/booking';
 export * from './types/booking';
 export * from './types/booking-extended';
 // Explicitly re-export UserRole to resolve ambiguity
@@ -16,6 +18,7 @@ export { AuthService, createAuthService, getAuthService } from './services/AuthS
 export type { AuthConfig } from './services/AuthService';
 export * from './utils/logger';
 export * from './utils/debounce';
+export * from './utils/dateUtils';
 export { logger } from './lib/logger';
 
 // Legacy API client exports (deprecated - use unified-api-client)

@@ -73,10 +73,13 @@ export interface Booking {
   customerName: string; // Maps to API schema
   teamName: string;
   bookingType?: BookingType; // Made optional for compatibility
+  origin?: string; // v2 origin city
   destination: string;
+  coordinator?: string; // v2 coordinator
   startDate: string;
   endDate: string;
   paxCount: number;
+  totalPax?: number; // v2 total passenger count
   nights?: number; // Made optional for compatibility
   days?: number; // Made optional for compatibility
   status: BookingStatus;
@@ -100,6 +103,7 @@ export interface Booking {
   returnDate?: string; // Alternative field for endDate  
   date?: string; // Alternative generic date field
   version?: number; // For optimistic locking
+  etag?: string; // Weak ETag from API responses
   
   // Mapped fields for frontend compatibility
   client?: string; // Maps to customerName
@@ -111,16 +115,6 @@ export interface Booking {
     email: string;
     name: string;
     role: UserRole;
-  };
-}
-
-export interface BookingListResponse {
-  data: Booking[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
   };
 }
 
@@ -202,11 +196,21 @@ export interface BookingListResponse {
   total: number;
   page: number;
   pageSize: number;
+  totalPages?: number;
+  meta?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  raw?: unknown;
 }
 
 export interface BookingDetailResponse {
   booking: Booking;
   events: BookingEvent[];
+  etag?: string;
+  raw?: unknown;
 }
 
 // MonthlySummary 타입 추가

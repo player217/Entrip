@@ -16,14 +16,21 @@ export interface CacheOptions {
 export const cacheMiddleware = (options: CacheOptions = {}) => {
   const {
     ttl = 300, // 5 minutes default
+    // Default key generator now scopes authenticated GETs by user and company to prevent cross-tenant/user cache leaks
     keyGenerator = (req: Request) => {
-      const key = `${req.method}:${req.originalUrl}:${JSON.stringify(req.body)}`;
+      const user = (req as any)?.user as { id?: string; companyCode?: string } | undefined;
+      const authScope = user?.id || user?.companyCode ? `:uid=${user?.id ?? 'anon'}:co=${user?.companyCode ?? 'none'}` : '';
+      const key = `${req.method}:${req.originalUrl}${authScope}:${JSON.stringify(req.body)}`;
       return createHash('md5').update(key).digest('hex');
     },
     condition = () => true
   } = options;
 
   return (req: Request, res: Response, next: NextFunction) => {
+    // Test-only escape hatch to avoid cache-related flakiness in CI
+    if (process.env.NODE_ENV === 'test' && process.env.CACHE_DISABLE_IN_TEST === 'true') {
+      return next();
+    }
     // Skip caching if condition is not met
     if (!condition(req)) {
       return next();
@@ -109,8 +116,10 @@ export const cleanupExpiredCache = () => {
   }
 };
 
-// Run cleanup every 5 minutes
-setInterval(cleanupExpiredCache, 5 * 60 * 1000);
+// Run cleanup every 5 minutes (skip in test to avoid open handles)
+if (process.env.NODE_ENV !== 'test') {
+  setInterval(cleanupExpiredCache, 5 * 60 * 1000);
+}
 
 /**
  * Cache statistics

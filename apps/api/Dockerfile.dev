@@ -1,44 +1,79 @@
-FROM node:20-slim
+# Development Dockerfile for API (Legacy) with pnpm workspace support
+FROM node:20-slim AS deps
 
-# 필수 빌드 툴 설치
+# Install dependencies needed for Prisma and builds
 RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
     curl \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
+
+# Install pnpm
+RUN npm install -g pnpm@10.13.1
 
 WORKDIR /app
 
-# pnpm 설치
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Copy workspace configuration first
+COPY pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
+COPY .npmrc* ./
 
-# workspace 설정 및 lockfile 복사
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json .npmrc ./
-
-# 모든 package.json 복사 (의존성 설치를 위해)
-COPY packages/design-tokens/package.json ./packages/design-tokens/
+# Copy all package.json files to maintain workspace structure
+COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/ui/package.json ./packages/ui/
-COPY apps/api/package.json ./apps/api/
+COPY packages/design-tokens/package.json ./packages/design-tokens/
 
-# 전체 의존성 설치 (postinstall 무시)
-RUN pnpm install --no-frozen-lockfile --ignore-scripts
-
-# Prisma schema 복사 및 Client 생성
+# Copy Prisma schema to prevent postinstall failure
 COPY apps/api/prisma ./apps/api/prisma
-RUN pnpm --filter @entrip/api-legacy exec prisma generate
 
-# 전체 소스 코드 복사
+# Install ALL dependencies including devDependencies (needed for build)
+RUN pnpm install --frozen-lockfile --prod=false
+
+# Builder stage
+FROM deps AS builder
+
+WORKDIR /app
+
+# Copy all source code
 COPY . .
 
-# 패키지 빌드
-RUN pnpm --filter @entrip/design-tokens build || true
-RUN pnpm --filter @entrip/shared build || true
+# Generate Prisma client for API
+RUN cd apps/api && npx prisma generate
 
+# Build dependencies in correct order
+RUN pnpm --filter @entrip/design-tokens build
+RUN pnpm --filter @entrip/shared build
+RUN pnpm --filter @entrip/ui build
+
+# Development runner stage
+FROM deps AS runner
+
+WORKDIR /app
+
+# Install PostgreSQL client for migration checks
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
+# Copy Prisma schema (client is already generated in deps)
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+
+# Copy built dependencies from builder
+COPY --from=builder /app/packages/design-tokens/build ./packages/design-tokens/build
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/ui/dist ./packages/ui/dist
+
+# Copy source code for hot reload
+COPY . .
+
+# Make scripts executable
+COPY scripts/test-db.prepare.sh /app/scripts/
+RUN chmod +x /app/scripts/wait-for-postgres.sh /app/scripts/docker-entrypoint.sh /app/scripts/test-db.prepare.sh || true
+
+# Expose port
 EXPOSE 4000
 
-WORKDIR /app/apps/api
+# Set environment variables for development
+ENV NODE_ENV=development
+ENV DATABASE_URL=postgresql://entrip:entrip@postgres:5432/entrip
 
-# ts-node-dev로 실행
-CMD ["pnpm", "exec", "ts-node-dev", "--respawn", "--transpile-only", "src/index.ts"]
+# Use entrypoint script for migrations and server start
+CMD ["/app/scripts/docker-entrypoint.sh"]

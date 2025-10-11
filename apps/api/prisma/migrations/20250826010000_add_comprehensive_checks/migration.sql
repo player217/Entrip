@@ -187,50 +187,51 @@ ALTER TABLE "Message" ADD CONSTRAINT message_content_required
 -- ===== Create Performance Indexes =====
 
 -- Partial indexes for frequently queried statuses
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_booking_confirmed 
-  ON "Booking"("startDate", "endDate") 
+CREATE INDEX IF NOT EXISTS idx_booking_confirmed
+  ON "Booking"("startDate", "endDate")
   WHERE status = 'CONFIRMED';
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_booking_pending 
-  ON "Booking"("createdAt") 
+CREATE INDEX IF NOT EXISTS idx_booking_pending
+  ON "Booking"("createdAt")
   WHERE status = 'PENDING';
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_approval_pending 
-  ON "Approval"("createdAt", "approverId") 
+CREATE INDEX IF NOT EXISTS idx_approval_pending
+  ON "Approval"("createdAt", "approverId")
   WHERE status = 'PENDING';
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_transaction_recent 
-  ON "Transaction"("transactionDate") 
-  WHERE "transactionDate" > (CURRENT_DATE - INTERVAL '90 days');
+-- CREATE INDEX IF NOT EXISTS idx_transaction_recent
+--   ON "Transaction"("transactionDate")
+--   WHERE "transactionDate" > (CURRENT_DATE - INTERVAL '90 days');
+-- Note: Removed due to PostgreSQL IMMUTABLE function requirement in index predicates
 
 -- Composite indexes for common queries
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_booking_customer_search 
+CREATE INDEX IF NOT EXISTS idx_booking_customer_search
   ON "Booking"("customerName", "teamName", "status");
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_booking_date_range 
+CREATE INDEX IF NOT EXISTS idx_booking_date_range
   ON "Booking"("startDate", "endDate", "status")
   WHERE status IN ('CONFIRMED', 'PENDING');
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_flight_schedule 
+CREATE INDEX IF NOT EXISTS idx_flight_schedule
   ON "Flight"("departDate", "departureTime", "airline");
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_hotel_availability 
+CREATE INDEX IF NOT EXISTS idx_hotel_availability
   ON "Hotel"("checkIn", "checkOut", "name");
 
 -- Message system performance indexes
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_message_unread 
+CREATE INDEX IF NOT EXISTS idx_message_unread
   ON "Message"("conversationId", "createdAt")
   WHERE "isDeleted" = false;
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_conversation_active 
+CREATE INDEX IF NOT EXISTS idx_conversation_active
   ON "Conversation"("lastActivity")
   WHERE "lastMessageId" IS NOT NULL;
 
 -- Financial tracking indexes
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_settlement_summary 
+CREATE INDEX IF NOT EXISTS idx_settlement_summary
   ON "Settlement"("bookingId", "type", "currency");
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_account_active 
+CREATE INDEX IF NOT EXISTS idx_account_active
   ON "Account"("managerId", "isActive")
   WHERE "isActive" = true;
 

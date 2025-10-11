@@ -29,12 +29,14 @@ export function DataGrid<T extends object>({
   enablePagination = false,
   pageSize = 10,
 }: DataGridProps<T>) {
+  // Guard against undefined data in tests/edge cases
+  const safeData = Array.isArray(data) ? data : ([] as T[]);
   const {
     table,
     globalFilter,
     setGlobalFilter,
   } = useDataGridCore({
-    data,
+    data: safeData,
     columns,
     enableSorting,
     enableFiltering,

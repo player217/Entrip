@@ -1,5 +1,4 @@
-import { Booking, BookingEvent } from '@entrip/shared';
-import { toDate, type DateLike } from '@entrip/shared/utils/dateUtils';
+import { Booking, BookingEvent, toDate, type DateLike } from '@entrip/shared';
 
 /**
  * Booking 또는 BookingEvent에서 날짜를 안전하게 추출하는 헬퍼 함수

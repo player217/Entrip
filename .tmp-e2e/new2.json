@@ -1,0 +1,13 @@
+{
+  "customerName": "최속테스트",
+  "teamName": "E2E-1759990439",
+  "bookingType": "FIT",
+  "destination": "Seoul",
+  "startDate": "2025-10-15T00:00:00.000Z",
+  "endDate": "2025-10-18T00:00:00.000Z",
+  "paxCount": 2,
+  "nights": 3,
+  "days": 4,
+  "totalPrice": 500000,
+  "currency": "KRW"
+}

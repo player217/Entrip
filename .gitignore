@@ -27,6 +27,11 @@ yarn-error.log*
 pnpm-debug.log*
 .pnpm-debug.log*
 
+# Process management
+.entrip-pids.json
+.prisma.lock
+.prisma.pid
+
 # local env files
 .env*.local
 .env
@@ -78,3 +83,6 @@ ui_backup_*
 app_backup_*
 packages_backup_*
 Entrip_demo_backup_*
+
+# Archived stray Windows-path artifacts (quarantined)
+archive/_windows_artifacts/

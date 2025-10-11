@@ -1,4 +1,4 @@
-import { teamBookingService } from '../teamBookingService';
+import { teamBookingService, __setTeamBookingServiceModeForTests } from '../teamBookingService';
 import { apiClient } from '../../lib/apiClient';
 import type { 
   TeamBooking, 
@@ -27,6 +27,11 @@ jest.mock('../../lib/apiClient', () => ({
 describe('teamBookingService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    __setTeamBookingServiceModeForTests(null);
+  });
+
+  afterEach(() => {
+    __setTeamBookingServiceModeForTests(null);
   });
 
   const mockTeamBooking: TeamBooking = {
@@ -149,7 +154,7 @@ describe('teamBookingService', () => {
 
       const result = await teamBookingService.createTeamBooking(payload);
 
-      expect(apiClient.post).toHaveBeenCalledWith('/api/team-bookings', payload);
+      expect(apiClient.post).toHaveBeenCalledWith('/team-bookings', payload);
       expect(result).toEqual(mockTeamBooking);
     });
   });
@@ -167,7 +172,7 @@ describe('teamBookingService', () => {
 
       const result = await teamBookingService.getTeamBookings();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/team-bookings', { params: undefined });
+      expect(apiClient.get).toHaveBeenCalledWith('/team-bookings', { params: undefined });
       expect(result).toEqual(mockResponse);
     });
 
@@ -193,7 +198,7 @@ describe('teamBookingService', () => {
 
       await teamBookingService.getTeamBookings(filters);
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/team-bookings', { params: filters });
+      expect(apiClient.get).toHaveBeenCalledWith('/team-bookings', { params: filters });
     });
   });
 
@@ -208,7 +213,7 @@ describe('teamBookingService', () => {
 
       const result = await teamBookingService.getTeamBookingDetail('tb-123');
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/team-bookings/tb-123');
+      expect(apiClient.get).toHaveBeenCalledWith('/team-bookings/tb-123');
       expect(result).toEqual(mockResponse);
     });
   });
@@ -228,7 +233,7 @@ describe('teamBookingService', () => {
 
       const result = await teamBookingService.updateTeamBooking('tb-123', updates);
 
-      expect(apiClient.patch).toHaveBeenCalledWith('/api/team-bookings/tb-123', updates);
+      expect(apiClient.patch).toHaveBeenCalledWith('/team-bookings/tb-123', updates);
       expect(result).toEqual(updatedBooking);
     });
   });
@@ -239,7 +244,7 @@ describe('teamBookingService', () => {
 
       await teamBookingService.deleteTeamBooking('tb-123');
 
-      expect(apiClient.delete).toHaveBeenCalledWith('/api/team-bookings/tb-123');
+      expect(apiClient.delete).toHaveBeenCalledWith('/team-bookings/tb-123');
     });
   });
 
@@ -275,7 +280,7 @@ describe('teamBookingService', () => {
       const result = await teamBookingService.updateTransportation('tb-123', transportation);
 
       expect(apiClient.put).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/transportation',
+        '/team-bookings/tb-123/transportation',
         transportation
       );
       expect(result).toEqual(mockTeamBooking);
@@ -305,7 +310,7 @@ describe('teamBookingService', () => {
       const result = await teamBookingService.updateAccommodations('tb-123', accommodations);
 
       expect(apiClient.put).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/accommodations',
+        '/team-bookings/tb-123/accommodations',
         { accommodations }
       );
       expect(result).toEqual(mockTeamBooking);
@@ -342,7 +347,7 @@ describe('teamBookingService', () => {
       const result = await teamBookingService.addParticipants('tb-123', participants);
 
       expect(apiClient.post).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/participants',
+        '/team-bookings/tb-123/participants',
         { participants }
       );
       expect(result).toEqual(updatedBooking);
@@ -356,7 +361,7 @@ describe('teamBookingService', () => {
       const result = await teamBookingService.updateParticipant('tb-123', 'participant-1', updates);
 
       expect(apiClient.patch).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/participants/participant-1',
+        '/team-bookings/tb-123/participants/participant-1',
         updates
       );
       expect(result).toEqual(mockTeamBooking);
@@ -368,7 +373,7 @@ describe('teamBookingService', () => {
       const result = await teamBookingService.removeParticipant('tb-123', 'participant-1');
 
       expect(apiClient.delete).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/participants/participant-1'
+        '/team-bookings/tb-123/participants/participant-1'
       );
       expect(result).toEqual(mockTeamBooking);
     });
@@ -391,7 +396,7 @@ describe('teamBookingService', () => {
       const result = await teamBookingService.updateCosts('tb-123', costs);
 
       expect(apiClient.put).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/costs',
+        '/team-bookings/tb-123/costs',
         { costs }
       );
       expect(result).toEqual(mockTeamBooking);
@@ -414,7 +419,7 @@ describe('teamBookingService', () => {
       const result = await teamBookingService.addPayment('tb-123', payment);
 
       expect(apiClient.post).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/payments',
+        '/team-bookings/tb-123/payments',
         payment
       );
       expect(result).toEqual(mockTeamBooking);
@@ -437,7 +442,7 @@ describe('teamBookingService', () => {
       const result = await teamBookingService.assignManagers('tb-123', managers);
 
       expect(apiClient.put).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/managers',
+        '/team-bookings/tb-123/managers',
         { managers }
       );
       expect(result).toEqual(mockTeamBooking);
@@ -454,7 +459,7 @@ describe('teamBookingService', () => {
       const result = await teamBookingService.updateStatus('tb-123', status);
 
       expect(apiClient.patch).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/status',
+        '/team-bookings/tb-123/status',
         { status, reason: undefined }
       );
       expect(result.status).toBe(status);
@@ -474,7 +479,7 @@ describe('teamBookingService', () => {
       const result = await teamBookingService.updateStatus('tb-123', status, reason);
 
       expect(apiClient.patch).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/status',
+        '/team-bookings/tb-123/status',
         { status, reason }
       );
       expect(result.status).toBe(status);
@@ -495,7 +500,7 @@ describe('teamBookingService', () => {
       expectedFormData.append('category', category);
 
       expect(apiClient.post).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/attachments',
+        '/team-bookings/tb-123/attachments',
         expectedFormData,
         {
           headers: {
@@ -512,7 +517,7 @@ describe('teamBookingService', () => {
       const result = await teamBookingService.deleteAttachment('tb-123', 'attachment-1');
 
       expect(apiClient.delete).toHaveBeenCalledWith(
-        '/api/team-bookings/tb-123/attachments/attachment-1'
+        '/team-bookings/tb-123/attachments/attachment-1'
       );
       expect(result).toEqual(mockTeamBooking);
     });
@@ -548,13 +553,244 @@ describe('teamBookingService', () => {
         endDate: '2024-12-31'
       });
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/team-bookings/statistics', {
+      expect(apiClient.get).toHaveBeenCalledWith('/team-bookings/statistics', {
         params: {
           startDate: '2024-01-01',
           endDate: '2024-12-31'
         }
       });
       expect(result).toEqual(mockStats);
+    });
+  });
+
+  describe('v2 mode interoperability', () => {
+    beforeEach(() => {
+      __setTeamBookingServiceModeForTests('v2');
+    });
+
+    afterEach(() => {
+      __setTeamBookingServiceModeForTests(null);
+    });
+
+    it('routes create requests to v2 endpoint', async () => {
+      const payload = {
+        teamCode: 'TEAM-001',
+        tourName: 'Heritage Tour',
+      } as unknown as CreateTeamBookingPayload;
+
+      (apiClient.post as jest.Mock).mockResolvedValue({ data: mockTeamBooking });
+
+      await teamBookingService.createTeamBooking(payload);
+
+      expect(apiClient.post).toHaveBeenCalledWith('/v2/team-bookings', payload);
+    });
+
+    it('routes detail requests to v2 endpoint', async () => {
+      (apiClient.get as jest.Mock).mockResolvedValue({ data: mockTeamBooking });
+
+      await teamBookingService.getTeamBookingDetail('tb-123');
+
+      expect(apiClient.get).toHaveBeenCalledWith('/v2/team-bookings/tb-123');
+    });
+
+    it('normalizes v2 list payloads to the shared DTO shape', async () => {
+      const v2Payload = {
+        id: 'uuid-1',
+        bookingNumber: 'TB-100',
+        code: 'TEAM-100',
+        team: { code: 'TEAM-100' },
+        programName: 'V2 Heritage Program',
+        destinationCity: 'Osaka',
+        startDate: '2025-02-01T00:00:00Z',
+        endDate: '2025-02-05T00:00:00Z',
+        status: 'IN_PROGRESS',
+        participantCounts: { adults: 10, children: 2, infants: 1, total: 13 },
+        transportation: {
+          outbound: {
+            flights: [{
+              number: 'JL123',
+              carrier: 'JAL',
+              departure: { airport: 'ICN', time: '2025-02-01T09:00:00+09:00' },
+              arrival: { airport: 'KIX', time: '2025-02-01T11:30:00+09:00' },
+              cabin: 'business',
+              seats: ['12A', '12B']
+            }]
+          },
+          inbound: {
+            flights: [{
+              number: 'JL456',
+              carrier: 'JAL',
+              departure: { airport: 'KIX', time: '2025-02-05T18:00:00+09:00' },
+              arrival: { airport: 'ICN', time: '2025-02-05T20:30:00+09:00' },
+              cabin: 'economy'
+            }]
+          }
+        },
+        accommodations: [
+          {
+            name: 'Osaka Bay Hotel',
+            address: '1-1 Naniwa, Osaka',
+            startDate: '2025-02-01',
+            endDate: '2025-02-05',
+            rooms: [
+              {
+                roomType: 'twin',
+                guestNames: ['홍길동', '이영희'],
+                checkInDate: '2025-02-01',
+                checkOutDate: '2025-02-05'
+              }
+            ],
+            plan: 'full_board',
+            roomCount: 5,
+            phone: '010-1234-5678',
+            confirmation: 'CONF-1'
+          }
+        ],
+        costs: [
+          {
+            type: 'transportation',
+            description: '전세버스',
+            amount: '120000',
+            currency: 'KRW',
+            quantity: 1,
+            total: '120000'
+          }
+        ],
+        pricing: {
+          adultPrice: '200000',
+          childPrice: '150000',
+          infantPrice: 0,
+          currency: 'usd'
+        },
+        settlement: {
+          totalRevenue: '1200000',
+          totalCost: '800000',
+          profit: '400000',
+          profitMargin: '33',
+          payments: [
+            {
+              paymentId: 'pay-1',
+              paidAt: '2025-01-10',
+              amount: '400000',
+              currency: 'KRW',
+              method: 'transfer',
+              from: 'Foo Corp',
+              to: 'Entrip',
+              purpose: 'deposit'
+            }
+          ],
+          outstandingBalance: '800000'
+        },
+        customer: {
+          organizationName: 'Foo Corp',
+          type: 'company',
+          contacts: [
+            {
+              name: 'Kim',
+              phone: '010-0000-0000',
+              relationship: 'primary',
+              email: 'kim@example.com'
+            }
+          ]
+        },
+        coordinators: [
+          {
+            id: 'mgr-1',
+            fullName: 'Lee Manager',
+            role: 'guide',
+            phone: '010-2222-3333'
+          }
+        ],
+        attachments: [
+          {
+            attachmentId: 'att-1',
+            filename: 'plan.pdf',
+            mimeType: 'application/pdf',
+            size: 2048,
+            timestamp: '2025-01-05T00:00:00Z',
+            category: 'ITINERARY'
+          }
+        ],
+        createdAt: '2025-01-01T00:00:00Z',
+        createdBy: 'user-42'
+      };
+
+      (apiClient.get as jest.Mock).mockResolvedValue({
+        data: {
+          data: [v2Payload],
+          total: 1,
+          page: 1,
+          limit: 15
+        }
+      });
+
+      const result = await teamBookingService.getTeamBookings();
+      const booking = result.bookings[0];
+
+      expect(booking.teamCode).toBe('TEAM-100');
+      expect(booking.tourName).toBe('V2 Heritage Program');
+      expect(booking.transportation.outbound.flights[0]).toMatchObject({
+        flightNumber: 'JL123',
+        airline: 'JAL',
+        departureAirport: 'ICN',
+        arrivalAirport: 'KIX',
+        class: 'business'
+      });
+      expect(booking.accommodations[0].hotelName).toBe('Osaka Bay Hotel');
+      expect(booking.pricing.currency).toBe('USD');
+      expect(booking.managers[0].role).toBe('guide');
+      expect(booking.attachments?.[0].category).toBe('itinerary');
+      expect(result.total).toBe(1);
+    });
+
+    it('normalizes v2 detail payload history entries', async () => {
+      const v2Payload = {
+        id: 'uuid-2',
+        bookingNumber: 'TB-200',
+        code: 'TEAM-200',
+        programName: 'Pacific Tour',
+        destinationCity: 'Fukuoka',
+        startDate: '2025-03-10T00:00:00Z',
+        endDate: '2025-03-15T00:00:00Z',
+        status: 'CONFIRMED',
+        transportation: {},
+        accommodations: [],
+        participants: [],
+        pricing: { adultPrice: 0, childPrice: 0, infantPrice: 0, currency: 'KRW' },
+        settlement: {},
+        customer: {
+          organizationName: 'Bar Inc',
+          type: 'company',
+          contacts: [{ name: 'Park', phone: '010-3333-3333', relationship: 'primary' }]
+        },
+        managers: []
+      };
+
+      (apiClient.get as jest.Mock).mockResolvedValue({
+        data: {
+          booking: v2Payload,
+          history: [
+            {
+              eventId: 'hist-1',
+              type: 'STATUS-CHANGED',
+              message: 'Status updated',
+              user: 'tester',
+              timestamp: '2025-03-01T12:00:00Z',
+              changes: { status: ['draft', 'confirmed'] }
+            }
+          ]
+        }
+      });
+
+      const result = await teamBookingService.getTeamBookingDetail('uuid-2');
+
+      expect(result.booking.status).toBe('confirmed');
+      expect(result.history?.[0]).toMatchObject({
+        id: 'hist-1',
+        action: 'status_changed',
+        description: 'Status updated',
+        changedBy: 'tester'
+      });
     });
   });
 });

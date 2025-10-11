@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { ToastProvider } from '../src/providers/ToastProvider';
 import ReservationListView from '../src/features/calendar/ReservationListView';
 
 // Mock the required modules
@@ -36,7 +37,11 @@ jest.mock('next/navigation', () => ({
 
 describe('Calendar renders', () => {
   it('should render calendar components and reservation data', () => {
-    render(<ReservationListView />);
+    render(
+      <ToastProvider>
+        <ReservationListView />
+      </ToastProvider>
+    );
     
     // Check if title is rendered
     expect(screen.getByText('예약 관리')).toBeInTheDocument();

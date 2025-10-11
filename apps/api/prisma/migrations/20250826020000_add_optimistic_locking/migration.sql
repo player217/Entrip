@@ -39,16 +39,16 @@ ALTER TABLE "Conversation"
 --   ADD COLUMN IF NOT EXISTS "version" INTEGER NOT NULL DEFAULT 1;
 
 -- Create indexes for version fields (helps with conflict detection queries)
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_booking_version 
+CREATE INDEX IF NOT EXISTS idx_booking_version
   ON "Booking"("id", "version");
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_account_version 
+CREATE INDEX IF NOT EXISTS idx_account_version
   ON "Account"("id", "version");
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_transaction_version 
+CREATE INDEX IF NOT EXISTS idx_transaction_version
   ON "Transaction"("id", "version");
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_approval_version 
+CREATE INDEX IF NOT EXISTS idx_approval_version
   ON "Approval"("id", "version");
 
 -- Add check constraint to ensure version is always positive

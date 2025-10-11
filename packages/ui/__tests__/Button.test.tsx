@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { Button } from '../primitives/Button'
+import { Button } from '../src/components/primitives/Button'
 
 describe('Button', () => {
   it('renders with children', () => {

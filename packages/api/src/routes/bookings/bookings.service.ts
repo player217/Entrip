@@ -22,10 +22,18 @@ export class BookingsService extends BaseService<Booking> {
     // Generate booking number
     const bookingNumber = `BK${Date.now()}`;
 
+    // Map/normalize fields to match Prisma schema
     return this.create(companyCode, userId, {
       ...input,
+      // Normalize type to Prisma enum; fallback to FIT
+      type: ((): any => {
+        const t = (input as any).type;
+        const upper = typeof t === 'string' ? t.toUpperCase() : undefined;
+        const allowed = ['PACKAGE','FIT','GROUP','BUSINESS','INCENTIVE'];
+        return allowed.includes(upper || '') ? upper : 'FIT';
+      })(),
       bookingNumber,
-      status: BookingStatus.pending,
+      status: BookingStatus.PENDING,
       startDate: new Date(input.startDate),
       endDate: new Date(input.endDate),
     });
@@ -37,7 +45,8 @@ export class BookingsService extends BaseService<Booking> {
   async updateBooking(
     id: string,
     companyCode: string,
-    input: BookingUpdateInput
+    input: BookingUpdateInput,
+    ifMatch?: string
   ): Promise<Booking> {
     const updateData: any = { ...input };
 
@@ -49,7 +58,27 @@ export class BookingsService extends BaseService<Booking> {
       updateData.endDate = new Date(input.endDate);
     }
 
-    return this.update(id, companyCode, updateData);
+    // Optimistic locking via If-Match (expects numeric version)
+    const { parseIfMatchVersion } = await import('../../lib/etag');
+    const expectedVersion = parseIfMatchVersion(ifMatch);
+    if (expectedVersion === undefined) {
+      throw new ApiError(428, 'Precondition Required: If-Match header (version) is required');
+    }
+
+    const result = await this.model.updateMany({
+      where: { id, companyCode, deletedAt: null, version: expectedVersion },
+      data: {
+        ...updateData,
+        version: { increment: 1 },
+        updatedAt: new Date(),
+      },
+    });
+
+    if (result.count === 0) {
+      throw new ApiError(412, 'Precondition Failed: version mismatch');
+    }
+
+    return this.findById(id, companyCode);
   }
 
   /**
@@ -74,15 +103,34 @@ export class BookingsService extends BaseService<Booking> {
   }
 
   /**
+   * Soft delete with optimistic lock (require If-Match version)
+   */
+  async deleteWithLock(id: string, companyCode: string, ifMatch?: string): Promise<void> {
+    const { parseIfMatchVersion } = await import('../../lib/etag');
+    const expectedVersion = parseIfMatchVersion(ifMatch);
+    if (expectedVersion === undefined) {
+      throw new ApiError(428, 'Precondition Required: If-Match header (version) is required');
+    }
+
+    const result = await this.model.updateMany({
+      where: { id, companyCode, deletedAt: null, version: expectedVersion },
+      data: { deletedAt: new Date(), updatedAt: new Date() },
+    });
+    if (result.count === 0) {
+      throw new ApiError(412, 'Precondition Failed: version mismatch');
+    }
+  }
+
+  /**
    * Get booking statistics for a company
    */
   async getStats(companyCode: string) {
     const [total, pending, confirmed, completed, cancelled] = await Promise.all([
       this.count(companyCode),
-      this.count(companyCode, { status: BookingStatus.pending }),
-      this.count(companyCode, { status: BookingStatus.confirmed }),
-      this.count(companyCode, { status: BookingStatus.done }),
-      this.count(companyCode, { status: BookingStatus.cancelled }),
+      this.count(companyCode, { status: BookingStatus.PENDING }),
+      this.count(companyCode, { status: BookingStatus.CONFIRMED }),
+      this.count(companyCode, { status: BookingStatus.COMPLETED }),
+      this.count(companyCode, { status: BookingStatus.CANCELLED }),
     ]);
 
     return {

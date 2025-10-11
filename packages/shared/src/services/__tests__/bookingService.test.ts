@@ -1,6 +1,7 @@
-import { bookingService } from '../bookingService';
+import { bookingService, __setBookingServiceModeForTests } from '../bookingService';
 import { apiClient } from '../../lib/apiClient';
 import type { NewTeamPayload, Booking, BookingListResponse, BookingDetailResponse } from '../../types/booking';
+import { BookingStatus } from '../../types/booking';
 
 // Mock the API client
 jest.mock('../../lib/apiClient', () => ({
@@ -15,6 +16,11 @@ jest.mock('../../lib/apiClient', () => ({
 describe('bookingService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    __setBookingServiceModeForTests('v1');
+  });
+
+  afterEach(() => {
+    __setBookingServiceModeForTests(null);
   });
 
   describe('getBookings', () => {
@@ -99,8 +105,12 @@ describe('bookingService', () => {
 
       const result = await bookingService.getBookings();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/bookings', { params: undefined });
-      expect(result).toEqual(mockResponse);
+      expect(apiClient.get).toHaveBeenCalledWith('/bookings', { params: undefined });
+      expect(result.bookings).toEqual(mockBookings);
+      expect(result.total).toBe(2);
+      expect(result.page).toBe(1);
+      expect(result.pageSize).toBe(20);
+      expect(result.raw).toEqual(mockResponse);
     });
 
     it('should handle API errors', async () => {
@@ -122,7 +132,7 @@ describe('bookingService', () => {
 
       await bookingService.getBookings(params);
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/bookings', { params });
+      expect(apiClient.get).toHaveBeenCalledWith('/bookings', { params });
     });
   });
 
@@ -173,8 +183,7 @@ describe('bookingService', () => {
 
       const result = await bookingService.getBookingDetail('123');
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/bookings/123');
-      expect(result).toEqual(mockResponse);
+      expect(apiClient.get).toHaveBeenCalledWith('/bookings/123');
     });
 
     it('should handle 404 error', async () => {
@@ -243,7 +252,7 @@ describe('bookingService', () => {
 
       const result = await bookingService.createBooking(newBooking);
 
-      expect(apiClient.post).toHaveBeenCalledWith('/api/bookings', newBooking);
+      expect(apiClient.post).toHaveBeenCalledWith('/bookings', newBooking);
       expect(result).toEqual(createdBooking);
     });
 
@@ -306,7 +315,7 @@ describe('bookingService', () => {
 
       const result = await bookingService.updateBooking(bookingId, updates);
 
-      expect(apiClient.put).toHaveBeenCalledWith(`/api/bookings/${bookingId}`, updates);
+      expect(apiClient.put).toHaveBeenCalledWith(`/bookings/${bookingId}`, updates);
       expect(result).toEqual(updatedBooking);
     });
 
@@ -329,7 +338,7 @@ describe('bookingService', () => {
 
       await bookingService.deleteBooking(bookingId);
 
-      expect(apiClient.delete).toHaveBeenCalledWith(`/api/bookings/${bookingId}`);
+      expect(apiClient.delete).toHaveBeenCalledWith(`/bookings/${bookingId}`);
     });
 
     it('should handle delete restrictions', async () => {
@@ -344,4 +353,85 @@ describe('bookingService', () => {
     });
   });
 
+
+  describe('v2 mode interoperability', () => {
+    beforeEach(() => {
+      __setBookingServiceModeForTests('v2');
+    });
+
+    afterEach(() => {
+      __setBookingServiceModeForTests(null);
+    });
+
+    it('normalizes v2 list responses', async () => {
+      const v2Booking = {
+        id: 'v2-1',
+        bookingNumber: 'BK2025-0001',
+        teamName: 'Alpha',
+        companyCode: 'ENT',
+        status: 'pending',
+        destination: 'Tokyo',
+        startDate: '2025-02-01',
+        endDate: '2025-02-05',
+        totalPax: 12,
+        version: 5,
+      };
+
+      const mockResponse = {
+        success: true,
+        data: [v2Booking],
+        pagination: {
+          page: 1,
+          limit: 20,
+          total: 1,
+          pages: 1,
+        },
+      };
+
+      (apiClient.get as jest.Mock).mockResolvedValue({ data: mockResponse });
+
+      const result = await bookingService.getBookings();
+
+      expect(apiClient.get).toHaveBeenCalledWith('/v2/bookings', { params: {} });
+      expect(result.bookings[0]).toMatchObject({
+        id: 'v2-1',
+        teamName: 'Alpha',
+        companyCode: 'ENT',
+        status: BookingStatus.PENDING,
+        totalPax: 12,
+        version: 5,
+      });
+      expect(result.raw).toEqual(mockResponse);
+    });
+
+    it('sends If-Match header on v2 update', async () => {
+      const detailPayload = {
+        id: 'v2-2',
+        bookingNumber: 'BK2025-0002',
+        teamName: 'Beta',
+        companyCode: 'ENT',
+        status: 'confirmed',
+        origin: 'Seoul',
+        destination: 'Busan',
+        startDate: '2025-03-01',
+        endDate: '2025-03-04',
+        totalPax: 4,
+        version: 3,
+      };
+
+      (apiClient.get as jest.Mock)
+        .mockResolvedValueOnce({ data: { data: detailPayload } })
+        .mockResolvedValueOnce({ data: { data: detailPayload } });
+
+      (apiClient.put as jest.Mock).mockResolvedValue({ data: { data: detailPayload } });
+
+      await bookingService.updateBooking('v2-2', { teamName: 'Beta Updated' });
+
+      expect(apiClient.put).toHaveBeenCalledWith(
+        '/v2/bookings/v2-2',
+        expect.objectContaining({ teamName: 'Beta Updated' }),
+        expect.objectContaining({ headers: { 'If-Match': '3' } }),
+      );
+    });
+  });
 });

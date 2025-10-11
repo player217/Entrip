@@ -1,0 +1,187 @@
+#!/usr/bin/env ts-node
+
+/**
+ * Prisma Binary Manager for Windows
+ * Handles file lock issues on Windows by cleaning and regenerating Prisma binaries
+ */
+
+import { execSync } from 'child_process';
+import { platform } from 'os';
+import { existsSync, unlinkSync, readdirSync } from 'fs';
+import path from 'path';
+
+export class PrismaBinaryManager {
+  private static readonly BINARY_PATTERNS = [
+    'query_engine-windows.dll.node',
+    'migration-engine-windows.exe',
+    'introspection-engine-windows.exe',
+    'prisma-fmt-windows.exe'
+  ];
+
+  private static readonly SEARCH_PATHS = [
+    'node_modules/.prisma/client',
+    'node_modules/@prisma/engines',
+    'apps/api/node_modules/.prisma/client',
+    'apps/api/node_modules/@prisma/engines',
+    'packages/api/node_modules/.prisma/client',
+    'packages/api/node_modules/@prisma/engines'
+  ];
+
+  /**
+   * Find all Prisma binary files
+   */
+  private static findBinaries(): string[] {
+    const binaries: string[] = [];
+
+    for (const searchPath of this.SEARCH_PATHS) {
+      if (!existsSync(searchPath)) continue;
+
+      try {
+        const files = readdirSync(searchPath);
+        for (const file of files) {
+          for (const pattern of this.BINARY_PATTERNS) {
+            if (file.includes(pattern)) {
+              binaries.push(path.join(searchPath, file));
+            }
+          }
+        }
+      } catch (error) {
+        // Directory might not exist or be accessible
+        continue;
+      }
+    }
+
+    return binaries;
+  }
+
+  /**
+   * Kill Node.js processes that might be holding file locks
+   */
+  private static killNodeProcesses(): void {
+    if (platform() !== 'win32') return;
+
+    console.log('🔄 Terminating Node.js processes...');
+    try {
+      // Kill all node processes except the current one
+      execSync('taskkill /F /IM node.exe /FI "PID ne ' + process.pid + '"', {
+        stdio: 'ignore',
+        windowsHide: true
+      });
+      console.log('✅ Node.js processes terminated');
+    } catch (error) {
+      console.log('⚠️  No Node.js processes to terminate');
+    }
+  }
+
+  /**
+   * Clean Prisma binary files
+   */
+  private static cleanBinaries(): void {
+    console.log('🧹 Cleaning Prisma binaries...');
+
+    const binaries = this.findBinaries();
+
+    if (binaries.length === 0) {
+      console.log('✅ No binaries to clean');
+      return;
+    }
+
+    let cleaned = 0;
+    let failed = 0;
+
+    for (const binary of binaries) {
+      try {
+        unlinkSync(binary);
+        console.log(`   ✅ Cleaned: ${path.basename(binary)}`);
+        cleaned++;
+      } catch (error: any) {
+        console.log(`   ⚠️  Failed to clean: ${path.basename(binary)} - ${error.message}`);
+        failed++;
+      }
+    }
+
+    console.log(`✅ Cleaned ${cleaned} binaries${failed > 0 ? `, ${failed} failed` : ''}`);
+  }
+
+  /**
+   * Generate Prisma client
+   */
+  private static generateClient(): void {
+    console.log('🔨 Generating Prisma client...');
+
+    try {
+      // Set environment variable to use local binaries
+      process.env.PRISMA_ENGINES_MIRROR = 'https://binaries.prisma.sh';
+
+      // Generate for all workspaces
+      execSync('pnpm prisma:generate', {
+        stdio: 'inherit',
+        env: process.env
+      });
+
+      console.log('✅ Prisma client generated successfully');
+    } catch (error: any) {
+      console.error('❌ Failed to generate Prisma client:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Main execution function
+   */
+  static async execute(options: {
+    clean?: boolean;
+    generate?: boolean;
+    force?: boolean;
+  } = {}): Promise<void> {
+    const { clean = true, generate = true, force = false } = options;
+
+    console.log('==================================');
+    console.log(' Prisma Binary Manager for Windows');
+    console.log('==================================\n');
+
+    // Only run on Windows
+    if (platform() !== 'win32') {
+      console.log('ℹ️  This script is only needed on Windows. Skipping...');
+      return;
+    }
+
+    // Kill processes if force mode
+    if (force) {
+      this.killNodeProcesses();
+      // Wait a bit for processes to fully terminate
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    // Clean binaries
+    if (clean) {
+      this.cleanBinaries();
+    }
+
+    // Generate new client
+    if (generate) {
+      this.generateClient();
+    }
+
+    console.log('\n✨ Prisma binary management complete!');
+  }
+}
+
+// CLI execution
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  const options = {
+    clean: !args.includes('--no-clean'),
+    generate: !args.includes('--no-generate'),
+    force: args.includes('--force')
+  };
+
+  PrismaBinaryManager.execute(options)
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error('❌ Error:', error);
+      process.exit(1);
+    });
+}
+
+export default PrismaBinaryManager;

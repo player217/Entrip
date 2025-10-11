@@ -1,5 +1,6 @@
 import React from 'react';
-import { BookingType, BookingStatus, type Booking } from '@entrip/shared';
+// Import enums from shared source file to ensure runtime values in tests
+import { BookingType, BookingStatus, type Booking } from '@entrip/shared/types/booking';
 
 interface BookingListProps {
   bookings: Booking[];

@@ -18,6 +18,47 @@ const verifyPassword = async (password: string, hashedPassword: string): Promise
   return bcrypt.compare(password, hashedPassword);
 };
 
+// Helper: accept common aliases and case-insensitive company codes
+function resolveCompanyCandidates(input: string): string[] {
+  if (!input) return [];
+  const cc = input.trim();
+  const lc = cc.toLowerCase();
+  const set = new Set<string>();
+
+  // Always include raw forms
+  set.add(cc);
+  set.add(cc.toUpperCase());
+  set.add(lc);
+
+  // Canonical alias mapping (accept legacy UI labels)
+  switch (lc) {
+    case 'entrip':
+    case 'entrip_main':
+    case 'entrip-main':
+    case 'main':
+      set.add('ENTRIP_MAIN');
+      break;
+    case 'startour':
+      // Historical label maps to 'star' in DB
+      set.add('star');
+      set.add('STAR');
+      break;
+    case 'happytravel':
+      // Historical label maps to 'happy' in DB
+      set.add('happy');
+      set.add('HAPPY');
+      break;
+    case 'j1':
+      set.add('J1');
+      break;
+    default:
+      // no-op, raw values already included
+      break;
+  }
+
+  return Array.from(set);
+}
+
 // Login endpoint with real database authentication
 router.post('/login', authRateLimiter, async (req, res) => {
   try {
@@ -35,13 +76,16 @@ router.post('/login', authRateLimiter, async (req, res) => {
     
     // Find user in database (using email as username)
     console.log('DEBUG: About to query with:', { companyCode, email: username, isActive: true });
-    
+
+    // Accept synonyms for company codes to avoid UI/seed mismatches
+    const candidates = resolveCompanyCandidates(companyCode);
+
     const user = await prisma.user.findFirst({
       where: {
-        companyCode: companyCode,
         email: username,
-        isActive: true
-      }
+        isActive: true,
+        companyCode: { in: candidates },
+      },
     });
     
     if (!user) {

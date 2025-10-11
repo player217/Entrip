@@ -250,6 +250,11 @@ app.use('/api/monitoring', require('./routes/monitoring-dashboard.route').defaul
 // Integration resilience routes
 app.use('/api/integration', require('./routes/integration-example').default);
 app.use('/api/health', require('./routes/health.route').default);
+// Demo-only endpoints (dev flag)
+if (process.env.ENABLE_DEMO_ENDPOINTS === 'true' || process.env.NODE_ENV !== 'production') {
+  app.use('/api', require('./routes/demo.route').default);
+  console.log('🧪 Demo endpoints enabled: /api/demo-accounts');
+}
 
 // Test routes - controlled by environment variable
 if (process.env.ENABLE_TEST_ROUTES === 'true') {

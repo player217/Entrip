@@ -43,15 +43,53 @@ pnpm install
 pnpm run build:tokens
 ```
 
-### 개발 실행
-```bash
-# 모든 서비스 실행
-pnpm run dev
+### 🚀 Quick Start
 
-# 또는 개별 서비스 실행
-pnpm dev:web      # 프론트엔드 (http://localhost:3000)
-pnpm dev:api      # API 서버 (http://localhost:4000)
-pnpm storybook    # UI 컴포넌트 (http://localhost:6006)
+#### 모든 서비스 한 번에 시작
+```bash
+# npm-run-all을 사용한 병렬 실행
+pnpm dev:all
+
+# 또는 PowerShell 스크립트 사용 (Windows)
+.\scripts\dev.ps1 start
+```
+
+#### 서비스 확인
+- 🌐 **Web App**: http://localhost:3000
+- 🔧 **API v1**: http://localhost:4001/api/health
+- 🆕 **API v2**: http://localhost:4002/api/v2/health
+- 📚 **Storybook**: http://localhost:6006 (별도 실행: `pnpm storybook`)
+
+#### 개별 서비스 실행
+```bash
+pnpm dev:web        # 웹 애플리케이션
+pnpm dev:api-v1     # API v1 (레거시)
+pnpm dev:api-v2     # API v2 (신규)
+```
+
+#### 상태 확인
+```bash
+# Node.js 스크립트
+pnpm status
+
+# 또는 PowerShell
+.\scripts\dev.ps1 status
+```
+
+#### Prisma 문제 해결
+```bash
+# Windows에서 파일 잠금 문제 발생 시
+pnpm fix:prisma
+
+# 또는 WSL 사용 (권장)
+wsl
+cd /mnt/c/Users/PC/Documents/project/Entrip
+pnpm prisma:generate
+```
+
+#### 모든 서비스 중지
+```bash
+.\scripts\dev.ps1 stop
 ```
 
 ## API 문서

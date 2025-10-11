@@ -193,6 +193,24 @@ export const broadcastBookingUpdate = (type: 'create' | 'update' | 'delete', boo
   });
 };
 
+// Company-scoped broadcast for booking events
+export const broadcastBookingUpdateForCompany = (
+  companyCode: string,
+  type: 'create' | 'update' | 'delete',
+  bookingId: string,
+  data?: any
+) => {
+  if (!io) return;
+  const event = `booking:${type}`;
+  logger.ws('Broadcasting booking event (company)', 'broadcast', { event, bookingId, companyCode });
+  io.to(`company:${companyCode}:bookings`).emit(event, {
+    bookingId,
+    data,
+    companyCode,
+    timestamp: new Date().toISOString(),
+  });
+};
+
 // 대량 작업 브로드캐스트
 export const broadcastBulkOperation = (type: 'delete' | 'create', count: number, ids: string[]) => {
   if (!io) return;

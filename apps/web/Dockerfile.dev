@@ -1,45 +1,62 @@
-FROM node:20-slim
+# Development Dockerfile for Web (Next.js) with pnpm workspace support
+FROM node:20-slim AS deps
 
-# Install dependencies for building
+# Install dependencies needed for builds
 RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Install pnpm
+RUN npm install -g pnpm@10.13.1
+
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Copy workspace configuration first
+COPY pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
+COPY .npmrc* ./
 
-# Copy workspace files
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json .npmrc ./
-
-# Copy all package.json files
-COPY packages/design-tokens/package.json ./packages/design-tokens/
+# Copy all package.json files to maintain workspace structure
+COPY apps/web/package.json ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/ui/package.json ./packages/ui/
-COPY apps/web/package.json ./apps/web/
+COPY packages/design-tokens/package.json ./packages/design-tokens/
 
-# Install dependencies (skip postinstall scripts)
-RUN pnpm install --no-frozen-lockfile --ignore-scripts
+# Install ALL dependencies including devDependencies (needed for build)
+RUN pnpm install --frozen-lockfile --prod=false
 
-# Copy source files
+# Builder stage
+FROM deps AS builder
+
+WORKDIR /app
+
+# Copy all source code
 COPY . .
 
-# Build dependencies
-WORKDIR /app/packages/design-tokens
-RUN pnpm build || true
+# Build dependencies in correct order
+RUN pnpm --filter @entrip/design-tokens build
+RUN pnpm --filter @entrip/shared build
+RUN pnpm --filter @entrip/ui build
 
-WORKDIR /app/packages/shared
-RUN pnpm build || true
+# Development runner stage
+FROM deps AS runner
 
-WORKDIR /app/packages/ui
-RUN pnpm build || true
+WORKDIR /app
 
-WORKDIR /app/apps/web
+# Copy built dependencies from builder
+COPY --from=builder /app/packages/design-tokens/build ./packages/design-tokens/build
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/ui/dist ./packages/ui/dist
 
+# Copy source code for hot reload
+COPY . .
+
+# Expose port
 EXPOSE 3000
 
-CMD ["pnpm", "dev"]
+# Set environment variables for development
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Start development server
+CMD ["pnpm", "--filter", "@entrip/web", "dev"]

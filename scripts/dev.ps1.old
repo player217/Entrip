@@ -1,0 +1,381 @@
+# Entrip Development Management Script
+# 현실적이고 기존 구조와 호환되는 개발 도구
+
+param(
+    [Parameter(Position=0)]
+    [ValidateSet('start', 'stop', 'status', 'test', 'clean', 'fix-prisma', 'help')]
+    [string]$Action = 'help',
+
+    [switch]$WSL,
+    [switch]$Docker,
+    [switch]$Force
+)
+
+$ErrorActionPreference = "Stop"
+$ProjectRoot = Split-Path -Parent $PSScriptRoot
+
+# Helper Functions
+function Write-Status {
+    param([string]$Message, [string]$Color = "White")
+    Write-Host $Message -ForegroundColor $Color
+}
+
+function Write-Success {
+    param([string]$Message)
+    Write-Host "✅ $Message" -ForegroundColor Green
+}
+
+function Write-Error {
+    param([string]$Message)
+    Write-Host "❌ $Message" -ForegroundColor Red
+}
+
+function Write-Info {
+    param([string]$Message)
+    Write-Host "ℹ️  $Message" -ForegroundColor Cyan
+}
+
+function Write-Header {
+    param([string]$Title)
+    Write-Host ""
+    Write-Host "=== $Title ===" -ForegroundColor Cyan
+}
+
+# Check service health
+function Test-ServiceHealth {
+    $services = @{
+        "Web App" = "http://localhost:3000"
+        "API v1" = "http://localhost:4001/api/health"
+        "API v2" = "http://localhost:4002/health"
+        "Database" = "localhost:5432"
+    }
+
+    Write-Header "Service Status"
+    $allHealthy = $true
+
+    foreach ($name in $services.Keys) {
+        $url = $services[$name]
+
+        try {
+            if ($name -eq "Database") {
+                # Simple port check for database
+                $tcpClient = New-Object System.Net.Sockets.TcpClient
+                $tcpClient.Connect("localhost", 5432)
+                $tcpClient.Close()
+                Write-Success "$name : Running (Port 5432)"
+            } else {
+                $response = Invoke-RestMethod -Uri $url -TimeoutSec 3
+                Write-Success "$name : Running"
+            }
+        } catch {
+            Write-Error "$name : Not responding"
+            $allHealthy = $false
+        }
+    }
+
+    return $allHealthy
+}
+
+# Start services
+function Start-Services {
+    Write-Header "Starting Development Services"
+
+    if ($WSL) {
+        Write-Info "Starting services in WSL2..."
+        $wslPath = "/mnt/c/Users/PC/Documents/project/Entrip"
+
+        # Check if WSL is available
+        try {
+            wsl --version | Out-Null
+        } catch {
+            Write-Error "WSL is not installed or not available"
+            return
+        }
+
+        # Start services in WSL
+        wsl -d Ubuntu-22.04 "cd $wslPath && pnpm dev" &
+
+    } elseif ($Docker) {
+        Write-Info "Starting services with Docker..."
+
+        Push-Location $ProjectRoot
+        try {
+            # Check if Docker is running
+            docker info | Out-Null
+
+            # Start with docker-compose
+            docker-compose -f docker-compose.local.yml up -d
+
+            Write-Success "Docker services started"
+        } catch {
+            Write-Error "Docker is not running or docker-compose failed"
+        } finally {
+            Pop-Location
+        }
+
+    } else {
+        Write-Info "Starting services natively on Windows..."
+
+        # Start Web App
+        Write-Info "Starting Web App (port 3000)..."
+        Start-Process -WindowStyle Hidden powershell -ArgumentList @"
+            cd '$ProjectRoot\apps\web'
+            pnpm dev
+"@
+
+        # Start API v1
+        Write-Info "Starting API v1 (port 4001)..."
+        Start-Process -WindowStyle Hidden powershell -ArgumentList @"
+            cd '$ProjectRoot\apps\api'
+            pnpm dev
+"@
+
+        # Start API v2
+        Write-Info "Starting API v2 (port 4002)..."
+        Start-Process -WindowStyle Hidden powershell -ArgumentList @"
+            cd '$ProjectRoot\packages\api'
+            pnpm dev
+"@
+
+        Write-Success "All services starting..."
+        Write-Info "Wait 10-15 seconds for services to initialize"
+    }
+}
+
+# Stop services
+function Stop-Services {
+    Write-Header "Stopping Development Services"
+
+    if ($Docker) {
+        Push-Location $ProjectRoot
+        try {
+            docker-compose -f docker-compose.local.yml down
+            Write-Success "Docker services stopped"
+        } finally {
+            Pop-Location
+        }
+    } else {
+        # Stop Node.js processes
+        $nodeProcesses = Get-Process -Name node -ErrorAction SilentlyContinue
+
+        if ($nodeProcesses) {
+            $nodeProcesses | Stop-Process -Force
+            Write-Success "Node.js processes stopped ($($nodeProcesses.Count) processes)"
+        } else {
+            Write-Info "No Node.js processes running"
+        }
+
+        # Stop Python processes (if any)
+        $pythonProcesses = Get-Process -Name python -ErrorAction SilentlyContinue
+        if ($pythonProcesses) {
+            $pythonProcesses | Stop-Process -Force
+            Write-Success "Python processes stopped"
+        }
+    }
+}
+
+# Fix Prisma issues
+function Fix-PrismaIssues {
+    Write-Header "Fixing Prisma Issues"
+
+    if ($WSL) {
+        Write-Info "Fixing Prisma in WSL2 (recommended)..."
+        $wslPath = "/mnt/c/Users/PC/Documents/project/Entrip"
+
+        try {
+            wsl -d Ubuntu-22.04 "cd $wslPath && pnpm prisma:generate"
+            Write-Success "Prisma client generated in WSL2"
+        } catch {
+            Write-Error "WSL Prisma generation failed"
+        }
+
+    } else {
+        Write-Info "Fixing Prisma on Windows..."
+
+        # Kill Node processes that might lock files
+        Write-Info "Stopping Node.js processes..."
+        Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force
+
+        # Wait a moment
+        Start-Sleep -Seconds 2
+
+        # Try to clean Prisma binaries
+        $prismaFiles = @(
+            "node_modules\.prisma",
+            "apps\api\node_modules\.prisma",
+            "packages\api\node_modules\.prisma"
+        )
+
+        foreach ($path in $prismaFiles) {
+            $fullPath = Join-Path $ProjectRoot $path
+            if (Test-Path $fullPath) {
+                try {
+                    Remove-Item -Path $fullPath -Recurse -Force
+                    Write-Success "Cleaned: $path"
+                } catch {
+                    Write-Info "Could not clean: $path (might be in use)"
+                }
+            }
+        }
+
+        # Regenerate
+        Push-Location $ProjectRoot
+        try {
+            Write-Info "Generating Prisma client..."
+            & pnpm prisma:generate
+            Write-Success "Prisma client generated"
+        } catch {
+            Write-Error "Prisma generation failed. Consider using WSL2: .\dev.ps1 fix-prisma -WSL"
+        } finally {
+            Pop-Location
+        }
+    }
+}
+
+# Clean project
+function Clean-Project {
+    Write-Header "Cleaning Project"
+
+    if (!$Force) {
+        $response = Read-Host "This will delete node_modules and build files. Continue? (y/N)"
+        if ($response -ne 'y') {
+            Write-Info "Clean cancelled"
+            return
+        }
+    }
+
+    Push-Location $ProjectRoot
+    try {
+        $targets = @(
+            "node_modules",
+            "apps\web\.next",
+            "apps\api\dist",
+            "packages\api\dist",
+            "packages\shared\dist",
+            "packages\ui\dist"
+        )
+
+        foreach ($target in $targets) {
+            $fullPath = Join-Path $ProjectRoot $target
+            if (Test-Path $fullPath) {
+                Write-Info "Removing $target..."
+                Remove-Item -Path $fullPath -Recurse -Force
+                Write-Success "Removed: $target"
+            }
+        }
+
+        Write-Success "Project cleaned. Run 'pnpm install' to reinstall dependencies."
+    } finally {
+        Pop-Location
+    }
+}
+
+# Run tests
+function Run-Tests {
+    Write-Header "Running Tests"
+
+    Push-Location $ProjectRoot
+    try {
+        # Check if services are running
+        $healthy = Test-ServiceHealth
+
+        if (!$healthy) {
+            Write-Error "Some services are not running. Start services first with: .\dev.ps1 start"
+            return
+        }
+
+        Write-Info "Running test suites..."
+
+        # Run contract tests (most important for migration)
+        if (Test-Path "tests\contract") {
+            Write-Info "Running contract tests..."
+            & pnpm test:contract
+        }
+
+        # Run unit tests
+        Write-Info "Running unit tests..."
+        & pnpm test:unit
+
+        Write-Success "Tests completed"
+    } catch {
+        Write-Error "Tests failed: $_"
+    } finally {
+        Pop-Location
+    }
+}
+
+# Show help
+function Show-Help {
+    Write-Host @"
+
+Entrip Development Management Tool
+현실적이고 기존 구조 호환 버전
+
+USAGE:
+    .\scripts\dev.ps1 [action] [options]
+
+ACTIONS:
+    start        Start all development services
+    stop         Stop all services
+    status       Check service health
+    test         Run test suites
+    fix-prisma   Fix Prisma generation issues
+    clean        Clean build artifacts and dependencies
+    help         Show this help
+
+OPTIONS:
+    -WSL         Use WSL2 instead of Windows native
+    -Docker      Use Docker Compose
+    -Force       Skip confirmations
+
+EXAMPLES:
+    # Start services (Windows native)
+    .\scripts\dev.ps1 start
+
+    # Start with Docker
+    .\scripts\dev.ps1 start -Docker
+
+    # Fix Prisma issues with WSL2 (recommended)
+    .\scripts\dev.ps1 fix-prisma -WSL
+
+    # Check all service status
+    .\scripts\dev.ps1 status
+
+    # Clean project (with confirmation)
+    .\scripts\dev.ps1 clean
+
+SERVICE PORTS:
+    Web App     : http://localhost:3000
+    API v1      : http://localhost:4001
+    API v2      : http://localhost:4002
+    Database    : localhost:5432
+
+TROUBLESHOOTING:
+    1. If Prisma errors: .\dev.ps1 fix-prisma -WSL
+    2. If ports busy: .\dev.ps1 stop
+    3. If build issues: .\dev.ps1 clean -Force
+
+"@ -ForegroundColor Cyan
+}
+
+# Main execution
+try {
+    switch ($Action) {
+        'start' {
+            Start-Services
+            Start-Sleep -Seconds 5
+            Test-ServiceHealth | Out-Null
+        }
+        'stop' { Stop-Services }
+        'status' { Test-ServiceHealth | Out-Null }
+        'test' { Run-Tests }
+        'fix-prisma' { Fix-PrismaIssues }
+        'clean' { Clean-Project }
+        'help' { Show-Help }
+        default { Show-Help }
+    }
+} catch {
+    Write-Error "Command failed: $_"
+    Write-Info "Use '.\dev.ps1 help' for usage information"
+    exit 1
+}

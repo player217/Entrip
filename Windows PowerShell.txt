@@ -1,0 +1,1177 @@
+player217@DESKTOP-BK2EGRK:/mnt/c/Users/PC/Documents/project/Entrip$ pnpm dev:docker:detached
+
+> entrip@0.1.0-rc.1 dev:docker:detached /mnt/c/Users/PC/Documents/project/Entrip
+> docker-compose -f docker-compose.dev.yml up --build -d
+
+[+] Building 30.1s (46/78)
+ => [internal] load local bake definitions                                                                         0.0s
+ => => reading from stdin 1.44kB                                                                                   0.0s
+ => [web internal] load build definition from Dockerfile.dev                                                       0.1s
+ => => transferring dockerfile: 1.65kB                                                                             0.1s
+ => [api internal] load build definition from Dockerfile.dev                                                       0.2s
+ => => transferring dockerfile: 2.35kB                                                                             0.1s
+ => [api-v2 internal] load build definition from Dockerfile.dev                                                    0.2s
+ => => transferring dockerfile: 2.57kB                                                                             0.1s
+ => [api-v2 internal] load metadata for docker.io/library/node:20-slim                                             1.8s
+ => [auth] library/node:pull token for registry-1.docker.io                                                        0.0s
+ => [api internal] load .dockerignore                                                                              0.3s
+ => => transferring context: 1.05kB                                                                                0.3s
+ => [api internal] load build context                                                                             21.4s
+ => => transferring context: 4.28MB                                                                               21.4s
+ => [api deps  1/12] FROM docker.io/library/node:20-slim@sha256:f679d7699517426eb148a5698c717477fd3f8a48f6c1eaf77  0.1s
+ => => resolve docker.io/library/node:20-slim@sha256:f679d7699517426eb148a5698c717477fd3f8a48f6c1eaf771e390a9bb82  0.1s
+ => CACHED [api-v2 deps  2/13] RUN apt-get update && apt-get install -y     curl     openssl     && rm -rf /var/l  0.0s
+ => CACHED [api-v2 deps  3/13] RUN npm install -g pnpm@10.13.1                                                     0.0s
+ => CACHED [api-v2 deps  4/13] WORKDIR /app                                                                        0.0s
+ => CACHED [api-v2 deps  5/13] COPY pnpm-workspace.yaml ./                                                         0.0s
+ => CACHED [api-v2 deps  6/13] COPY package.json pnpm-lock.yaml ./                                                 0.0s
+ => CACHED [api-v2 deps  7/13] COPY .npmrc* ./                                                                     0.0s
+ => [api-v2 deps  8/14] COPY packages/api/package.json ./packages/api/                                             0.2s
+ => CACHED [api deps  8/13] COPY apps/api/package.json ./apps/api/                                                 0.0s
+ => CACHED [api deps  9/13] COPY packages/shared/package.json ./packages/shared/                                   0.0s
+ => CACHED [api deps 10/13] COPY packages/ui/package.json ./packages/ui/                                           0.0s
+ => CACHED [api deps 11/13] COPY packages/design-tokens/package.json ./packages/design-tokens/                     0.0s
+ => CACHED [api deps 12/13] COPY apps/api/prisma ./apps/api/prisma                                                 0.0s
+ => CACHED [api deps 13/13] RUN pnpm install --frozen-lockfile --prod=false                                        0.0s
+ => CACHED [api builder 1/6] WORKDIR /app                                                                          0.0s
+ => CACHED [web deps  2/12] RUN apt-get update && apt-get install -y     curl     && rm -rf /var/lib/apt/lists/*   0.0s
+ => CACHED [web deps  3/12] RUN npm install -g pnpm@10.13.1                                                        0.0s
+ => CACHED [web deps  4/12] WORKDIR /app                                                                           0.0s
+ => CACHED [web deps  5/12] COPY pnpm-workspace.yaml ./                                                            0.0s
+ => CACHED [web deps  6/12] COPY package.json pnpm-lock.yaml ./                                                    0.0s
+ => CACHED [web deps  7/12] COPY .npmrc* ./                                                                        0.0s
+ => CACHED [web deps  8/12] COPY apps/web/package.json ./apps/web/                                                 0.0s
+ => CACHED [web deps  9/12] COPY packages/shared/package.json ./packages/shared/                                   0.0s
+ => CACHED [web deps 10/12] COPY packages/ui/package.json ./packages/ui/                                           0.0s
+ => CACHED [web deps 11/12] COPY packages/design-tokens/package.json ./packages/design-tokens/                     0.0s
+ => CACHED [web deps 12/12] RUN pnpm install --frozen-lockfile --prod=false                                        0.0s
+ => CACHED [web builder 1/5] WORKDIR /app                                                                          0.0s
+ => [api builder 2/6] COPY . .                                                                                     1.6s
+ => [web builder 2/5] COPY . .                                                                                     1.6s
+ => [api-v2 deps  9/14] COPY packages/shared/package.json ./packages/shared/                                       0.4s
+ => [api-v2 deps 10/14] COPY packages/ui/package.json ./packages/ui/                                               1.0s
+ => [api-v2 deps 11/14] COPY packages/design-tokens/package.json ./packages/design-tokens/                         0.5s
+ => CANCELED [api builder 3/6] RUN cd apps/api && npx prisma generate                                              2.6s
+ => [web builder 3/5] RUN pnpm --filter @entrip/design-tokens build                                                1.9s
+ => [api-v2 deps 12/14] COPY apps/api/prisma ./apps/api/prisma                                                     0.2s
+ => [api-v2 deps 13/14] COPY packages/api/prisma ./packages/api/prisma                                             0.2s
+ => ERROR [api-v2 deps 14/14] RUN pnpm install --frozen-lockfile --prod=false                                      1.4s
+ => CANCELED [web builder 4/5] RUN pnpm --filter @entrip/shared build                                              1.3s
+------
+ > [api-v2 deps 14/14] RUN pnpm install --frozen-lockfile --prod=false:
+1.087 Scope: all 5 workspace projects
+1.299  ERR_PNPM_OUTDATED_LOCKFILE  Cannot install with "frozen-lockfile" because pnpm-lock.yaml is not up to date with <ROOT>/packages/api/package.json
+1.299
+1.299 Note that in CI environments this setting is true by default. If you still need to run install in such cases, use "pnpm install --no-frozen-lockfile"
+1.299
+1.299   Failure reason:
+1.299   specifiers in the lockfile don't match specifiers in package.json:
+1.299 * 1 dependencies were added: @types/dotenv@^8.2.0
+1.299
+------
+Dockerfile.dev:31
+
+--------------------
+
+  29 |
+
+  30 |     # Install ALL dependencies including devDependencies (needed for build)
+
+  31 | >>> RUN pnpm install --frozen-lockfile --prod=false
+
+  32 |
+
+  33 |     # Builder stage
+
+--------------------
+
+target api-v2: failed to solve: process "/bin/sh -c pnpm install --frozen-lockfile --prod=false" did not complete successfully: exit code: 1
+
+ ELIFECYCLE  Command failed with exit code 1.
+player217@DESKTOP-BK2EGRK:/mnt/c/Users/PC/Documents/project/Entrip$ pnpm test:full:container
+
+> entrip@0.1.0-rc.1 test:full:container /mnt/c/Users/PC/Documents/project/Entrip
+> docker-compose -f docker-compose.dev.yml run --rm --entrypoint '' -e RATE_LIMIT_PREFIX=ci-$(date +%s) -e TEST_DATABASE_URL=postgresql://entrip:entrip@postgres:5432/entrip_test -e DATABASE_URL=postgresql://entrip:entrip@postgres:5432/entrip_test api-v2 sh -lc 'set -e; cd /app; echo :: @entrip/shared ::; mkdir -p /app/packages/shared/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/packages/shared/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --config packages/shared/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage; echo :: @entrip/ui ::; mkdir -p /app/packages/ui/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/packages/ui/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --config packages/ui/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage; echo :: @entrip/web ::; mkdir -p /app/apps/web/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/apps/web/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --config apps/web/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage; echo :: @entrip/api ::; cd /app/packages/api; mkdir -p /app/packages/api/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/packages/api/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --runInBand --verbose --reporters=default --reporters=jest-junit --coverage'
+
+[+] Creating 2/2
+ ✔ Container entrip-redis-local     Running                                                                        0.0s
+ ✔ Container entrip-postgres-local  Running                                                                        0.0s
+:: @entrip/shared ::
+ PASS   @entrip/shared  packages/shared/src/services/__tests__/teamBookingService.test.ts
+  teamBookingService
+    createTeamBooking
+      ✓ should create a new team booking (6 ms)
+    getTeamBookings
+      ✓ should fetch team bookings list (2 ms)
+      ✓ should pass filter parameters (2 ms)
+    getTeamBookingDetail
+      ✓ should fetch single team booking detail (2 ms)
+    updateTeamBooking
+      ✓ should update team booking details (2 ms)
+    deleteTeamBooking
+      ✓ should delete a team booking (1 ms)
+    Transportation Management
+      ✓ should update transportation details (1 ms)
+    Accommodation Management
+      ✓ should update accommodations (1 ms)
+    Participant Management
+      ✓ should add participants to team booking (1 ms)
+      ✓ should update participant information (2 ms)
+      ✓ should remove participant from team booking (1 ms)
+    Financial Management
+      ✓ should update costs (1 ms)
+      ✓ should add payment (1 ms)
+    Manager Assignment
+      ✓ should assign managers (1 ms)
+    Status Management
+      ✓ should update booking status (2 ms)
+      ✓ should update status with cancellation reason (1 ms)
+    File Attachment Management
+      ✓ should upload attachment (4 ms)
+      ✓ should delete attachment
+    Statistics
+      ✓ should get booking statistics (1 ms)
+
+ PASS   @entrip/shared  packages/shared/src/utils/__tests__/dateUtils.test.ts
+  dateUtils
+    formatDateKey
+      ✓ formats date to yyyy-MM-dd format (2 ms)
+    createDateKey
+      ✓ creates date key from year, month, day
+    formatDate
+      ✓ formats date in YYYY-MM-DD format by default (1 ms)
+      ✓ formats date string in YYYY-MM-DD format (1 ms)
+      ✓ formats date with custom format
+      ✓ handles invalid date
+    formatDateTime
+      ✓ formats date and time without seconds
+      ✓ includes seconds when specified (1 ms)
+      ✓ handles invalid date
+    formatRelativeTime
+      ✓ formats seconds ago for time within a minute (1 ms)
+      ✓ formats minutes ago (1 ms)
+      ✓ formats hours ago (1 ms)
+      ✓ formats days ago (1 ms)
+      ✓ formats months ago (1 ms)
+      ✓ formats years ago (1 ms)
+      ✓ formats future time (1 ms)
+    parseDate
+      ✓ returns Date object as is
+      ✓ parses date string
+      ✓ parses ISO date string (1 ms)
+    isValidDate
+      ✓ returns true for valid dates (1 ms)
+      ✓ returns false for invalid dates (1 ms)
+    addDays
+      ✓ adds positive days
+      ✓ adds negative days (1 ms)
+      ✓ handles month rollover (1 ms)
+    subtractDays
+      ✓ subtracts days (1 ms)
+      ✓ handles month rollover (1 ms)
+    getDaysBetween
+      ✓ calculates days between dates (5 ms)
+      ✓ returns 0 for same date (1 ms)
+      ✓ handles reverse order
+    getMonthName
+      ✓ returns Korean month name for number
+      ✓ returns English month name for number (1 ms)
+      ✓ returns month name for Date object (1 ms)
+    getWeekdayName
+      ✓ returns Korean weekday names (1 ms)
+      ✓ returns English weekday names (1 ms)
+      ✓ returns short weekday names
+      ✓ accepts day number (0-6) (1 ms)
+    formatKoreanDate
+      ✓ formats date in Korean (1 ms)
+      ✓ includes weekday when specified
+      ✓ handles string dates
+    isWeekend
+      ✓ returns true for Saturday
+      ✓ returns true for Sunday
+      ✓ returns false for weekdays (1 ms)
+    isHoliday
+      ✓ returns true for Korean holidays (1 ms)
+      ✓ returns true for weekends (1 ms)
+      ✓ returns false for regular weekdays
+    getBusinessDays
+      ✓ calculates business days excluding weekends (1 ms)
+      ✓ excludes weekends in calculation (1 ms)
+      ✓ excludes holidays when specified (1 ms)
+      ✓ returns 0 for same date
+    formatDateRange
+      ✓ formats date range for same month (1 ms)
+      ✓ formats date range for different months (1 ms)
+      ✓ formats date range for different years (1 ms)
+      ✓ formats same date
+      ✓ uses custom separator
+
+ PASS   @entrip/shared  packages/shared/src/hooks/__tests__/useDebounce.test.ts
+  useDebounce
+    Basic debounce timing accuracy
+      ✓ should return initial value immediately (18 ms)
+      ✓ should debounce value change with exact timing (6 ms)
+    Value updates after delay
+      ✓ should update to new value after delay period (5 ms)
+      ✓ should handle different data types (10 ms)
+    Cleanup on unmount
+      ✓ should clear timeout on unmount (4 ms)
+      ✓ should not update state after unmount (3 ms)
+    Multiple rapid changes
+      ✓ should only apply the last value when multiple updates occur (6 ms)
+      ✓ should reset timer on each value change (5 ms)
+      ✓ should handle continuous updates (16 ms)
+    Different delay values
+      ✓ should work with zero delay (4 ms)
+      ✓ should work with very short delays (5 ms)
+      ✓ should work with very long delays (4 ms)
+      ✓ should handle delay changes (4 ms)
+    Edge cases
+      ✓ should handle null and undefined values (2 ms)
+      ✓ should handle negative delay values (3 ms)
+      ✓ should maintain referential equality for objects when value does not change (3 ms)
+
+ PASS   @entrip/shared  packages/shared/src/services/__tests__/bookingService.test.ts
+  bookingService
+    getBookings
+      ✓ should fetch bookings list (1 ms)
+      ✓ should handle API errors (13 ms)
+      ✓ should pass query parameters (1 ms)
+    getBooking
+      ✓ should fetch single booking by ID (1 ms)
+      ✓ should handle 404 error (1 ms)
+    createBooking
+      ✓ should create a new booking (1 ms)
+      ✓ should handle validation errors (1 ms)
+    updateBooking
+      ✓ should update an existing booking (1 ms)
+      ✓ should handle concurrent update conflicts (2 ms)
+    deleteBooking
+      ✓ should delete a booking (2 ms)
+      ✓ should handle delete restrictions (1 ms)
+
+ PASS   @entrip/shared  packages/shared/src/hooks/__tests__/useTeamBooking.test.ts
+  useTeamBooking hooks
+    useTeamBookingList
+      ✓ should fetch bookings on mount (3 ms)
+      ✓ should set initial filters if provided (3 ms)
+      ✓ should update filters when updateFilters is called (3 ms)
+      ✓ should refresh bookings with current filters (2 ms)
+      ✓ should return bookings and state (3 ms)
+    useTeamBookingDetail
+      ✓ should fetch booking detail on mount with bookingId (2 ms)
+      ✓ should not fetch if no bookingId provided (2 ms)
+      ✓ should bind bookingId to update methods (1 ms)
+      ✓ should handle participant operations (3 ms)
+      ✓ should handle payment operations (2 ms)
+      ✓ should handle status update (2 ms)
+    useTeamBookingCalendar
+      ✓ should fetch bookings for selected month (2 ms)
+      ✓ should navigate to previous month (3 ms)
+      ✓ should navigate to next month (3 ms)
+      ✓ should handle year boundary when navigating (3 ms)
+      ✓ should go to today (2 ms)
+    useCreateTeamBooking
+      ✓ should expose create booking functionality (3 ms)
+    useTeamBookingStats
+      ✓ should calculate statistics from bookings (4 ms)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+  console.warn
+    A function to advance timers was called but the timers APIs are not replaced with fake timers. Call `jest.useFakeTimers()` in this test file or enable fake timers for all tests by setting 'fakeTimers': {'enableGlobally': true} in Jest configuration file.
+    Stack Trace:
+
+           8 |
+           9 | afterEach(() => {
+        > 10 |   jest.runOnlyPendingTimers();
+             |        ^
+          11 |   jest.useRealTimers();
+          12 | });
+          13 |
+
+          Error:
+          at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:158:13)
+          at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+          at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+       8 |
+       9 | afterEach(() => {
+    > 10 |   jest.runOnlyPendingTimers();
+         |        ^
+      11 |   jest.useRealTimers();
+      12 | });
+      13 |
+
+      at FakeTimers._checkFakeTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:152:28)
+      at FakeTimers.runOnlyPendingTimers (../../node_modules/.pnpm/@jest+fake-timers@29.7.0/node_modules/@jest/fake-timers/build/modernFakeTimers.js:59:14)
+      at Object.<anonymous> (src/hooks/__tests__/useThrottle.test.ts:10:8)
+
+ PASS   @entrip/shared  packages/shared/src/hooks/__tests__/useThrottle.test.ts
+  useThrottle
+    기본 동작
+      ✓ 지정된 시간 동안 함수 호출을 제한한다 (41 ms)
+      ✓ delay 시간이 지난 후 다시 호출할 수 있다 (15 ms)
+      ✓ 인자를 올바르게 전달한다 (19 ms)
+    leading 옵션
+      ✓ leading: true일 때 첫 호출을 즉시 실행한다 (14 ms)
+      ✓ leading: false일 때 첫 호출을 지연한다 (13 ms)
+    trailing 옵션
+      ✓ trailing: true일 때 마지막 호출을 실행한다 (15 ms)
+      ✓ trailing: false일 때 마지막 호출을 무시한다 (15 ms)
+    leading과 trailing 조합
+      ✓ 둘 다 false일 때는 아무것도 실행하지 않는다 (16 ms)
+      ✓ 연속 호출 시 올바르게 동작한다 (17 ms)
+    엣지 케이스
+      ✓ delay가 0일 때도 동작한다 (13 ms)
+      ✓ 음수 delay는 0으로 처리한다 (15 ms)
+      ✓ 컴포넌트 언마운트 시 타이머를 정리한다 (13 ms)
+    실제 사용 사례
+      ✓ 스크롤 이벤트 처리에 사용할 수 있다 (16 ms)
+      ✓ 검색 입력 처리에 사용할 수 있다 (14 ms)
+
+ PASS   @entrip/shared  packages/shared/src/utils/__tests__/priceFormatter.test.ts
+  priceFormatter
+    formatCurrency
+      ✓ formats KRW currency with default options (23 ms)
+      ✓ formats USD currency with default options (1 ms)
+      ✓ formats EUR currency with default options (1 ms)
+      ✓ formats JPY currency with default options (1 ms)
+      ✓ formats CNY currency with default options (1 ms)
+      ✓ formats negative amounts correctly (1 ms)
+      ✓ formats without symbol when showSymbol is false (1 ms)
+      ✓ formats with custom fraction digits (1 ms)
+      ✓ uses default currency when not specified (1 ms)
+    formatNumber
+      ✓ formats number with Korean locale
+      ✓ formats number with decimal places (1 ms)
+      ✓ formats negative numbers (1 ms)
+      ✓ formats zero (1 ms)
+      ✓ handles very large numbers (1 ms)
+    formatPercentage
+      ✓ formats decimal as percentage (1 ms)
+      ✓ formats with custom decimal places (1 ms)
+      ✓ formats when value is already percentage (1 ms)
+      ✓ formats negative percentages
+      ✓ formats zero percentage
+    parseCurrency
+      ✓ parses KRW currency string (1 ms)
+      ✓ parses USD currency string (7 ms)
+      ✓ parses EUR currency string (1 ms)
+      ✓ parses JPY currency string
+      ✓ parses string without currency symbol
+      ✓ parses negative amounts
+      ✓ handles strings with spaces
+    calculateTax
+      ✓ calculates tax correctly
+      ✓ handles zero tax rate
+      ✓ handles negative amounts (1 ms)
+      ✓ handles decimal tax rates
+    calculateDiscount
+      ✓ calculates percentage discount
+      ✓ calculates absolute discount (1 ms)
+      ✓ handles discount greater than original price (1 ms)
+      ✓ handles zero discount
+      ✓ caps discount at original price for negative amounts
+    formatExchangeRate
+      ✓ formats exchange rate with default decimal places (1 ms)
+      ✓ formats exchange rate with custom decimal places
+      ✓ formats exchange rate with currency symbol
+      ✓ handles null currency (1 ms)
+      ✓ formats very small rates (1 ms)
+    convertCurrency
+      ✓ converts currency with normal rate
+      ✓ converts currency in reverse
+      ✓ converts with custom decimal places
+      ✓ handles zero rate (1 ms)
+      ✓ handles negative amounts (1 ms)
+      ✓ handles very small rates
+      ✓ handles very large rates
+
+ PASS   @entrip/shared  packages/shared/src/lib/__tests__/logger.test.ts
+  logger
+    log level filtering
+      ✓ logs debug messages when in development (51 ms)
+      ✓ does not log debug messages when not in development (1 ms)
+      ✓ logs info messages (3 ms)
+      ✓ logs warn messages (2 ms)
+      ✓ logs error messages (2 ms)
+    production environment
+      ✓ logs all except debug in production (4 ms)
+    log formatting
+      ✓ formats debug messages correctly with style (2 ms)
+      ✓ formats info messages correctly with style (3 ms)
+      ✓ formats warn messages correctly with style (2 ms)
+      ✓ formats error messages correctly with style (2 ms)
+      ✓ includes Korean timestamp format in log messages (2 ms)
+      ✓ includes data with emoji in development (5 ms)
+      ✓ includes error with emoji (2 ms)
+    performance and API logging
+      ✓ logs performance metrics with emoji (2 ms)
+      ✓ warns about slow performance (1 ms)
+      ✓ logs API calls with emoji (2 ms)
+      ✓ warns about slow API calls (2 ms)
+      ✓ logs user actions with emoji (3 ms)
+    default behavior
+      ✓ logs info but not debug in non-development (6 ms)
+
+ PASS   @entrip/shared  packages/shared/src/stores/__tests__/sessionStore.test.ts
+  useSessionStore
+    Initial State
+      ✓ should have null user initially (5 ms)
+      ✓ should not be authenticated initially (11 ms)
+    Login
+      ✓ should set user and authenticate on successful login (5 ms)
+      ✓ should use provided email in user object (2 ms)
+      ✓ should handle empty email (2 ms)
+      ✓ should handle empty password (3 ms)
+    Logout
+      ✓ should clear user and authentication status (2 ms)
+      ✓ should handle logout when already logged out (2 ms)
+    User Object
+      ✓ should have correct user properties (3 ms)
+    State Persistence
+      ✓ should maintain state across multiple hook calls (2 ms)
+
+ PASS   @entrip/shared  packages/shared/src/__tests__/booking-helpers.test.ts
+  BookingHelpers
+    canCancel
+      ✓ should return true for CONFIRMED booking
+      ✓ should return false for CANCELLED booking (1 ms)
+    getDuration
+      ✓ should calculate correct duration (1 ms)
+      ✓ should return 1 for same day trip (1 ms)
+      ✓ should return 1 for booking without endDate
+    getTypeCode
+      ✓ should return IN for international destination (1 ms)
+      ✓ should return GF for golf destination (1 ms)
+      ✓ should return HM for honeymoon
+      ✓ should return AT for other destinations (1 ms)
+    toBookingEvent
+      ✓ should convert BookingDTO to BookingEvent (2 ms)
+    calculateStats
+      ✓ should calculate correct statistics (1 ms)
+    groupByMonth
+      ✓ should group bookings by month (1 ms)
+
+ PASS   @entrip/shared  packages/shared/src/lib/__tests__/api-client.test.ts
+  apiClient
+    handleApiError
+      ✓ should handle axios error with response message (1 ms)
+      ✓ should handle axios error with error message (1 ms)
+      ✓ should handle unknown errors (1 ms)
+    apiClient creation
+      ○ skipped should create axios instance with interceptors
+
+ PASS   @entrip/shared  packages/shared/src/__tests__/unified-api-client.test.ts
+  Unified API Client
+    Type Safety
+      ✓ should provide type-safe get method (1 ms)
+    Configuration
+      ✓ should have correct default configuration (1 ms)
+    401 Handling
+      ✓ should handle 401 without redirect (1 ms)
+
+---------------------------------|---------|----------|---------|---------|---------------------------------------------
+File                             | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+---------------------------------|---------|----------|---------|---------|---------------------------------------------
+All files                        |   13.07 |    12.35 |    9.62 |   13.61 |
+ src                             |       0 |      100 |       0 |       0 |
+  client.ts                      |       0 |      100 |       0 |       0 | 6-26
+  index.ts                       |       0 |      100 |       0 |       0 | 3-129
+  server.ts                      |       0 |      100 |       0 |       0 | 4-19
+ src/data                        |       0 |        0 |       0 |       0 |
+  all-airports.ts                |       0 |        0 |       0 |       0 | 1-69
+  flight-routes.ts               |       0 |        0 |       0 |       0 | 24-327
+  international-airports.ts      |       0 |        0 |       0 |       0 | 9-72
+  korean-airports.ts             |       0 |        0 |       0 |       0 | 8-33
+ src/hooks                       |   42.14 |    34.72 |   33.72 |   46.02 |
+  unified-use-bookings.ts        |       0 |        0 |       0 |       0 | 3-174
+  useBookings.ts                 |       0 |        0 |       0 |       0 | 1-133
+  useDebounce.ts                 |   92.85 |       50 |     100 |   92.85 | 18
+  useTeamBooking.ts              |   94.91 |       80 |      95 |   94.91 | 91-92,158
+  useThrottle.ts                 |   95.34 |    84.21 |     100 |   95.34 | 44-45
+ src/hooks/useAuth               |       0 |        0 |       0 |       0 |
+  AuthProvider.tsx               |       0 |        0 |       0 |       0 | 8-35
+  index.ts                       |       0 |      100 |       0 |       0 | 8-10
+  useAuth.ts                     |       0 |        0 |       0 |       0 | 8-276
+ src/hooks/useBookings           |       0 |        0 |       0 |       0 |
+  BookingService.ts              |       0 |        0 |       0 |       0 | 13-202
+  index.ts                       |       0 |      100 |       0 |       0 | 8-37
+  legacy.ts                      |       0 |        0 |       0 |       0 | 7-141
+  useBookings.ts                 |       0 |        0 |       0 |       0 | 7-307
+ src/hooks/useBookings/providers |       0 |      100 |       0 |       0 |
+  SWRProvider.ts                 |       0 |      100 |       0 |       0 | 5-44
+ src/lib                         |   30.88 |    31.44 |   20.77 |   31.25 |
+  apiClient.ts                   |      50 |    42.85 |   11.11 |   48.27 | 24-31,38-48,74-78
+  flightApi.ts                   |       0 |        0 |       0 |       0 | 5-148
+  logger.ts                      |   63.88 |    68.85 |   56.52 |   66.99 | ...,135,155,162-190,221,223,242-259,268,277
+  migration-adapter.ts           |       0 |      100 |     100 |       0 | 1-28
+  unified-api-client.ts          |   18.08 |      3.7 |    8.69 |   18.08 | 108-125,133-368
+  websocket-manager.ts           |       0 |        0 |       0 |       0 | 1-148
+ src/lib/advanced                |       0 |        0 |       0 |       0 |
+  DeveloperTools.ts              |       0 |        0 |       0 |       0 | 6-697
+  FileHandler.ts                 |       0 |        0 |       0 |       0 | 6-765
+  TypeScriptHelpers.ts           |       0 |        0 |       0 |       0 | 41-558
+  index.ts                       |       0 |        0 |       0 |       0 | 7-198
+ src/lib/error-handling          |   10.86 |     9.09 |     5.4 |   11.15 |
+  ApiError.ts                    |   22.66 |     7.14 |    12.5 |   22.66 | 57-134,156-349,368-423
+  CircuitBreaker.ts              |      10 |     7.69 |    4.87 |   10.61 | 59-319,344-385,400-401,408-423
+  RequestManager.ts              |   10.62 |     1.78 |    6.66 |   10.96 | 56-224,253-375,390-462,469,474-476,494,501
+  RetryEngine.ts                 |    8.23 |       20 |    5.26 |    8.33 | 81,108-322,334-340,348-363
+  index.ts                       |       0 |        0 |       0 |       0 | 7-182
+ src/lib/monitoring              |       0 |        0 |       0 |       0 |
+  CacheStrategy.ts               |       0 |        0 |       0 |       0 | 7-714
+  PerformanceMonitor.ts          |       0 |        0 |       0 |       0 | 6-778
+  StructuredLogger.ts            |       0 |        0 |       0 |       0 | 6-596
+  index.ts                       |       0 |      100 |       0 |       0 | 7-132
+ src/lib/testing                 |       0 |        0 |       0 |       0 |
+  IntegrationTestFramework.ts    |       0 |        0 |       0 |       0 | 7-691
+  PerformanceTestSuite.ts        |       0 |        0 |       0 |       0 | 6-644
+  index.ts                       |       0 |        0 |       0 |       0 | 7-273
+ src/services                    |   37.12 |        0 |   51.16 |    37.4 |
+  AuthService.ts                 |       0 |        0 |       0 |       0 | 28-241
+  bookingService.ts              |   84.61 |      100 |   83.33 |   84.61 | 41-44
+  teamBookingService.ts          |      76 |      100 |   77.27 |      76 | 137-148,210-237
+ src/stores                      |    6.27 |     2.17 |    3.07 |    5.53 |
+  booking-store.ts               |       0 |        0 |       0 |       0 | 1-246
+  modalStore.ts                  |       0 |        0 |       0 |       0 | 1-42
+  sessionStore.ts                |     100 |      100 |     100 |     100 |
+  teamBookingStore.ts            |    7.69 |        0 |    1.53 |    6.29 | 94-502
+  workspaceStore.ts              |       0 |        0 |       0 |       0 | 1-227
+ src/types                       |       0 |        0 |       0 |       0 |
+  booking-adapter.ts             |       0 |        0 |       0 |       0 | 6-89
+  booking-extended.ts            |       0 |        0 |       0 |       0 | 49-110
+  booking.ts                     |       0 |        0 |       0 |       0 | 3-15
+  prisma-bridge.ts               |       0 |        0 |       0 |       0 | 35-50
+  user.ts                        |       0 |        0 |       0 |       0 | 1-5
+ src/types/booking               |   41.75 |       60 |   27.02 |   41.86 |
+  dto.ts                         |       0 |      100 |       0 |       0 | 1-119
+  helpers.ts                     |   66.66 |       60 |   45.45 |   69.23 | 45,131-178
+  index.ts                       |       0 |      100 |       0 |       0 | 7-50
+ src/utils                       |   70.68 |    75.49 |   59.52 |   70.98 |
+  dateUtils.ts                   |      80 |    70.83 |   89.47 |    80.4 | 38,56,85,230-265,269-274
+  debounce.ts                    |       0 |        0 |       0 |       0 | 7-39
+  logger.ts                      |       0 |        0 |       0 |       0 | 3-41
+  priceFormatter.ts              |     100 |      100 |     100 |     100 |
+---------------------------------|---------|----------|---------|---------|---------------------------------------------
+Test Suites: 12 passed, 12 total
+Tests:       1 skipped, 226 passed, 227 total
+Snapshots:   0 total
+Time:        15.222 s
+Ran all test suites.
+:: @entrip/ui ::
+ PASS   @entrip/ui  packages/ui/__tests__/DataGrid.test.tsx
+  DataGrid
+    ✓ renders table with columns and data (58 ms)
+    ✓ renders empty table when no data (8 ms)
+    ✓ handles undefined data gracefully (8 ms)
+    ✓ renders with filtering enabled (17 ms)
+    ✓ renders with pagination enabled (12 ms)
+
+ PASS   @entrip/ui  packages/ui/__tests__/Button.test.tsx
+  Button
+    ✓ renders with children (38 ms)
+    ✓ applies correct variant classes (24 ms)
+    ✓ applies correct size classes (21 ms)
+    ✓ handles click events (16 ms)
+    ✓ can be disabled (6 ms)
+    ✓ shows loading state (9 ms)
+    ✓ applies fullWidth class when prop is true (6 ms)
+
+ PASS   @entrip/ui  packages/ui/__tests__/utils.test.ts
+  cn utility
+    ✓ should merge single class (5 ms)
+    ✓ should merge multiple classes
+    ✓ should handle conditional classes
+    ✓ should handle undefined and null
+    ✓ should merge Tailwind conflicts correctly (1 ms)
+    ✓ should handle arrays (1 ms)
+    ✓ should handle objects (1 ms)
+    ✓ should handle empty inputs (2 ms)
+    ✓ should handle complex combinations (1 ms)
+    ✓ should trim extra whitespace (1 ms)
+
+ PASS   @entrip/ui  packages/ui/__tests__/Input.test.tsx
+  Input
+    ✓ renders input element (5 ms)
+    ✓ renders label when provided (4 ms)
+    ✓ displays error message (3 ms)
+    ✓ displays hint text (2 ms)
+    ✓ disables input when disabled prop is true (2 ms)
+    ✓ applies correct type attribute (3 ms)
+
+---------------|---------|----------|---------|---------|-------------------
+File           | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+---------------|---------|----------|---------|---------|-------------------
+All files      |   90.32 |    97.61 |      70 |   90.32 |
+ compounds     |   82.35 |      100 |    62.5 |   82.35 |
+  DataGrid.tsx |   82.35 |      100 |    62.5 |   82.35 | 56,120-128
+ primitives    |     100 |    96.15 |     100 |     100 |
+  Button.tsx   |     100 |      100 |     100 |     100 |
+  Input.tsx    |     100 |    93.75 |     100 |     100 | 16
+---------------|---------|----------|---------|---------|-------------------
+Test Suites: 4 passed, 4 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        4.251 s
+Ran all test suites.
+:: @entrip/web ::
+  console.log
+    🚀 Entrip Developer Tools available at window.__ENTRIP_DEV__
+
+      at Function.enableGlobalConsoleAccess (../../packages/shared/src/lib/advanced/DeveloperTools.ts:608:15)
+
+  console.warn
+    [flightApi.ts] NEXT_PUBLIC_CRAWLER_API_URL is not set, using default: http://localhost:8001
+
+       7 | // 개발 환경에서 환경변수가 없을 경우 에러 대신 기본값 사용
+       8 | if (!process.env.NEXT_PUBLIC_CRAWLER_API_URL) {
+    >  9 |   console.warn('[flightApi.ts] NEXT_PUBLIC_CRAWLER_API_URL is not set, using default: http://localhost:8001');
+         |           ^
+      10 | }
+      11 |
+      12 | console.log('[flightApi.ts] CRAWLER_API_URL:', CRAWLER_API_URL);
+
+      at Object.<anonymous> (../../packages/shared/src/lib/flightApi.ts:9:11)
+      at Object.<anonymous> (../../packages/shared/src/index.ts:102:1)
+      at Object.<anonymous> (src/lib/socket.ts:2:1)
+      at Object.<anonymous> (src/hooks/useBookings.ts:11:1)
+      at __tests__/BookingModal.test.tsx:7:23
+      at Object.require (src/components/BookingModal.tsx:7:1)
+      at Object.<anonymous> (__tests__/BookingModal.test.tsx:2:1)
+
+  console.log
+    [flightApi.ts] CRAWLER_API_URL: http://localhost:8001
+
+      at Object.<anonymous> (../../packages/shared/src/lib/flightApi.ts:12:9)
+
+  console.error
+    [25. 10. 04. 01:21:19] [ERROR] [Booking error:] network error
+    📍 Stack: Error:
+        at Logger.log (/app/packages/shared/src/lib/logger.ts:79:30)
+        at Logger.error (/app/packages/shared/src/lib/logger.ts:157:10)
+        at error (/app/apps/web/src/components/BookingModal.tsx:113:14)
+        at isSubmitted (/app/node_modules/.pnpm/react-hook-form@7.61.1_react@18.3.1/node_modules/react-hook-form/src/logic/createFormControl.ts:1271:9)
+
+      115 |       case 'error':
+      116 |         if (formattedLog.style) {
+    > 117 |           console.error(`%c${formattedLog.message}`, formattedLog.style);
+          |                   ^
+      118 |         } else {
+      119 |           console.error(formattedLog.message);
+      120 |         }
+
+      at Logger.log (../../packages/shared/src/lib/logger.ts:117:19)
+      at Logger.error (../../packages/shared/src/lib/logger.ts:157:10)
+      at error (src/components/BookingModal.tsx:113:14)
+      at isSubmitted (../../node_modules/.pnpm/react-hook-form@7.61.1_react@18.3.1/node_modules/react-hook-form/src/logic/createFormControl.ts:1271:9)
+
+ PASS   @entrip/web  apps/web/__tests__/BookingModal.test.tsx
+  BookingModal interactions
+    ✓ renders booking form fields when opened (162 ms)
+    ✓ submits new booking and calls createBooking with mapped payload (119 ms)
+    ✓ submits existing booking and calls updateBooking (183 ms)
+    ✓ displays error message when submission fails (309 ms)
+
+ PASS   @entrip/web  apps/web/app/(main)/__tests__/layout.test.tsx
+  MainLayout
+    ✓ renders all layout components when authenticated (7 ms)
+    ✓ displays user information (3 ms)
+    ✓ renders children inside app frame (4 ms)
+    ✓ includes toast provider for notifications (7 ms)
+    ✓ includes messenger container (2 ms)
+    ✓ includes log viewer for debugging (3 ms)
+    ✓ renders empty content gracefully (2 ms)
+    ✓ renders with fragment children (4 ms)
+
+  console.log
+    🚀 Entrip Developer Tools available at window.__ENTRIP_DEV__
+
+      at Function.enableGlobalConsoleAccess (../../packages/shared/src/lib/advanced/DeveloperTools.ts:608:15)
+
+  console.warn
+    [flightApi.ts] NEXT_PUBLIC_CRAWLER_API_URL is not set, using default: http://localhost:8001
+
+       7 | // 개발 환경에서 환경변수가 없을 경우 에러 대신 기본값 사용
+       8 | if (!process.env.NEXT_PUBLIC_CRAWLER_API_URL) {
+    >  9 |   console.warn('[flightApi.ts] NEXT_PUBLIC_CRAWLER_API_URL is not set, using default: http://localhost:8001');
+         |           ^
+      10 | }
+      11 |
+      12 | console.log('[flightApi.ts] CRAWLER_API_URL:', CRAWLER_API_URL);
+
+      at Object.<anonymous> (../../packages/shared/src/lib/flightApi.ts:9:11)
+      at Object.<anonymous> (../../packages/shared/src/index.ts:102:1)
+      at __tests__/ToastProvider.test.tsx:5:23
+      at Object.require (src/providers/ToastProvider.tsx:5:1)
+      at Object.<anonymous> (__tests__/ToastProvider.test.tsx:2:1)
+
+  console.log
+    [flightApi.ts] CRAWLER_API_URL: http://localhost:8001
+
+      at Object.<anonymous> (../../packages/shared/src/lib/flightApi.ts:12:9)
+
+ PASS   @entrip/web  apps/web/__tests__/ToastProvider.test.tsx
+  ToastProvider
+    ✓ adds and removes toast manually (19 ms)
+    ✓ auto-dismisses toast after duration (7 ms)
+
+  console.log
+    🚀 Entrip Developer Tools available at window.__ENTRIP_DEV__
+
+      at Function.enableGlobalConsoleAccess (../../packages/shared/src/lib/advanced/DeveloperTools.ts:608:15)
+
+  console.warn
+    [flightApi.ts] NEXT_PUBLIC_CRAWLER_API_URL is not set, using default: http://localhost:8001
+
+       7 | // 개발 환경에서 환경변수가 없을 경우 에러 대신 기본값 사용
+       8 | if (!process.env.NEXT_PUBLIC_CRAWLER_API_URL) {
+    >  9 |   console.warn('[flightApi.ts] NEXT_PUBLIC_CRAWLER_API_URL is not set, using default: http://localhost:8001');
+         |           ^
+      10 | }
+      11 |
+      12 | console.log('[flightApi.ts] CRAWLER_API_URL:', CRAWLER_API_URL);
+
+      at Object.<anonymous> (../../packages/shared/src/lib/flightApi.ts:9:11)
+      at Object.<anonymous> (../../packages/shared/src/index.ts:102:1)
+      at Object.require (src/providers/ToastProvider.tsx:5:1)
+      at Object.<anonymous> (__tests__/Calendar.test.tsx:2:1)
+
+  console.log
+    [flightApi.ts] CRAWLER_API_URL: http://localhost:8001
+
+      at Object.<anonymous> (../../packages/shared/src/lib/flightApi.ts:12:9)
+
+ PASS   @entrip/web  apps/web/__tests__/Calendar.test.tsx
+  Calendar renders
+    ✓ should render calendar components and reservation data (27 ms)
+
+ PASS   @entrip/web  apps/web/__tests__/Login.test.tsx
+  Login Authentication System
+    ✓ should use HttpOnly cookies for authentication (1 ms)
+    ✓ should handle authentication without localStorage tokens (1 ms)
+
+--------------------------|---------|----------|---------|---------|----------------------------------------------------
+File                      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+--------------------------|---------|----------|---------|---------|----------------------------------------------------
+All files                 |   75.67 |    68.77 |   55.76 |   77.64 |
+ app/(main)               |   68.18 |       40 |      25 |   68.18 |
+  layout.tsx              |   68.18 |       40 |      25 |   68.18 | 16-28,52,57
+ src/components           |   97.29 |    87.75 |     100 |     100 |
+  BookingModal.tsx        |   97.29 |    87.75 |     100 |     100 | 62,83,107-113,152-290
+ src/features/calendar    |   61.62 |    56.45 |   35.48 |   65.82 |
+  ReservationListView.tsx |   61.62 |    56.45 |   35.48 |   65.82 | ...115,183-186,191,198-245,261-263,268,275,302-349
+ src/providers            |      90 |       50 |     100 |   88.23 |
+  ToastProvider.tsx       |      90 |       50 |     100 |   88.23 | 28,38-42
+--------------------------|---------|----------|---------|---------|----------------------------------------------------
+Test Suites: 5 passed, 5 total
+Tests:       17 passed, 17 total
+Snapshots:   0 total
+Time:        7.92 s
+Ran all test suites.
+:: @entrip/api ::
+node:internal/modules/cjs/loader:1210
+  throw err;
+  ^
+
+Error: Cannot find module '/app/packages/api/node_modules/jest/bin/jest.js'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+    at Module._load (node:internal/modules/cjs/loader:1038:27)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v20.19.5
+
+ ELIFECYCLE  Command failed with exit code 1.
+player217@DESKTOP-BK2EGRK:/mnt/c/Users/PC/Documents/project/Entrip$
+
+
+
+
+
+
+
+
+
+
+
+

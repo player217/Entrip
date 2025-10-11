@@ -5,6 +5,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+// Ensure Node.js runtime so we can forward cookies/headers reliably
+export const runtime = 'nodejs';
 
 // Get the API URL based on environment
 const getApiUrl = () => {
@@ -13,9 +15,13 @@ const getApiUrl = () => {
     return process.env.INTERNAL_API_V2_URL;
   }
 
-  if (process.env.NODE_ENV === 'production') {
-    return 'http://api-v2:4002';
+  // In Docker environment, use Docker service name
+  if (typeof window === 'undefined') {
+    // Server-side: use Docker network name
+    return 'http://api-v2:4000'; // Docker internal port is 4000
   }
+
+  // Client-side or development
   return 'http://localhost:4002';
 };
 
@@ -23,6 +29,7 @@ const getApiUrl = () => {
 async function handler(request: NextRequest, { params }: { params: { path: string[] } }) {
   const apiUrl = getApiUrl();
   const path = params.path?.join('/') || '';
+  // Forward to API v2 with correct /api/v2 prefix
   const url = `${apiUrl}/api/v2/${path}${request.nextUrl.search}`;
 
   console.log('[V2 Proxy Debug]', {
@@ -52,25 +59,42 @@ async function handler(request: NextRequest, { params }: { params: { path: strin
       duplex: 'half',
     });
 
-    // Forward the response
+    // Read upstream response body as text (may be JSON)
     const data = await response.text();
-    
-    const responseHeaders: Record<string, string> = {
-      'Content-Type': response.headers.get('Content-Type') || 'application/json',
-    };
 
-    // Forward any cookies from the API
-    response.headers.forEach((value, key) => {
-      if (key.toLowerCase() === 'set-cookie') {
-        responseHeaders[key] = value;
-      }
-    });
-    
-    return new NextResponse(data, {
+    // Create NextResponse and forward headers safely
+    const next = new NextResponse(data, {
       status: response.status,
       statusText: response.statusText,
-      headers: responseHeaders,
     });
+
+    // Copy non Set-Cookie headers
+    response.headers.forEach((value, key) => {
+      if (key.toLowerCase() !== 'set-cookie') {
+        next.headers.set(key, value);
+      }
+    });
+
+    // Preserve multiple Set-Cookie headers (undici/Next provides getSetCookie on headers)
+    // Fallback: if not available, append the single header value
+    const anyHeaders: any = response.headers as any;
+    const setCookies: string[] = anyHeaders.getSetCookie?.() ?? [];
+    if (Array.isArray(setCookies) && setCookies.length > 0) {
+      for (const cookie of setCookies) {
+        next.headers.append('set-cookie', cookie);
+      }
+    } else {
+      const sc = response.headers.get('set-cookie');
+      if (sc) next.headers.append('set-cookie', sc);
+    }
+
+    // Ensure Content-Type is present
+    if (!next.headers.has('content-type')) {
+      const ct = response.headers.get('content-type') || 'application/json';
+      next.headers.set('content-type', ct);
+    }
+
+    return next;
   } catch (error) {
     console.error('[API v2 Proxy] Error:', error);
     return NextResponse.json(

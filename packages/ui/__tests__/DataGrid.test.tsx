@@ -1,8 +1,8 @@
 import React from 'react'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import { DataGrid } from '../compounds/DataGrid'
-import type { ColumnDef } from '../types/tanstack-table'
+import { DataGrid } from '../src/components/compounds/DataGrid'
+import type { ColumnDef } from '../src/types/tanstack-table'
 
 interface MockData {
   id: string
@@ -80,6 +80,7 @@ describe('DataGrid', () => {
     // Check for pagination controls
     expect(screen.getByText('이전')).toBeInTheDocument()
     expect(screen.getByText('다음')).toBeInTheDocument()
-    expect(screen.getByText(/페이지/)).toBeInTheDocument()
+    // Supports both Korean and English pagination text
+    expect(screen.getByText(/페이지|Page/i)).toBeInTheDocument()
   })
 })

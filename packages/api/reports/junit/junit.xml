@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="51" failures="0" errors="0" time="103.166">
+  <testsuite name="E2E: Middleware Integration Tests" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:34" time="13.712" tests="19">
+    <testcase classname="E2E: Middleware Integration Tests Configuration Validation should have valid configuration object" name="E2E: Middleware Integration Tests Configuration Validation should have valid configuration object" time="0.009">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Configuration Validation should set environment correctly" name="E2E: Middleware Integration Tests Configuration Validation should set environment correctly" time="0.006">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Health Check &amp; Basic Response should respond to health check" name="E2E: Middleware Integration Tests Health Check &amp; Basic Response should respond to health check" time="0.025">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Health Check &amp; Basic Response should have security headers from Helmet" name="E2E: Middleware Integration Tests Health Check &amp; Basic Response should have security headers from Helmet" time="0.01">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Health Check &amp; Basic Response should have CORS headers configured" name="E2E: Middleware Integration Tests Health Check &amp; Basic Response should have CORS headers configured" time="0.009">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Rate Limiting Functionality should apply API rate limiting with correct headers" name="E2E: Middleware Integration Tests Rate Limiting Functionality should apply API rate limiting with correct headers" time="0.01">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Rate Limiting Functionality should apply auth rate limiting with stricter limits" name="E2E: Middleware Integration Tests Rate Limiting Functionality should apply auth rate limiting with stricter limits" time="0.019">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Rate Limiting Functionality should track requests per endpoint separately" name="E2E: Middleware Integration Tests Rate Limiting Functionality should track requests per endpoint separately" time="0.01">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Logging Middleware should log incoming requests" name="E2E: Middleware Integration Tests Logging Middleware should log incoming requests" time="0.008">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Logging Middleware should log successful responses" name="E2E: Middleware Integration Tests Logging Middleware should log successful responses" time="0.012">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Logging Middleware should log error responses with WARN level" name="E2E: Middleware Integration Tests Logging Middleware should log error responses with WARN level" time="0.01">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Error Handling &amp; Validation should handle validation errors correctly" name="E2E: Middleware Integration Tests Error Handling &amp; Validation should handle validation errors correctly" time="0.009">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Error Handling &amp; Validation should handle missing body" name="E2E: Middleware Integration Tests Error Handling &amp; Validation should handle missing body" time="0.009">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Error Handling &amp; Validation should return 404 for non-existent routes" name="E2E: Middleware Integration Tests Error Handling &amp; Validation should return 404 for non-existent routes" time="0.008">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Error Handling &amp; Validation should handle malformed JSON" name="E2E: Middleware Integration Tests Error Handling &amp; Validation should handle malformed JSON" time="0.014">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Compression &amp; Content Handling should set correct content type for JSON" name="E2E: Middleware Integration Tests Compression &amp; Content Handling should set correct content type for JSON" time="0.008">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Compression &amp; Content Handling should handle URL encoded data" name="E2E: Middleware Integration Tests Compression &amp; Content Handling should handle URL encoded data" time="0.01">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Performance &amp; Concurrent Requests should handle multiple concurrent requests" name="E2E: Middleware Integration Tests Performance &amp; Concurrent Requests should handle multiple concurrent requests" time="0.019">
+    </testcase>
+    <testcase classname="E2E: Middleware Integration Tests Performance &amp; Concurrent Requests should respond within reasonable time" name="E2E: Middleware Integration Tests Performance &amp; Concurrent Requests should respond within reasonable time" time="0.01">
+    </testcase>
+  </testsuite>
+  <testsuite name="E2E: Server Core Flows" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:48" time="19.681" tests="18">
+    <testcase classname="E2E: Server Core Flows Configuration &amp; Health Check should respond to health check with correct structure" name="E2E: Server Core Flows Configuration &amp; Health Check should respond to health check with correct structure" time="0.011">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows Configuration &amp; Health Check should have correct CORS headers" name="E2E: Server Core Flows Configuration &amp; Health Check should have correct CORS headers" time="0.009">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows Configuration &amp; Health Check should have security headers (Helmet)" name="E2E: Server Core Flows Configuration &amp; Health Check should have security headers (Helmet)" time="0.009">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows Rate Limiting should apply general rate limiting to API routes" name="E2E: Server Core Flows Rate Limiting should apply general rate limiting to API routes" time="0.008">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows Rate Limiting should apply stricter rate limiting to auth routes" name="E2E: Server Core Flows Rate Limiting should apply stricter rate limiting to auth routes" time="0.013">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows Rate Limiting should track rate limits per IP" name="E2E: Server Core Flows Rate Limiting should track rate limits per IP" time="0.01">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows Logging Integration should log incoming requests" name="E2E: Server Core Flows Logging Integration should log incoming requests" time="0.009">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows Logging Integration should log HTTP responses with metrics" name="E2E: Server Core Flows Logging Integration should log HTTP responses with metrics" time="0.045">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows Logging Integration should log errors with appropriate level" name="E2E: Server Core Flows Logging Integration should log errors with appropriate level" time="0.011">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows API Validation &amp; Error Handling should validate request bodies" name="E2E: Server Core Flows API Validation &amp; Error Handling should validate request bodies" time="0.012">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows API Validation &amp; Error Handling should handle missing request body" name="E2E: Server Core Flows API Validation &amp; Error Handling should handle missing request body" time="0.011">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows API Validation &amp; Error Handling should return JSON error responses" name="E2E: Server Core Flows API Validation &amp; Error Handling should return JSON error responses" time="0.01">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows WebSocket Integration should initialize WebSocket server without errors" name="E2E: Server Core Flows WebSocket Integration should initialize WebSocket server without errors" time="0.013">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows API Routes Structure should mount API v2 routes correctly" name="E2E: Server Core Flows API Routes Structure should mount API v2 routes correctly" time="0.014">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows API Routes Structure should handle non-existent routes" name="E2E: Server Core Flows API Routes Structure should handle non-existent routes" time="0.012">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows API Routes Structure should handle invalid HTTP methods" name="E2E: Server Core Flows API Routes Structure should handle invalid HTTP methods" time="0.011">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows Compression &amp; Performance should compress responses when appropriate" name="E2E: Server Core Flows Compression &amp; Performance should compress responses when appropriate" time="0.019">
+    </testcase>
+    <testcase classname="E2E: Server Core Flows Compression &amp; Performance should handle concurrent requests" name="E2E: Server Core Flows Compression &amp; Performance should handle concurrent requests" time="0.034">
+    </testcase>
+  </testsuite>
+  <testsuite name="Bookings ETag/If-Match contracts" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:34:07" time="10.255" tests="3">
+    <testcase classname="Bookings ETag/If-Match contracts performs ETag/If-Match flow end-to-end" name="Bookings ETag/If-Match contracts performs ETag/If-Match flow end-to-end" time="0.358">
+    </testcase>
+    <testcase classname="Bookings ETag/If-Match contracts rejects weak ETag format in If-Match (expects numeric version)" name="Bookings ETag/If-Match contracts rejects weak ETag format in If-Match (expects numeric version)" time="0.182">
+    </testcase>
+    <testcase classname="Bookings ETag/If-Match contracts deleteWithLock second call returns 412 (version mismatch/idempotency via guard)" name="Bookings ETag/If-Match contracts deleteWithLock second call returns 412 (version mismatch/idempotency via guard)" time="0.19">
+    </testcase>
+  </testsuite>
+  <testsuite name="v2 Team Bookings routes" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:34:18" time="10.485" tests="3">
+    <testcase classname="v2 Team Bookings routes lists team bookings with pagination" name="v2 Team Bookings routes lists team bookings with pagination" time="0.205">
+    </testcase>
+    <testcase classname="v2 Team Bookings routes gets a team booking by id and returns ETag" name="v2 Team Bookings routes gets a team booking by id and returns ETag" time="0.106">
+    </testcase>
+    <testcase classname="v2 Team Bookings routes returns history array (possibly empty)" name="v2 Team Bookings routes returns history array (possibly empty)" time="0.098">
+    </testcase>
+  </testsuite>
+  <testsuite name="Notifications security and concurrency" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:34:28" time="12.201" tests="2">
+    <testcase classname="Notifications security and concurrency denies cross-company notification access (404)" name="Notifications security and concurrency denies cross-company notification access (404)" time="0.343">
+    </testcase>
+    <testcase classname="Notifications security and concurrency markAllAsRead is idempotent under concurrency" name="Notifications security and concurrency markAllAsRead is idempotent under concurrency" time="0.278">
+    </testcase>
+  </testsuite>
+  <testsuite name="WS booking events (cookie-first auth)" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:34:40" time="7.256" tests="1">
+    <testcase classname="WS booking events (cookie-first auth) receives booking:create via company room using cookie auth" name="WS booking events (cookie-first auth) receives booking:create via company room using cookie auth" time="0.033">
+    </testcase>
+  </testsuite>
+  <testsuite name="Auth login companyCode enforcement" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:34:48" time="10.147" tests="3">
+    <testcase classname="Auth login companyCode enforcement succeeds with correct companyCode" name="Auth login companyCode enforcement succeeds with correct companyCode" time="0.241">
+    </testcase>
+    <testcase classname="Auth login companyCode enforcement fails without companyCode" name="Auth login companyCode enforcement fails without companyCode" time="0.084">
+    </testcase>
+    <testcase classname="Auth login companyCode enforcement rejects valid email/password but wrong companyCode (or rate-limits)" name="Auth login companyCode enforcement rejects valid email/password but wrong companyCode (or rate-limits)" time="0.097">
+    </testcase>
+  </testsuite>
+  <testsuite name="Rate limiting on auth login (dev thresholds)" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:34:58" time="10.358" tests="1">
+    <testcase classname="Rate limiting on auth login (dev thresholds) returns 429 after exceeding attempts" name="Rate limiting on auth login (dev thresholds) returns 429 after exceeding attempts" time="0.172">
+    </testcase>
+  </testsuite>
+  <testsuite name="Middleware headers &amp; CORS exposure" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:35:08" time="8.192" tests="1">
+    <testcase classname="Middleware headers &amp; CORS exposure sets X-Request-ID on /health" name="Middleware headers &amp; CORS exposure sets X-Request-ID on /health" time="0.018">
+    </testcase>
+  </testsuite>
+</testsuites>

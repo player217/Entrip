@@ -1,6 +1,6 @@
 import React from 'react';
-import type { BookingFilters } from '@entrip/shared';
-import { BookingStatus, BookingType } from '@entrip/shared';
+import type { BookingFilters } from '@entrip/shared/types/booking';
+import { BookingStatus, BookingType } from '@entrip/shared/types/booking';
 
 // BookingType and BookingStatus are now imported from @entrip/shared
 

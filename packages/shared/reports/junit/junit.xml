@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="233" failures="0" errors="0" time="4.925">
+  <testsuite name="teamBookingService" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:03" time="1.204" tests="23">
+    <testcase classname="teamBookingService createTeamBooking should create a new team booking" name="teamBookingService createTeamBooking should create a new team booking" time="0.004">
+    </testcase>
+    <testcase classname="teamBookingService getTeamBookings should fetch team bookings list" name="teamBookingService getTeamBookings should fetch team bookings list" time="0.001">
+    </testcase>
+    <testcase classname="teamBookingService getTeamBookings should pass filter parameters" name="teamBookingService getTeamBookings should pass filter parameters" time="0">
+    </testcase>
+    <testcase classname="teamBookingService getTeamBookingDetail should fetch single team booking detail" name="teamBookingService getTeamBookingDetail should fetch single team booking detail" time="0">
+    </testcase>
+    <testcase classname="teamBookingService updateTeamBooking should update team booking details" name="teamBookingService updateTeamBooking should update team booking details" time="0">
+    </testcase>
+    <testcase classname="teamBookingService deleteTeamBooking should delete a team booking" name="teamBookingService deleteTeamBooking should delete a team booking" time="0.001">
+    </testcase>
+    <testcase classname="teamBookingService Transportation Management should update transportation details" name="teamBookingService Transportation Management should update transportation details" time="0.001">
+    </testcase>
+    <testcase classname="teamBookingService Accommodation Management should update accommodations" name="teamBookingService Accommodation Management should update accommodations" time="0">
+    </testcase>
+    <testcase classname="teamBookingService Participant Management should add participants to team booking" name="teamBookingService Participant Management should add participants to team booking" time="0">
+    </testcase>
+    <testcase classname="teamBookingService Participant Management should update participant information" name="teamBookingService Participant Management should update participant information" time="0.001">
+    </testcase>
+    <testcase classname="teamBookingService Participant Management should remove participant from team booking" name="teamBookingService Participant Management should remove participant from team booking" time="0.004">
+    </testcase>
+    <testcase classname="teamBookingService Financial Management should update costs" name="teamBookingService Financial Management should update costs" time="0">
+    </testcase>
+    <testcase classname="teamBookingService Financial Management should add payment" name="teamBookingService Financial Management should add payment" time="0.001">
+    </testcase>
+    <testcase classname="teamBookingService Manager Assignment should assign managers" name="teamBookingService Manager Assignment should assign managers" time="0.001">
+    </testcase>
+    <testcase classname="teamBookingService Status Management should update booking status" name="teamBookingService Status Management should update booking status" time="0.001">
+    </testcase>
+    <testcase classname="teamBookingService Status Management should update status with cancellation reason" name="teamBookingService Status Management should update status with cancellation reason" time="0">
+    </testcase>
+    <testcase classname="teamBookingService File Attachment Management should upload attachment" name="teamBookingService File Attachment Management should upload attachment" time="0.002">
+    </testcase>
+    <testcase classname="teamBookingService File Attachment Management should delete attachment" name="teamBookingService File Attachment Management should delete attachment" time="0">
+    </testcase>
+    <testcase classname="teamBookingService Statistics should get booking statistics" name="teamBookingService Statistics should get booking statistics" time="0.001">
+    </testcase>
+    <testcase classname="teamBookingService v2 mode interoperability routes create requests to v2 endpoint" name="teamBookingService v2 mode interoperability routes create requests to v2 endpoint" time="0.002">
+    </testcase>
+    <testcase classname="teamBookingService v2 mode interoperability routes detail requests to v2 endpoint" name="teamBookingService v2 mode interoperability routes detail requests to v2 endpoint" time="0.001">
+    </testcase>
+    <testcase classname="teamBookingService v2 mode interoperability normalizes v2 list payloads to the shared DTO shape" name="teamBookingService v2 mode interoperability normalizes v2 list payloads to the shared DTO shape" time="0.002">
+    </testcase>
+    <testcase classname="teamBookingService v2 mode interoperability normalizes v2 detail payload history entries" name="teamBookingService v2 mode interoperability normalizes v2 detail payload history entries" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="bookingService" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:04" time="0.383" tests="13">
+    <testcase classname="bookingService getBookings should fetch bookings list" name="bookingService getBookings should fetch bookings list" time="0.002">
+    </testcase>
+    <testcase classname="bookingService getBookings should handle API errors" name="bookingService getBookings should handle API errors" time="0.011">
+    </testcase>
+    <testcase classname="bookingService getBookings should pass query parameters" name="bookingService getBookings should pass query parameters" time="0.001">
+    </testcase>
+    <testcase classname="bookingService getBooking should fetch single booking by ID" name="bookingService getBooking should fetch single booking by ID" time="0">
+    </testcase>
+    <testcase classname="bookingService getBooking should handle 404 error" name="bookingService getBooking should handle 404 error" time="0.001">
+    </testcase>
+    <testcase classname="bookingService createBooking should create a new booking" name="bookingService createBooking should create a new booking" time="0.001">
+    </testcase>
+    <testcase classname="bookingService createBooking should handle validation errors" name="bookingService createBooking should handle validation errors" time="0">
+    </testcase>
+    <testcase classname="bookingService updateBooking should update an existing booking" name="bookingService updateBooking should update an existing booking" time="0.001">
+    </testcase>
+    <testcase classname="bookingService updateBooking should handle concurrent update conflicts" name="bookingService updateBooking should handle concurrent update conflicts" time="0.001">
+    </testcase>
+    <testcase classname="bookingService deleteBooking should delete a booking" name="bookingService deleteBooking should delete a booking" time="0">
+    </testcase>
+    <testcase classname="bookingService deleteBooking should handle delete restrictions" name="bookingService deleteBooking should handle delete restrictions" time="0.001">
+    </testcase>
+    <testcase classname="bookingService v2 mode interoperability normalizes v2 list responses" name="bookingService v2 mode interoperability normalizes v2 list responses" time="0.001">
+    </testcase>
+    <testcase classname="bookingService v2 mode interoperability sends If-Match header on v2 update" name="bookingService v2 mode interoperability sends If-Match header on v2 update" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="dateUtils" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:05" time="0.33" tests="54">
+    <testcase classname="dateUtils formatDateKey formats date to yyyy-MM-dd format" name="dateUtils formatDateKey formats date to yyyy-MM-dd format" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils createDateKey creates date key from year, month, day" name="dateUtils createDateKey creates date key from year, month, day" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatDate formats date in YYYY-MM-DD format by default" name="dateUtils formatDate formats date in YYYY-MM-DD format by default" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils formatDate formats date string in YYYY-MM-DD format" name="dateUtils formatDate formats date string in YYYY-MM-DD format" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatDate formats date with custom format" name="dateUtils formatDate formats date with custom format" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatDate handles invalid date" name="dateUtils formatDate handles invalid date" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatDateTime formats date and time without seconds" name="dateUtils formatDateTime formats date and time without seconds" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils formatDateTime includes seconds when specified" name="dateUtils formatDateTime includes seconds when specified" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatDateTime handles invalid date" name="dateUtils formatDateTime handles invalid date" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatRelativeTime formats seconds ago for time within a minute" name="dateUtils formatRelativeTime formats seconds ago for time within a minute" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils formatRelativeTime formats minutes ago" name="dateUtils formatRelativeTime formats minutes ago" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils formatRelativeTime formats hours ago" name="dateUtils formatRelativeTime formats hours ago" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatRelativeTime formats days ago" name="dateUtils formatRelativeTime formats days ago" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatRelativeTime formats months ago" name="dateUtils formatRelativeTime formats months ago" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils formatRelativeTime formats years ago" name="dateUtils formatRelativeTime formats years ago" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatRelativeTime formats future time" name="dateUtils formatRelativeTime formats future time" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils parseDate returns Date object as is" name="dateUtils parseDate returns Date object as is" time="0">
+    </testcase>
+    <testcase classname="dateUtils parseDate parses date string" name="dateUtils parseDate parses date string" time="0">
+    </testcase>
+    <testcase classname="dateUtils parseDate parses ISO date string" name="dateUtils parseDate parses ISO date string" time="0">
+    </testcase>
+    <testcase classname="dateUtils isValidDate returns true for valid dates" name="dateUtils isValidDate returns true for valid dates" time="0">
+    </testcase>
+    <testcase classname="dateUtils isValidDate returns false for invalid dates" name="dateUtils isValidDate returns false for invalid dates" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils addDays adds positive days" name="dateUtils addDays adds positive days" time="0">
+    </testcase>
+    <testcase classname="dateUtils addDays adds negative days" name="dateUtils addDays adds negative days" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils addDays handles month rollover" name="dateUtils addDays handles month rollover" time="0">
+    </testcase>
+    <testcase classname="dateUtils subtractDays subtracts days" name="dateUtils subtractDays subtracts days" time="0">
+    </testcase>
+    <testcase classname="dateUtils subtractDays handles month rollover" name="dateUtils subtractDays handles month rollover" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils getDaysBetween calculates days between dates" name="dateUtils getDaysBetween calculates days between dates" time="0">
+    </testcase>
+    <testcase classname="dateUtils getDaysBetween returns 0 for same date" name="dateUtils getDaysBetween returns 0 for same date" time="0">
+    </testcase>
+    <testcase classname="dateUtils getDaysBetween handles reverse order" name="dateUtils getDaysBetween handles reverse order" time="0">
+    </testcase>
+    <testcase classname="dateUtils getMonthName returns Korean month name for number" name="dateUtils getMonthName returns Korean month name for number" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils getMonthName returns English month name for number" name="dateUtils getMonthName returns English month name for number" time="0">
+    </testcase>
+    <testcase classname="dateUtils getMonthName returns month name for Date object" name="dateUtils getMonthName returns month name for Date object" time="0">
+    </testcase>
+    <testcase classname="dateUtils getWeekdayName returns Korean weekday names" name="dateUtils getWeekdayName returns Korean weekday names" time="0">
+    </testcase>
+    <testcase classname="dateUtils getWeekdayName returns English weekday names" name="dateUtils getWeekdayName returns English weekday names" time="0">
+    </testcase>
+    <testcase classname="dateUtils getWeekdayName returns short weekday names" name="dateUtils getWeekdayName returns short weekday names" time="0.004">
+    </testcase>
+    <testcase classname="dateUtils getWeekdayName accepts day number (0-6)" name="dateUtils getWeekdayName accepts day number (0-6)" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils formatKoreanDate formats date in Korean" name="dateUtils formatKoreanDate formats date in Korean" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatKoreanDate includes weekday when specified" name="dateUtils formatKoreanDate includes weekday when specified" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatKoreanDate handles string dates" name="dateUtils formatKoreanDate handles string dates" time="0">
+    </testcase>
+    <testcase classname="dateUtils isWeekend returns true for Saturday" name="dateUtils isWeekend returns true for Saturday" time="0">
+    </testcase>
+    <testcase classname="dateUtils isWeekend returns true for Sunday" name="dateUtils isWeekend returns true for Sunday" time="0">
+    </testcase>
+    <testcase classname="dateUtils isWeekend returns false for weekdays" name="dateUtils isWeekend returns false for weekdays" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils isHoliday returns true for Korean holidays" name="dateUtils isHoliday returns true for Korean holidays" time="0">
+    </testcase>
+    <testcase classname="dateUtils isHoliday returns true for weekends" name="dateUtils isHoliday returns true for weekends" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils isHoliday returns false for regular weekdays" name="dateUtils isHoliday returns false for regular weekdays" time="0">
+    </testcase>
+    <testcase classname="dateUtils getBusinessDays calculates business days excluding weekends" name="dateUtils getBusinessDays calculates business days excluding weekends" time="0">
+    </testcase>
+    <testcase classname="dateUtils getBusinessDays excludes weekends in calculation" name="dateUtils getBusinessDays excludes weekends in calculation" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils getBusinessDays excludes holidays when specified" name="dateUtils getBusinessDays excludes holidays when specified" time="0">
+    </testcase>
+    <testcase classname="dateUtils getBusinessDays returns 0 for same date" name="dateUtils getBusinessDays returns 0 for same date" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatDateRange formats date range for same month" name="dateUtils formatDateRange formats date range for same month" time="0.001">
+    </testcase>
+    <testcase classname="dateUtils formatDateRange formats date range for different months" name="dateUtils formatDateRange formats date range for different months" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatDateRange formats date range for different years" name="dateUtils formatDateRange formats date range for different years" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatDateRange formats same date" name="dateUtils formatDateRange formats same date" time="0">
+    </testcase>
+    <testcase classname="dateUtils formatDateRange uses custom separator" name="dateUtils formatDateRange uses custom separator" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="useDebounce" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:05" time="0.386" tests="16">
+    <testcase classname="useDebounce Basic debounce timing accuracy should return initial value immediately" name="useDebounce Basic debounce timing accuracy should return initial value immediately" time="0.014">
+    </testcase>
+    <testcase classname="useDebounce Basic debounce timing accuracy should debounce value change with exact timing" name="useDebounce Basic debounce timing accuracy should debounce value change with exact timing" time="0.004">
+    </testcase>
+    <testcase classname="useDebounce Value updates after delay should update to new value after delay period" name="useDebounce Value updates after delay should update to new value after delay period" time="0.003">
+    </testcase>
+    <testcase classname="useDebounce Value updates after delay should handle different data types" name="useDebounce Value updates after delay should handle different data types" time="0.008">
+    </testcase>
+    <testcase classname="useDebounce Cleanup on unmount should clear timeout on unmount" name="useDebounce Cleanup on unmount should clear timeout on unmount" time="0.003">
+    </testcase>
+    <testcase classname="useDebounce Cleanup on unmount should not update state after unmount" name="useDebounce Cleanup on unmount should not update state after unmount" time="0.002">
+    </testcase>
+    <testcase classname="useDebounce Multiple rapid changes should only apply the last value when multiple updates occur" name="useDebounce Multiple rapid changes should only apply the last value when multiple updates occur" time="0.003">
+    </testcase>
+    <testcase classname="useDebounce Multiple rapid changes should reset timer on each value change" name="useDebounce Multiple rapid changes should reset timer on each value change" time="0.002">
+    </testcase>
+    <testcase classname="useDebounce Multiple rapid changes should handle continuous updates" name="useDebounce Multiple rapid changes should handle continuous updates" time="0.005">
+    </testcase>
+    <testcase classname="useDebounce Different delay values should work with zero delay" name="useDebounce Different delay values should work with zero delay" time="0.002">
+    </testcase>
+    <testcase classname="useDebounce Different delay values should work with very short delays" name="useDebounce Different delay values should work with very short delays" time="0.003">
+    </testcase>
+    <testcase classname="useDebounce Different delay values should work with very long delays" name="useDebounce Different delay values should work with very long delays" time="0.002">
+    </testcase>
+    <testcase classname="useDebounce Different delay values should handle delay changes" name="useDebounce Different delay values should handle delay changes" time="0.002">
+    </testcase>
+    <testcase classname="useDebounce Edge cases should handle null and undefined values" name="useDebounce Edge cases should handle null and undefined values" time="0.001">
+    </testcase>
+    <testcase classname="useDebounce Edge cases should handle negative delay values" name="useDebounce Edge cases should handle negative delay values" time="0.001">
+    </testcase>
+    <testcase classname="useDebounce Edge cases should maintain referential equality for objects when value does not change" name="useDebounce Edge cases should maintain referential equality for objects when value does not change" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="useTeamBooking hooks" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:06" time="0.399" tests="18">
+    <testcase classname="useTeamBooking hooks useTeamBookingList should fetch bookings on mount" name="useTeamBooking hooks useTeamBookingList should fetch bookings on mount" time="0.002">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingList should set initial filters if provided" name="useTeamBooking hooks useTeamBookingList should set initial filters if provided" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingList should update filters when updateFilters is called" name="useTeamBooking hooks useTeamBookingList should update filters when updateFilters is called" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingList should refresh bookings with current filters" name="useTeamBooking hooks useTeamBookingList should refresh bookings with current filters" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingList should return bookings and state" name="useTeamBooking hooks useTeamBookingList should return bookings and state" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingDetail should fetch booking detail on mount with bookingId" name="useTeamBooking hooks useTeamBookingDetail should fetch booking detail on mount with bookingId" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingDetail should not fetch if no bookingId provided" name="useTeamBooking hooks useTeamBookingDetail should not fetch if no bookingId provided" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingDetail should bind bookingId to update methods" name="useTeamBooking hooks useTeamBookingDetail should bind bookingId to update methods" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingDetail should handle participant operations" name="useTeamBooking hooks useTeamBookingDetail should handle participant operations" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingDetail should handle payment operations" name="useTeamBooking hooks useTeamBookingDetail should handle payment operations" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingDetail should handle status update" name="useTeamBooking hooks useTeamBookingDetail should handle status update" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingCalendar should fetch bookings for selected month" name="useTeamBooking hooks useTeamBookingCalendar should fetch bookings for selected month" time="0.002">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingCalendar should navigate to previous month" name="useTeamBooking hooks useTeamBookingCalendar should navigate to previous month" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingCalendar should navigate to next month" name="useTeamBooking hooks useTeamBookingCalendar should navigate to next month" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingCalendar should handle year boundary when navigating" name="useTeamBooking hooks useTeamBookingCalendar should handle year boundary when navigating" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingCalendar should go to today" name="useTeamBooking hooks useTeamBookingCalendar should go to today" time="0.002">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useCreateTeamBooking should expose create booking functionality" name="useTeamBooking hooks useCreateTeamBooking should expose create booking functionality" time="0.001">
+    </testcase>
+    <testcase classname="useTeamBooking hooks useTeamBookingStats should calculate statistics from bookings" name="useTeamBooking hooks useTeamBookingStats should calculate statistics from bookings" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="useThrottle" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:06" time="0.301" tests="14">
+    <testcase classname="useThrottle 기본 동작 지정된 시간 동안 함수 호출을 제한한다" name="useThrottle 기본 동작 지정된 시간 동안 함수 호출을 제한한다" time="0.027">
+    </testcase>
+    <testcase classname="useThrottle 기본 동작 delay 시간이 지난 후 다시 호출할 수 있다" name="useThrottle 기본 동작 delay 시간이 지난 후 다시 호출할 수 있다" time="0.009">
+    </testcase>
+    <testcase classname="useThrottle 기본 동작 인자를 올바르게 전달한다" name="useThrottle 기본 동작 인자를 올바르게 전달한다" time="0.01">
+    </testcase>
+    <testcase classname="useThrottle leading 옵션 leading: true일 때 첫 호출을 즉시 실행한다" name="useThrottle leading 옵션 leading: true일 때 첫 호출을 즉시 실행한다" time="0.009">
+    </testcase>
+    <testcase classname="useThrottle leading 옵션 leading: false일 때 첫 호출을 지연한다" name="useThrottle leading 옵션 leading: false일 때 첫 호출을 지연한다" time="0.009">
+    </testcase>
+    <testcase classname="useThrottle trailing 옵션 trailing: true일 때 마지막 호출을 실행한다" name="useThrottle trailing 옵션 trailing: true일 때 마지막 호출을 실행한다" time="0.014">
+    </testcase>
+    <testcase classname="useThrottle trailing 옵션 trailing: false일 때 마지막 호출을 무시한다" name="useThrottle trailing 옵션 trailing: false일 때 마지막 호출을 무시한다" time="0.011">
+    </testcase>
+    <testcase classname="useThrottle leading과 trailing 조합 둘 다 false일 때는 아무것도 실행하지 않는다" name="useThrottle leading과 trailing 조합 둘 다 false일 때는 아무것도 실행하지 않는다" time="0.007">
+    </testcase>
+    <testcase classname="useThrottle leading과 trailing 조합 연속 호출 시 올바르게 동작한다" name="useThrottle leading과 trailing 조합 연속 호출 시 올바르게 동작한다" time="0.011">
+    </testcase>
+    <testcase classname="useThrottle 엣지 케이스 delay가 0일 때도 동작한다" name="useThrottle 엣지 케이스 delay가 0일 때도 동작한다" time="0.01">
+    </testcase>
+    <testcase classname="useThrottle 엣지 케이스 음수 delay는 0으로 처리한다" name="useThrottle 엣지 케이스 음수 delay는 0으로 처리한다" time="0.009">
+    </testcase>
+    <testcase classname="useThrottle 엣지 케이스 컴포넌트 언마운트 시 타이머를 정리한다" name="useThrottle 엣지 케이스 컴포넌트 언마운트 시 타이머를 정리한다" time="0.009">
+    </testcase>
+    <testcase classname="useThrottle 실제 사용 사례 스크롤 이벤트 처리에 사용할 수 있다" name="useThrottle 실제 사용 사례 스크롤 이벤트 처리에 사용할 수 있다" time="0.01">
+    </testcase>
+    <testcase classname="useThrottle 실제 사용 사례 검색 입력 처리에 사용할 수 있다" name="useThrottle 실제 사용 사례 검색 입력 처리에 사용할 수 있다" time="0.01">
+    </testcase>
+  </testsuite>
+  <testsuite name="priceFormatter" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:06" time="0.146" tests="47">
+    <testcase classname="priceFormatter formatCurrency formats KRW currency with default options" name="priceFormatter formatCurrency formats KRW currency with default options" time="0.022">
+    </testcase>
+    <testcase classname="priceFormatter formatCurrency formats USD currency with default options" name="priceFormatter formatCurrency formats USD currency with default options" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatCurrency formats EUR currency with default options" name="priceFormatter formatCurrency formats EUR currency with default options" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatCurrency formats JPY currency with default options" name="priceFormatter formatCurrency formats JPY currency with default options" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatCurrency formats CNY currency with default options" name="priceFormatter formatCurrency formats CNY currency with default options" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatCurrency formats negative amounts correctly" name="priceFormatter formatCurrency formats negative amounts correctly" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter formatCurrency formats without symbol when showSymbol is false" name="priceFormatter formatCurrency formats without symbol when showSymbol is false" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatCurrency formats with custom fraction digits" name="priceFormatter formatCurrency formats with custom fraction digits" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter formatCurrency uses default currency when not specified" name="priceFormatter formatCurrency uses default currency when not specified" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter formatNumber formats number with Korean locale" name="priceFormatter formatNumber formats number with Korean locale" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatNumber formats number with decimal places" name="priceFormatter formatNumber formats number with decimal places" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter formatNumber formats negative numbers" name="priceFormatter formatNumber formats negative numbers" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatNumber formats zero" name="priceFormatter formatNumber formats zero" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter formatNumber handles very large numbers" name="priceFormatter formatNumber handles very large numbers" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatPercentage formats decimal as percentage" name="priceFormatter formatPercentage formats decimal as percentage" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter formatPercentage formats with custom decimal places" name="priceFormatter formatPercentage formats with custom decimal places" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatPercentage formats when value is already percentage" name="priceFormatter formatPercentage formats when value is already percentage" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatPercentage formats negative percentages" name="priceFormatter formatPercentage formats negative percentages" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatPercentage formats zero percentage" name="priceFormatter formatPercentage formats zero percentage" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter parseCurrency parses KRW currency string" name="priceFormatter parseCurrency parses KRW currency string" time="0">
+    </testcase>
+    <testcase classname="priceFormatter parseCurrency parses USD currency string" name="priceFormatter parseCurrency parses USD currency string" time="0">
+    </testcase>
+    <testcase classname="priceFormatter parseCurrency parses EUR currency string" name="priceFormatter parseCurrency parses EUR currency string" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter parseCurrency parses JPY currency string" name="priceFormatter parseCurrency parses JPY currency string" time="0">
+    </testcase>
+    <testcase classname="priceFormatter parseCurrency parses string without currency symbol" name="priceFormatter parseCurrency parses string without currency symbol" time="0">
+    </testcase>
+    <testcase classname="priceFormatter parseCurrency parses negative amounts" name="priceFormatter parseCurrency parses negative amounts" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter parseCurrency handles strings with spaces" name="priceFormatter parseCurrency handles strings with spaces" time="0">
+    </testcase>
+    <testcase classname="priceFormatter calculateTax calculates tax correctly" name="priceFormatter calculateTax calculates tax correctly" time="0">
+    </testcase>
+    <testcase classname="priceFormatter calculateTax handles zero tax rate" name="priceFormatter calculateTax handles zero tax rate" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter calculateTax handles negative amounts" name="priceFormatter calculateTax handles negative amounts" time="0">
+    </testcase>
+    <testcase classname="priceFormatter calculateTax handles decimal tax rates" name="priceFormatter calculateTax handles decimal tax rates" time="0">
+    </testcase>
+    <testcase classname="priceFormatter calculateDiscount calculates percentage discount" name="priceFormatter calculateDiscount calculates percentage discount" time="0">
+    </testcase>
+    <testcase classname="priceFormatter calculateDiscount calculates absolute discount" name="priceFormatter calculateDiscount calculates absolute discount" time="0">
+    </testcase>
+    <testcase classname="priceFormatter calculateDiscount handles discount greater than original price" name="priceFormatter calculateDiscount handles discount greater than original price" time="0">
+    </testcase>
+    <testcase classname="priceFormatter calculateDiscount handles zero discount" name="priceFormatter calculateDiscount handles zero discount" time="0">
+    </testcase>
+    <testcase classname="priceFormatter calculateDiscount caps discount at original price for negative amounts" name="priceFormatter calculateDiscount caps discount at original price for negative amounts" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatExchangeRate formats exchange rate with default decimal places" name="priceFormatter formatExchangeRate formats exchange rate with default decimal places" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatExchangeRate formats exchange rate with custom decimal places" name="priceFormatter formatExchangeRate formats exchange rate with custom decimal places" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter formatExchangeRate formats exchange rate with currency symbol" name="priceFormatter formatExchangeRate formats exchange rate with currency symbol" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatExchangeRate handles null currency" name="priceFormatter formatExchangeRate handles null currency" time="0">
+    </testcase>
+    <testcase classname="priceFormatter formatExchangeRate formats very small rates" name="priceFormatter formatExchangeRate formats very small rates" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter convertCurrency converts currency with normal rate" name="priceFormatter convertCurrency converts currency with normal rate" time="0">
+    </testcase>
+    <testcase classname="priceFormatter convertCurrency converts currency in reverse" name="priceFormatter convertCurrency converts currency in reverse" time="0">
+    </testcase>
+    <testcase classname="priceFormatter convertCurrency converts with custom decimal places" name="priceFormatter convertCurrency converts with custom decimal places" time="0.001">
+    </testcase>
+    <testcase classname="priceFormatter convertCurrency handles zero rate" name="priceFormatter convertCurrency handles zero rate" time="0">
+    </testcase>
+    <testcase classname="priceFormatter convertCurrency handles negative amounts" name="priceFormatter convertCurrency handles negative amounts" time="0">
+    </testcase>
+    <testcase classname="priceFormatter convertCurrency handles very small rates" name="priceFormatter convertCurrency handles very small rates" time="0">
+    </testcase>
+    <testcase classname="priceFormatter convertCurrency handles very large rates" name="priceFormatter convertCurrency handles very large rates" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="logger" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:07" time="0.197" tests="19">
+    <testcase classname="logger log level filtering logs debug messages when in development" name="logger log level filtering logs debug messages when in development" time="0.037">
+    </testcase>
+    <testcase classname="logger log level filtering does not log debug messages when not in development" name="logger log level filtering does not log debug messages when not in development" time="0.001">
+    </testcase>
+    <testcase classname="logger log level filtering logs info messages" name="logger log level filtering logs info messages" time="0.001">
+    </testcase>
+    <testcase classname="logger log level filtering logs warn messages" name="logger log level filtering logs warn messages" time="0.001">
+    </testcase>
+    <testcase classname="logger log level filtering logs error messages" name="logger log level filtering logs error messages" time="0.001">
+    </testcase>
+    <testcase classname="logger production environment logs all except debug in production" name="logger production environment logs all except debug in production" time="0.002">
+    </testcase>
+    <testcase classname="logger log formatting formats debug messages correctly with style" name="logger log formatting formats debug messages correctly with style" time="0.001">
+    </testcase>
+    <testcase classname="logger log formatting formats info messages correctly with style" name="logger log formatting formats info messages correctly with style" time="0">
+    </testcase>
+    <testcase classname="logger log formatting formats warn messages correctly with style" name="logger log formatting formats warn messages correctly with style" time="0">
+    </testcase>
+    <testcase classname="logger log formatting formats error messages correctly with style" name="logger log formatting formats error messages correctly with style" time="0">
+    </testcase>
+    <testcase classname="logger log formatting includes Korean timestamp format in log messages" name="logger log formatting includes Korean timestamp format in log messages" time="0">
+    </testcase>
+    <testcase classname="logger log formatting includes data with emoji in development" name="logger log formatting includes data with emoji in development" time="0">
+    </testcase>
+    <testcase classname="logger log formatting includes error with emoji" name="logger log formatting includes error with emoji" time="0.001">
+    </testcase>
+    <testcase classname="logger performance and API logging logs performance metrics with emoji" name="logger performance and API logging logs performance metrics with emoji" time="0.001">
+    </testcase>
+    <testcase classname="logger performance and API logging warns about slow performance" name="logger performance and API logging warns about slow performance" time="0">
+    </testcase>
+    <testcase classname="logger performance and API logging logs API calls with emoji" name="logger performance and API logging logs API calls with emoji" time="0">
+    </testcase>
+    <testcase classname="logger performance and API logging warns about slow API calls" name="logger performance and API logging warns about slow API calls" time="0.001">
+    </testcase>
+    <testcase classname="logger performance and API logging logs user actions with emoji" name="logger performance and API logging logs user actions with emoji" time="0.001">
+    </testcase>
+    <testcase classname="logger default behavior logs info but not debug in non-development" name="logger default behavior logs info but not debug in non-development" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="useSessionStore" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:07" time="0.162" tests="10">
+    <testcase classname="useSessionStore Initial State should have null user initially" name="useSessionStore Initial State should have null user initially" time="0.003">
+    </testcase>
+    <testcase classname="useSessionStore Initial State should not be authenticated initially" name="useSessionStore Initial State should not be authenticated initially" time="0.001">
+    </testcase>
+    <testcase classname="useSessionStore Login should set user and authenticate on successful login" name="useSessionStore Login should set user and authenticate on successful login" time="0.002">
+    </testcase>
+    <testcase classname="useSessionStore Login should use provided email in user object" name="useSessionStore Login should use provided email in user object" time="0.001">
+    </testcase>
+    <testcase classname="useSessionStore Login should handle empty email" name="useSessionStore Login should handle empty email" time="0.001">
+    </testcase>
+    <testcase classname="useSessionStore Login should handle empty password" name="useSessionStore Login should handle empty password" time="0.001">
+    </testcase>
+    <testcase classname="useSessionStore Logout should clear user and authentication status" name="useSessionStore Logout should clear user and authentication status" time="0.002">
+    </testcase>
+    <testcase classname="useSessionStore Logout should handle logout when already logged out" name="useSessionStore Logout should handle logout when already logged out" time="0.001">
+    </testcase>
+    <testcase classname="useSessionStore User Object should have correct user properties" name="useSessionStore User Object should have correct user properties" time="0.001">
+    </testcase>
+    <testcase classname="useSessionStore State Persistence should maintain state across multiple hook calls" name="useSessionStore State Persistence should maintain state across multiple hook calls" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="BookingHelpers" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:07" time="0.111" tests="12">
+    <testcase classname="BookingHelpers canCancel should return true for CONFIRMED booking" name="BookingHelpers canCancel should return true for CONFIRMED booking" time="0.001">
+    </testcase>
+    <testcase classname="BookingHelpers canCancel should return false for CANCELLED booking" name="BookingHelpers canCancel should return false for CANCELLED booking" time="0">
+    </testcase>
+    <testcase classname="BookingHelpers getDuration should calculate correct duration" name="BookingHelpers getDuration should calculate correct duration" time="0">
+    </testcase>
+    <testcase classname="BookingHelpers getDuration should return 1 for same day trip" name="BookingHelpers getDuration should return 1 for same day trip" time="0">
+    </testcase>
+    <testcase classname="BookingHelpers getDuration should return 1 for booking without endDate" name="BookingHelpers getDuration should return 1 for booking without endDate" time="0">
+    </testcase>
+    <testcase classname="BookingHelpers getTypeCode should return IN for international destination" name="BookingHelpers getTypeCode should return IN for international destination" time="0">
+    </testcase>
+    <testcase classname="BookingHelpers getTypeCode should return GF for golf destination" name="BookingHelpers getTypeCode should return GF for golf destination" time="0">
+    </testcase>
+    <testcase classname="BookingHelpers getTypeCode should return HM for honeymoon" name="BookingHelpers getTypeCode should return HM for honeymoon" time="0">
+    </testcase>
+    <testcase classname="BookingHelpers getTypeCode should return AT for other destinations" name="BookingHelpers getTypeCode should return AT for other destinations" time="0.001">
+    </testcase>
+    <testcase classname="BookingHelpers toBookingEvent should convert BookingDTO to BookingEvent" name="BookingHelpers toBookingEvent should convert BookingDTO to BookingEvent" time="0">
+    </testcase>
+    <testcase classname="BookingHelpers calculateStats should calculate correct statistics" name="BookingHelpers calculateStats should calculate correct statistics" time="0">
+    </testcase>
+    <testcase classname="BookingHelpers groupByMonth should group bookings by month" name="BookingHelpers groupByMonth should group bookings by month" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="apiClient" errors="0" failures="0" skipped="1" timestamp="2025-10-08T07:33:07" time="0.056" tests="4">
+    <testcase classname="apiClient handleApiError should handle axios error with response message" name="apiClient handleApiError should handle axios error with response message" time="0.001">
+    </testcase>
+    <testcase classname="apiClient handleApiError should handle axios error with error message" name="apiClient handleApiError should handle axios error with error message" time="0.001">
+    </testcase>
+    <testcase classname="apiClient handleApiError should handle unknown errors" name="apiClient handleApiError should handle unknown errors" time="0">
+    </testcase>
+    <testcase classname="apiClient apiClient creation should create axios instance with interceptors" name="apiClient apiClient creation should create axios instance with interceptors" time="0">
+      <skipped/>
+    </testcase>
+  </testsuite>
+  <testsuite name="Unified API Client" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:07" time="0.428" tests="3">
+    <testcase classname="Unified API Client Type Safety should provide type-safe get method" name="Unified API Client Type Safety should provide type-safe get method" time="0">
+    </testcase>
+    <testcase classname="Unified API Client Configuration should have correct default configuration" name="Unified API Client Configuration should have correct default configuration" time="0.001">
+    </testcase>
+    <testcase classname="Unified API Client 401 Handling should handle 401 without redirect" name="Unified API Client 401 Handling should handle 401 without redirect" time="0.001">
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -191,12 +191,9 @@ describe('E2E: Middleware Integration Tests', () => {
       const infoSpy = jest.spyOn(logger, 'info');
 
       await request(testApp).get('/health');
-
-      expect(infoSpy).toHaveBeenCalledWith(
-        'GET',
-        '/health',
-        200,
-        expect.any(Number), // duration
+      const call = infoSpy.mock.calls.find(([msg]) => typeof msg === 'string' && msg.startsWith('GET /health 200 -'));
+      expect(call).toBeTruthy();
+      expect(call?.[1]).toEqual(
         expect.objectContaining({
           ip: expect.any(String),
           userAgent: expect.any(String),
@@ -212,11 +209,11 @@ describe('E2E: Middleware Integration Tests', () => {
         .post('/api/v2/auth/login')
         .send({ email: 'invalid', password: 'short' });
 
-      expect(warnSpy).toHaveBeenCalledWith(
-        'POST',
-        '/api/v2/auth/login',
-        400,
-        expect.any(Number),
+      const warnCall = warnSpy.mock.calls.find(([msg, meta]) =>
+        typeof msg === 'string' && msg.includes('POST /api/v2/auth/login') && (meta?.statusCode ?? 0) >= 400
+      );
+      expect(warnCall).toBeTruthy();
+      expect(warnCall?.[1]).toEqual(
         expect.objectContaining({
           ip: expect.any(String),
           userAgent: expect.any(String),

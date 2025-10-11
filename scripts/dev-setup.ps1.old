@@ -1,0 +1,369 @@
+# Entrip Development Environment Setup Script for Windows
+# Run with: .\scripts\dev-setup.ps1
+
+param(
+    [string]$Environment = "development",
+    [switch]$Docker,
+    [switch]$SkipPrerequisites,
+    [switch]$Force
+)
+
+$ErrorActionPreference = "Stop"
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = Split-Path -Parent $ScriptDir
+
+Write-Host "===================================" -ForegroundColor Cyan
+Write-Host "  Entrip Development Setup         " -ForegroundColor Cyan
+Write-Host "===================================" -ForegroundColor Cyan
+Write-Host ""
+
+# Helper Functions
+function Write-Step {
+    param([string]$Message)
+    Write-Host "► $Message" -ForegroundColor Yellow
+}
+
+function Write-Success {
+    param([string]$Message)
+    Write-Host "✅ $Message" -ForegroundColor Green
+}
+
+function Write-Error {
+    param([string]$Message)
+    Write-Host "❌ $Message" -ForegroundColor Red
+}
+
+function Write-Info {
+    param([string]$Message)
+    Write-Host "ℹ️  $Message" -ForegroundColor Cyan
+}
+
+# 1. Check Prerequisites
+function Test-Prerequisites {
+    if ($SkipPrerequisites) {
+        Write-Info "Skipping prerequisites check"
+        return
+    }
+
+    Write-Step "Checking prerequisites..."
+
+    $required = @{
+        "Docker Desktop" = {
+            if ($Docker) { docker --version }
+            else { $true }
+        }
+        "Node.js (v18+)" = {
+            $version = node --version
+            if ($version -match "v(\d+)") {
+                [int]$matches[1] -ge 18
+            }
+        }
+        "pnpm" = { pnpm --version }
+        "Git" = { git --version }
+    }
+
+    $missing = @()
+    foreach ($tool in $required.Keys) {
+        try {
+            $result = & $required[$tool]
+            if ($result) {
+                Write-Success "$tool installed"
+            } else {
+                throw "Version requirement not met"
+            }
+        } catch {
+            Write-Error "$tool missing or version too old"
+            $missing += $tool
+        }
+    }
+
+    if ($missing.Count -gt 0) {
+        Write-Host ""
+        Write-Error "Missing or outdated tools: $($missing -join ', ')"
+        Write-Info "Installation guides:"
+        Write-Info "  Docker: https://docs.docker.com/desktop/install/windows-install/"
+        Write-Info "  Node.js: https://nodejs.org/en/download/"
+        Write-Info "  pnpm: npm install -g pnpm"
+        exit 1
+    }
+
+    Write-Host ""
+}
+
+# 2. Setup Environment Files
+function Setup-Environment {
+    Write-Step "Setting up environment files..."
+
+    $envFiles = @{
+        ".env.local" = @"
+NODE_ENV=$Environment
+DATABASE_URL=postgresql://entrip:entrip@localhost:5432/entrip
+JWT_SECRET=local-dev-secret-change-in-production
+REDIS_URL=redis://localhost:6379
+MIGRATION_PHASE=2
+"@
+        "apps/api/.env" = @"
+NODE_ENV=$Environment
+DATABASE_URL=postgresql://entrip:entrip@localhost:5432/entrip
+JWT_SECRET=local-dev-secret-change-in-production
+PORT=4001
+REDIS_URL=redis://localhost:6379
+"@
+        "packages/api/.env" = @"
+NODE_ENV=$Environment
+DATABASE_URL=postgresql://entrip:entrip@localhost:5432/entrip
+JWT_SECRET=local-dev-secret-change-in-production
+PORT=4002
+REDIS_URL=redis://localhost:6379
+"@
+        "apps/web/.env.local" = @"
+NEXT_PUBLIC_API_URL=http://localhost:4001
+INTERNAL_API_URL=http://api:4000
+NEXT_PUBLIC_CRAWLER_API_URL=http://localhost:8001
+API_V2_URL=http://localhost:4002
+MIGRATION_PHASE=2
+"@
+    }
+
+    $created = 0
+    $skipped = 0
+
+    foreach ($file in $envFiles.Keys) {
+        $path = Join-Path $ProjectRoot $file
+        $dir = Split-Path -Parent $path
+
+        # Create directory if it doesn't exist
+        if (!(Test-Path $dir)) {
+            New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        }
+
+        if (!(Test-Path $path) -or $Force) {
+            Set-Content -Path $path -Value $envFiles[$file]
+            Write-Success "Created $file"
+            $created++
+        } else {
+            Write-Info "Skipped $file (already exists)"
+            $skipped++
+        }
+    }
+
+    Write-Success "Environment setup complete ($created created, $skipped skipped)"
+    Write-Host ""
+}
+
+# 3. Install Dependencies
+function Install-Dependencies {
+    Write-Step "Installing dependencies..."
+
+    Push-Location $ProjectRoot
+    try {
+        if (Test-Path "node_modules") {
+            Write-Info "Dependencies already installed"
+        } else {
+            & pnpm install --frozen-lockfile
+            Write-Success "Dependencies installed"
+        }
+    } finally {
+        Pop-Location
+    }
+    Write-Host ""
+}
+
+# 4. Handle Prisma Setup (Windows-specific)
+function Setup-Prisma {
+    Write-Step "Setting up Prisma (Windows-specific handling)..."
+
+    Push-Location $ProjectRoot
+    try {
+        # Check if Prisma binary manager exists
+        $managerPath = Join-Path $ScriptDir "prisma-binary-manager.ts"
+        if (Test-Path $managerPath) {
+            Write-Info "Running Prisma Binary Manager..."
+            & npx ts-node $managerPath --force
+            Write-Success "Prisma binaries managed"
+        } else {
+            # Fallback to standard generation
+            & pnpm prisma:generate
+            Write-Success "Prisma client generated"
+        }
+    } catch {
+        Write-Error "Prisma setup failed: $_"
+        Write-Info "Try running: npm run prisma:generate manually"
+    } finally {
+        Pop-Location
+    }
+    Write-Host ""
+}
+
+# 5. Docker Setup (if requested)
+function Setup-Docker {
+    if (!$Docker) {
+        Write-Info "Skipping Docker setup (use -Docker flag to enable)"
+        return
+    }
+
+    Write-Step "Setting up Docker environment..."
+
+    Push-Location $ProjectRoot
+    try {
+        # Check if Docker is running
+        $dockerRunning = $false
+        try {
+            docker info | Out-Null
+            $dockerRunning = $true
+        } catch {
+            Write-Info "Starting Docker Desktop..."
+            Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+
+            # Wait for Docker to start
+            $maxWait = 60
+            $waited = 0
+            while ($waited -lt $maxWait) {
+                Start-Sleep -Seconds 5
+                $waited += 5
+                try {
+                    docker info | Out-Null
+                    $dockerRunning = $true
+                    break
+                } catch {
+                    Write-Host "." -NoNewline
+                }
+            }
+            Write-Host ""
+        }
+
+        if (!$dockerRunning) {
+            Write-Error "Docker failed to start"
+            return
+        }
+
+        Write-Success "Docker is running"
+
+        # Start services
+        Write-Info "Starting Docker services..."
+        & docker-compose -f docker-compose.local.yml up -d
+
+        # Wait for services
+        Write-Info "Waiting for services to be healthy..."
+        Start-Sleep -Seconds 10
+
+        # Show status
+        & docker-compose -f docker-compose.local.yml ps
+
+        Write-Success "Docker environment ready"
+    } catch {
+        Write-Error "Docker setup failed: $_"
+    } finally {
+        Pop-Location
+    }
+    Write-Host ""
+}
+
+# 6. Database Setup
+function Setup-Database {
+    Write-Step "Setting up database..."
+
+    Push-Location $ProjectRoot
+    try {
+        # Check if database is accessible
+        $dbAvailable = $false
+        try {
+            # Simple port check
+            $connection = New-Object System.Net.Sockets.TcpClient
+            $connection.Connect("localhost", 5432)
+            $connection.Close()
+            $dbAvailable = $true
+        } catch {
+            Write-Info "Database not accessible on port 5432"
+        }
+
+        if (!$dbAvailable -and !$Docker) {
+            Write-Error "Database not available. Run with -Docker flag to start PostgreSQL"
+            return
+        }
+
+        if ($dbAvailable) {
+            Write-Info "Running database migrations..."
+            & pnpm prisma:migrate
+
+            Write-Info "Seeding database with test data..."
+            & pnpm prisma:seed
+
+            Write-Success "Database setup complete"
+        }
+    } catch {
+        Write-Error "Database setup failed: $_"
+        Write-Info "You may need to run migrations manually: pnpm prisma:migrate"
+    } finally {
+        Pop-Location
+    }
+    Write-Host ""
+}
+
+# 7. Verify Setup
+function Test-Setup {
+    Write-Step "Verifying setup..."
+
+    $checks = @{
+        "Node modules" = { Test-Path (Join-Path $ProjectRoot "node_modules") }
+        "Prisma client" = { Test-Path (Join-Path $ProjectRoot "node_modules/.prisma") }
+        "Environment files" = { Test-Path (Join-Path $ProjectRoot ".env.local") }
+        "TypeScript" = { Test-Path (Join-Path $ProjectRoot "tsconfig.json") }
+    }
+
+    $allPassed = $true
+    foreach ($check in $checks.Keys) {
+        $result = & $checks[$check]
+        if ($result) {
+            Write-Success "$check"
+        } else {
+            Write-Error "$check"
+            $allPassed = $false
+        }
+    }
+
+    if ($allPassed) {
+        Write-Host ""
+        Write-Success "All checks passed!"
+    } else {
+        Write-Host ""
+        Write-Error "Some checks failed. Please review the setup."
+    }
+    Write-Host ""
+}
+
+# Main Execution Flow
+Push-Location $ProjectRoot
+
+try {
+    Test-Prerequisites
+    Setup-Environment
+    Install-Dependencies
+    Setup-Prisma
+    Setup-Docker
+    Setup-Database
+    Test-Setup
+
+    Write-Host "===================================" -ForegroundColor Cyan
+    Write-Host "       Setup Complete! 🎉          " -ForegroundColor Cyan
+    Write-Host "===================================" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Access points:" -ForegroundColor Yellow
+    Write-Host "  Web App:    http://localhost:3000" -ForegroundColor White
+    Write-Host "  API v1:     http://localhost:4001" -ForegroundColor White
+    Write-Host "  API v2:     http://localhost:4002" -ForegroundColor White
+    Write-Host "  Crawler:    http://localhost:8001" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Next steps:" -ForegroundColor Yellow
+    Write-Host "  1. Start development: pnpm dev" -ForegroundColor White
+    Write-Host "  2. Run tests: pnpm test" -ForegroundColor White
+    Write-Host "  3. View logs: pnpm logs" -ForegroundColor White
+    Write-Host ""
+    Write-Info "For Docker management, use: .\scripts\entrip.ps1"
+
+} catch {
+    Write-Error "Setup failed: $_"
+    exit 1
+} finally {
+    Pop-Location
+}

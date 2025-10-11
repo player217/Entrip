@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="28" failures="0" errors="0" time="2.482">
+  <testsuite name="DataGrid" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:15" time="1.288" tests="5">
+    <testcase classname="DataGrid renders table with columns and data" name="DataGrid renders table with columns and data" time="0.046">
+    </testcase>
+    <testcase classname="DataGrid renders empty table when no data" name="DataGrid renders empty table when no data" time="0.007">
+    </testcase>
+    <testcase classname="DataGrid handles undefined data gracefully" name="DataGrid handles undefined data gracefully" time="0.005">
+    </testcase>
+    <testcase classname="DataGrid renders with filtering enabled" name="DataGrid renders with filtering enabled" time="0.009">
+    </testcase>
+    <testcase classname="DataGrid renders with pagination enabled" name="DataGrid renders with pagination enabled" time="0.014">
+    </testcase>
+  </testsuite>
+  <testsuite name="Button" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:16" time="0.267" tests="7">
+    <testcase classname="Button renders with children" name="Button renders with children" time="0.033">
+    </testcase>
+    <testcase classname="Button applies correct variant classes" name="Button applies correct variant classes" time="0.021">
+    </testcase>
+    <testcase classname="Button applies correct size classes" name="Button applies correct size classes" time="0.011">
+    </testcase>
+    <testcase classname="Button handles click events" name="Button handles click events" time="0.014">
+    </testcase>
+    <testcase classname="Button can be disabled" name="Button can be disabled" time="0.005">
+    </testcase>
+    <testcase classname="Button shows loading state" name="Button shows loading state" time="0.007">
+    </testcase>
+    <testcase classname="Button applies fullWidth class when prop is true" name="Button applies fullWidth class when prop is true" time="0.004">
+    </testcase>
+  </testsuite>
+  <testsuite name="cn utility" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:17" time="0.139" tests="10">
+    <testcase classname="cn utility should merge single class" name="cn utility should merge single class" time="0.004">
+    </testcase>
+    <testcase classname="cn utility should merge multiple classes" name="cn utility should merge multiple classes" time="0">
+    </testcase>
+    <testcase classname="cn utility should handle conditional classes" name="cn utility should handle conditional classes" time="0">
+    </testcase>
+    <testcase classname="cn utility should handle undefined and null" name="cn utility should handle undefined and null" time="0">
+    </testcase>
+    <testcase classname="cn utility should merge Tailwind conflicts correctly" name="cn utility should merge Tailwind conflicts correctly" time="0.001">
+    </testcase>
+    <testcase classname="cn utility should handle arrays" name="cn utility should handle arrays" time="0">
+    </testcase>
+    <testcase classname="cn utility should handle objects" name="cn utility should handle objects" time="0.001">
+    </testcase>
+    <testcase classname="cn utility should handle empty inputs" name="cn utility should handle empty inputs" time="0.001">
+    </testcase>
+    <testcase classname="cn utility should handle complex combinations" name="cn utility should handle complex combinations" time="0">
+    </testcase>
+    <testcase classname="cn utility should trim extra whitespace" name="cn utility should trim extra whitespace" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Input" errors="0" failures="0" skipped="0" timestamp="2025-10-08T07:33:17" time="0.17" tests="6">
+    <testcase classname="Input renders input element" name="Input renders input element" time="0.003">
+    </testcase>
+    <testcase classname="Input renders label when provided" name="Input renders label when provided" time="0.002">
+    </testcase>
+    <testcase classname="Input displays error message" name="Input displays error message" time="0.003">
+    </testcase>
+    <testcase classname="Input displays hint text" name="Input displays hint text" time="0.002">
+    </testcase>
+    <testcase classname="Input disables input when disabled prop is true" name="Input disables input when disabled prop is true" time="0.002">
+    </testcase>
+    <testcase classname="Input applies correct type attribute" name="Input applies correct type attribute" time="0.002">
+    </testcase>
+  </testsuite>
+</testsuites>

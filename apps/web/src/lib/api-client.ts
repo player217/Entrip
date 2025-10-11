@@ -23,7 +23,7 @@ const isServer = typeof window === 'undefined';
 // Base URL configuration
 const getBaseURL = (): string => {
   if (isServer) {
-    // Server-side: Direct Docker network communication
+    // Server-side: default to legacy v1 internal API; requests to /api/v2 are rerouted in the interceptor
     return process.env.INTERNAL_API_URL || 'http://api:4000';
   } else {
     // Client-side: Use Next.js API routes as proxy
@@ -65,6 +65,14 @@ const createApiClient = (): AxiosInstance => {
       
       // Ensure cookies are sent with every request
       config.withCredentials = true;
+
+      // On the server, route /api/v2/* directly to v2 internal service to avoid double-proxy and wrong base
+      if (isServer && typeof config.url === 'string' && config.url.startsWith('/api/v2')) {
+        const base = process.env.INTERNAL_API_V2_URL
+          || process.env.API_V2_URL
+          || 'http://api-v2:4000';
+        config.baseURL = base;
+      }
 
       // Log request in development
       if (process.env.NODE_ENV === 'development') {

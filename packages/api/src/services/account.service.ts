@@ -166,8 +166,8 @@ export const createAccount = async (dto: AccountCreateDto): Promise<Account> => 
       name: dto.name,
       email: dto.email,
       phone: dto.phone,
-      role: dto.role || 'staff',
-      status: dto.status || 'active',
+      role: dto.role || AccountRole.STAFF,
+      status: dto.status || AccountStatus.ACTIVE,
       passwordHash: dto.passwordHash,
     },
     select: {
@@ -249,7 +249,7 @@ export const deleteAccount = async (id: string): Promise<Account> => {
     where: { id },
     data: { 
       deletedAt: new Date(),
-      status: 'deleted',
+      status: AccountStatus.DELETED,
     },
     select: {
       id: true,
@@ -352,7 +352,7 @@ export const getAccountsByRole = async (role: AccountRole): Promise<Account[]> =
     where: {
       deletedAt: null,
       role,
-      status: 'active', // Only active accounts
+      status: AccountStatus.ACTIVE, // Only active accounts
     },
     select: {
       id: true,

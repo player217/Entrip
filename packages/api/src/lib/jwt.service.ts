@@ -24,6 +24,15 @@ export class JWTService {
   }
 
   /**
+   * Convenience: generate both access and refresh tokens from a payload
+   */
+  generateTokens<T extends object>(payload: T): { accessToken: string; refreshToken: string } {
+    const accessToken = this.signAccessToken(payload);
+    const refreshToken = this.signRefreshToken({ id: (payload as any).id, email: (payload as any).email, companyCode: (payload as any).companyCode });
+    return { accessToken, refreshToken };
+  }
+
+  /**
    * Sign an access token with proper type safety
    */
   signAccessToken<T extends object>(payload: T): string {

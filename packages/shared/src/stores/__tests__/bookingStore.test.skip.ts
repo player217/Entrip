@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useBookingStore } from '../bookingStore';
+import { useBookingStore } from '../booking-store';
 import { bookingService } from '../../services/bookingService';
 import type { Booking, NewTeamPayload } from '../../types/booking';
 

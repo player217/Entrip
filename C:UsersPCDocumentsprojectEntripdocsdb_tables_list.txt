@@ -1,0 +1,37 @@
+       table_name        
+-------------------------
+ Account
+ Approval
+ ApprovalStep
+ AuditLog
+ Booking
+ BookingHistory
+ CalendarEvent
+ Conversation
+ ConversationParticipant
+ ConversationSettings
+ Document
+ ExchangeRate
+ ExternalCallLog
+ FinanceRecord
+ Flight
+ FlightStatusCache
+ FxRateCache
+ Hotel
+ IdempotencyKey
+ IntegrationInbox
+ IntegrationProvider
+ Message
+ MessageAttachment
+ MessageReaction
+ MessageRead
+ Outbox
+ Settlement
+ SystemMessage
+ Transaction
+ User
+ UserPresence
+ Vehicle
+ _prisma_migrations
+(33 rows)
+

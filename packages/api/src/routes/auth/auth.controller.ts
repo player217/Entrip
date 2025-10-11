@@ -77,11 +77,8 @@ export class AuthController {
 
       res.json({
         success: true,
-        data: {
-          user: result.user,
-          // Tokens are set as HttpOnly cookies, not returned in response
-        },
-        message: 'Login successful',
+        user: result.user,
+        message: '로그인 성공',
       });
     } catch (error) {
       next(error);

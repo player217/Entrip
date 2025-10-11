@@ -6,6 +6,7 @@
 # Node modules
 node_modules
 **/node_modules
+.pnpm-store
 **/.pnpm-store
 
 # Logs
@@ -76,7 +77,11 @@ compose*.yml
 
 # Scripts (except needed ones)
 scripts/**
-!scripts/postinstall.js
+!scripts/wait-for-postgres.sh
+!scripts/docker-entrypoint.sh
+!scripts/docker-entrypoint-v2.sh
+!scripts/test-db.prepare.sh
+!scripts/test-notifications.nojq.sh
 
 # Storybook
 .storybook

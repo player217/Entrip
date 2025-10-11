@@ -1,0 +1,19 @@
+{
+  "name": "@entrip/fx-free",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lightweight free FX proxy with multi-provider fallback and caching",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
+
