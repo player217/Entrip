@@ -101,7 +101,7 @@ jobs:
         echo "All data consistency checks passed successfully." >> data-report.md
 
     - name: Upload data report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: data-consistency-report-node-${{ matrix.node-version }}
         path: apps/api-legacy/data-report.md
@@ -200,7 +200,7 @@ jobs:
         echo "Company isolation tests passed"
 
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: company-isolation-test-results
