@@ -98,6 +98,9 @@ curl "http://localhost:3000/api/exchange" | jq .
   - `powershell -ExecutionPolicy Bypass -File scripts/verify-v2-targets.ps1 -TargetsFile <private-targets.json>`
 - Output report:
   - `artifacts/v2-gates/v2-gates-<timestamp>.md`
+- Optional daily automation:
+  - workflow: `.github/workflows/v2-cutover-daily-evidence.yml`
+  - required secrets: `STAGING_URL`, `STAGING_DATABASE_URL`, `PRODUCTION_URL`, `PRODUCTION_DATABASE_URL`
 
 ### Rollback policy
 - Do not re-enable v1 fallback flags.

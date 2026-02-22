@@ -24,7 +24,7 @@
     "status": "node scripts/check-status.js",
     "ops:rebuild:v2": "powershell -ExecutionPolicy Bypass -File scripts/rebuild-v2-stack.ps1",
     "ops:rebuild:v2:prune": "powershell -ExecutionPolicy Bypass -File scripts/rebuild-v2-stack.ps1 -PruneUnusedNetworks",
-    "ops:verify:v2:targets": "powershell -ExecutionPolicy Bypass -File scripts/verify-v2-targets.ps1 -TargetsFile scripts/config/v2-gate-targets.example.json",
+    "ops:verify:v2:targets": "powershell -ExecutionPolicy Bypass -File scripts/verify-v2-targets.ps1 -TargetsFile scripts/config/v2-gate-targets.local.json",
     "verify:v2-cutover": "node scripts/verify-v2-cutover.mjs",
     "verify:schema:v2": "node scripts/verify-v2-schema.mjs",
     "verify:schema:v2:db": "node scripts/verify-v2-schema.mjs --with-db",

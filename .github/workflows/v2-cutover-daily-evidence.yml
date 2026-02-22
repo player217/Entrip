@@ -1,0 +1,82 @@
+name: V2 Cutover Daily Evidence
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 22 * * *"
+
+jobs:
+  collect-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build targets file from secrets
+        shell: bash
+        env:
+          STAGING_URL: ${{ secrets.STAGING_URL }}
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          mkdir -p scripts/config
+          tmp="scripts/config/v2-gate-targets.ci.json"
+          echo "[" > "$tmp"
+          added=0
+          append_target() {
+            local name="$1"
+            local base="$2"
+            local db="$3"
+            if [ -n "$base" ] && [ -n "$db" ]; then
+              if [ "$added" -gt 0 ]; then echo "," >> "$tmp"; fi
+              cat >> "$tmp" <<EOF
+  {
+    "name": "$name",
+    "smokeBaseUrl": "$base",
+    "databaseUrl": "$db"
+  }
+EOF
+              added=$((added + 1))
+            fi
+          }
+          append_target "staging" "${STAGING_URL:-}" "${STAGING_DATABASE_URL:-}"
+          append_target "production" "${PRODUCTION_URL:-}" "${PRODUCTION_DATABASE_URL:-}"
+          echo "]" >> "$tmp"
+
+          if [ "$added" -eq 0 ]; then
+            echo "No valid targets found. Set STAGING/PRODUCTION URL and DATABASE_URL secrets."
+            exit 1
+          fi
+
+          echo "Created targets file with $added target(s)."
+
+      - name: Run v2 target gates
+        shell: pwsh
+        run: |
+          powershell -ExecutionPolicy Bypass -File scripts/verify-v2-targets.ps1 `
+            -TargetsFile scripts/config/v2-gate-targets.ci.json `
+            -SkipCutover
+
+      - name: Upload evidence report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-cutover-daily-evidence
+          path: artifacts/v2-gates/*.md
+          if-no-files-found: warn

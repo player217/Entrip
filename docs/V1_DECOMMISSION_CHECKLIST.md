@@ -97,3 +97,6 @@
 - Use `scripts/verify-v2-targets.ps1` to run target-by-target schema/smoke gates and emit timestamped evidence:
   - `powershell -ExecutionPolicy Bypass -File scripts/verify-v2-targets.ps1 -TargetsFile <private-targets.json>`
   - report: `artifacts/v2-gates/v2-gates-<timestamp>.md`
+- Daily CI evidence collection:
+  - workflow: `.github/workflows/v2-cutover-daily-evidence.yml`
+  - required secrets per target: `<TARGET>_URL`, `<TARGET>_DATABASE_URL`
