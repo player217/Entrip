@@ -9,7 +9,7 @@
     "target": "es2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
-    "noEmit": true,
+    "noEmit": false,
     "module": "esnext",
     "jsx": "preserve",
     "incremental": true,
@@ -21,17 +21,17 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "@entrip/ui": ["../../packages/ui/src/index.ts"],
       "@entrip/ui/*": ["../../packages/ui/src/*"],
       "@entrip/shared/*": ["../../packages/shared/src/*"]
     },
     "types": ["jest", "node"]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", ".next", "out", "tests/**/*", "**/*.spec.ts", "**/*.test.ts"],
+  "exclude": ["node_modules", ".next", "out", "dist", "tests/**/*", "**/*.spec.ts", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.tsx"],
   "references": [
     { "path": "../../packages/shared" },
     { "path": "../../packages/design-tokens" },
-    { "path": "../../packages/ui" },
-    { "path": "../../packages/api" }
+    { "path": "../../packages/ui" }
   ]
 }

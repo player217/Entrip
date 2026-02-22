@@ -23,100 +23,187 @@ enum UserRole {
 }
 
 enum PresenceStatus {
-  online
-  away
-  busy
-  offline
+  ONLINE
+  AWAY
+  BUSY
+  OFFLINE
 }
 
 enum BookingType {
-  incentive
-  golf
-  honeymoon
-  airtel
-  etc
+  PACKAGE
+  FIT
+  GROUP
+  BUSINESS
+  INCENTIVE
 }
 
 enum BookingStatus {
-  pending
-  confirmed
-  done
-  cancelled
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  CANCELLED
+  COMPLETED
 }
 
 enum CalendarEventStatus {
-  pending
-  confirmed
-  cancelled
+  PENDING
+  CONFIRMED
+  CANCELLED
 }
 
 enum FinanceType {
-  income
-  expense
+  INCOME
+  EXPENSE
 }
 
 enum FinanceStatus {
-  pending
-  approved
-  rejected
-  deleted
+  PENDING
+  APPROVED
+  REJECTED
+  DELETED
 }
 
 enum ApprovalStatus {
-  pending
-  approved
-  rejected
-  cancelled
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
 }
 
-enum ApprovalTargetType {
-  finance
-  custom
+enum ApprovalType {
+  BOOKING
+  PAYMENT
+  REFUND
+  MISC
 }
 
 enum ApprovalAction {
-  approve
-  reject
+  APPROVE
+  REJECT
 }
 
 enum AccountRole {
-  admin
-  approver
-  staff
-  viewer
+  ADMIN
+  APPROVER
+  STAFF
+  VIEWER
 }
 
 enum AccountStatus {
-  active
-  suspended
-  deleted
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum FlightStatus {
+  SCHEDULED
+  DELAYED
+  CANCELLED
+  BOARDING
+  DEPARTED
+  ARRIVED
+}
+
+enum VehicleType {
+  SEDAN
+  SUV
+  VAN
+  BUS
+  MINIBUS
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+  RESERVED
+}
+
+enum HotelStatus {
+  RESERVED
+  CONFIRMED
+  CHECKEDIN
+  CHECKEDOUT
+  CANCELLED
+}
+
+enum SettlementType {
+  INCOME
+  EXPENSE
+}
+
+enum SystemMessageType {
+  INFO
+  WARNING
+  ERROR
+  SUCCESS
+  ANNOUNCEMENT
+}
+
+enum NotificationChannel {
+  PUSH
+  EMAIL
+  SMS
+  IN_APP
+}
+
+enum NotificationType {
+  BOOKING_CREATED
+  BOOKING_UPDATED
+  BOOKING_CANCELLED
+  MESSAGE_RECEIVED
+  APPROVAL_REQUESTED
+  APPROVAL_APPROVED
+  APPROVAL_REJECTED
+  PAYMENT_RECEIVED
+  SYSTEM_ALERT
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum ProviderStatus {
+  HEALTHY
+  DEGRADED
+  DOWN
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER_IN
+  TRANSFER_OUT
 }
 
 enum ConversationType {
-  direct
-  group
-  channel
+  DIRECT
+  GROUP
+  CHANNEL
 }
 
 enum MessageType {
-  text
-  image
-  file
-  system
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
 }
 
 enum MessageStatus {
-  sent
-  delivered
-  read
-  deleted
+  SENT
+  DELIVERED
+  READ
+  DELETED
 }
 
 enum ParticipantRole {
-  owner
-  admin
-  member
-  viewer
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
 }
 
 // ============================================
@@ -165,9 +252,18 @@ model User {
   participants    ConversationParticipant[]
   invitedParticipants ConversationParticipant[] @relation("InvitedBy")
   createdConversations Conversation[] @relation("ConversationCreator")
+  systemMessages  SystemMessage[] @relation("SystemMessageCreator")
 
   // Presence
   presence        UserPresence?
+
+  // Additional Relations for new models
+  transactions    Transaction[]
+  uploadedDocs    Document[]      @relation("DocumentUploader")
+
+  // Notification Relations
+  notifications   Notification[]
+  notificationPreference NotificationPreference?
 
   // Indexes
   @@unique([email, companyCode]) // Unique email per company
@@ -178,48 +274,84 @@ model User {
 
 model Booking {
   // Primary ID
-  id          String        @id @default(cuid())
+  id              String        @id @default(cuid())
+  bookingNumber   String        @unique // Unique booking number
 
   // Basic Information
-  teamName    String        // @db.VarChar(100) - SQLite doesn't support this
-  type        BookingType
-  origin      String        // @db.VarChar(60)
-  destination String        // @db.VarChar(60)
-  startDate   DateTime
-  endDate     DateTime
+  teamName        String        // Team/Group name
+  teamType        String?       // Type of team (family, business, etc.)
+  type            BookingType   // Booking type (incentive, golf, etc.)
+  origin          String        // Origin city/location
+  destination     String        // Destination city/location
+  startDate       DateTime
+  endDate         DateTime
+  nights          Int?          // Number of nights
+  days            Int?          // Number of days
+
+  // Customer Information
+  customerName    String?       // Primary customer name
+  representative  String?       // Representative name
+  contact         String?       // Contact number
+  email           String?       // Contact email
 
   // Passenger Information
-  totalPax    Int           @default(1)
+  totalPax        Int           @default(1) // Total passenger count
+  paxCount        Int?          // Alternative field for passenger count
 
   // Coordination
-  coordinator String        // @db.VarChar(60)
+  coordinator     String        // Coordinator name
+  manager         String?       // Manager name
 
   // Financial
-  revenue     Decimal?      // @db.Numeric(14, 2) - SQLite uses REAL
+  revenue         Decimal?      // Revenue amount
+  totalPrice      Decimal?      // Total price
+  depositAmount   Decimal?      // Deposit amount
+  currency        String        @default("KRW")
+
+  // Detail Information (JSON for flexibility, will be migrated to relations)
+  flightInfo      Json?         // Flight details JSON
+  hotelInfo       Json?         // Hotel details JSON
+  vehicleInfo     Json?         // Vehicle details JSON
+  insuranceInfo   Json?         // Insurance details JSON
 
   // Additional Information
-  notes       String?       // @db.Text
-  status      BookingStatus @default(pending)
+  notes           String?       // Internal notes
+  memo            String?       // External memo
+  status          BookingStatus @default(PENDING)
 
   // Multi-tenancy and User Relations
-  companyCode String        @default("ENTRIP_MAIN")
-  userId      String?       // Creator of the booking
+  companyCode     String        @default("ENTRIP_MAIN")
+  userId          String?       // Creator of the booking
+  createdBy       String?       // Alternative creator field
+  updatedBy       String?       // Last updater
 
-  // Audit Fields (Common to all models)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  deletedAt   DateTime?     // For soft delete
+  // Version control for optimistic locking
+  version         Int           @default(1)
+
+  // Audit Fields
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?     // For soft delete
 
   // Relations
-  user        User?         @relation(fields: [userId], references: [id])
-  history     BookingHistory[]
+  user            User?         @relation(fields: [userId], references: [id])
+  history         BookingHistory[]
+  flights         Flight[]      // Related flight records
+  hotels          Hotel[]       // Related hotel records
+  vehicles        Vehicle[]     // Related vehicle records
+  settlements     Settlement[]  // Related settlements
+  transactions    Transaction[]  // Related transactions
+  documents       Document[]     // Related documents
 
   // Indexes
+  @@index([bookingNumber])
   @@index([status])
   @@index([startDate, endDate])
   @@index([createdAt])
   @@index([companyCode, status])
   @@index([companyCode, startDate])
+  @@index([customerName])
+  @@index([teamName])
 }
 
 model CalendarEvent {
@@ -240,7 +372,7 @@ model CalendarEvent {
   color       String?             // HEX color (e.g., "#2563EB")
 
   // Status and Organization
-  status      CalendarEventStatus @default(confirmed)
+  status      CalendarEventStatus @default(CONFIRMED)
 
   // Multi-tenancy and User Relations
   companyCode String              @default("ENTRIP_MAIN")
@@ -285,7 +417,7 @@ model FinanceRecord {
   updatedBy     String?       // User ID who last updated this record
 
   // Approval Workflow
-  status        FinanceStatus @default(pending)
+  status        FinanceStatus @default(PENDING)
   approvedBy    String?       // User ID who approved
   approvedAt    DateTime?     // When it was approved
   rejectedBy    String?       // User ID who rejected
@@ -316,7 +448,7 @@ model Approval {
   // Request Information
   title       String              // Approval request title
   content     String              // Detailed request content
-  targetType  ApprovalTargetType  // Type of target being approved
+  targetType  ApprovalType        // Type of target being approved
   targetId    String?             // ID of the target (e.g., finance record ID)
 
   // Financial Information (optional, synced from target)
@@ -324,7 +456,7 @@ model Approval {
   currency    String              @default("KRW") // Currency code
 
   // Approval Flow
-  status      ApprovalStatus      @default(pending)
+  status      ApprovalStatus      @default(PENDING)
   currentStep Int                 @default(0) // Current approval step index
   requesterId String              // User who requested approval
 
@@ -386,8 +518,8 @@ model Account {
   phone     String?       // Optional phone number
 
   // Role and Status
-  role      AccountRole   @default(staff)
-  status    AccountStatus @default(active)
+  role      AccountRole   @default(STAFF)
+  status    AccountStatus @default(ACTIVE)
 
   // Multi-tenancy and User Relations
   companyCode String      @default("ENTRIP_MAIN")
@@ -404,6 +536,7 @@ model Account {
 
   // Relations
   creator   User?         @relation("AccountCreator", fields: [createdBy], references: [id])
+  transactions Transaction[] // Account transactions
 
   // Indexes
   @@unique([email, companyCode]) // Email unique within company
@@ -419,7 +552,7 @@ model Conversation {
 
   // Basic Information
   name        String?           // Optional name for group conversations
-  type        ConversationType  @default(direct)
+  type        ConversationType  @default(DIRECT)
   description String?           // Optional description
 
   // Configuration
@@ -433,6 +566,7 @@ model Conversation {
   participants ConversationParticipant[]
   messages    Message[]
   creator     User?             @relation("ConversationCreator", fields: [createdBy], references: [id])
+  settings    ConversationSettings?
 
   // Metadata
   lastActivity DateTime         @default(now())
@@ -463,7 +597,7 @@ model ConversationParticipant {
   inviter       User?           @relation("InvitedBy", fields: [invitedBy], references: [id])
 
   // Participant Configuration
-  role          ParticipantRole @default(member)
+  role          ParticipantRole @default(MEMBER)
   nickname      String?         // Custom nickname in this conversation
 
   // Status
@@ -499,9 +633,9 @@ model Message {
   sender        User          @relation("SentMessages", fields: [senderId], references: [id])
 
   // Message Content
-  type          MessageType   @default(text)
+  type          MessageType   @default(TEXT)
   content       String        // Message text or JSON for rich content
-  attachments   Json?         // File attachments metadata
+  metadata      Json?         // Additional metadata (including legacy attachments)
 
   // Threading
   replyToId     String?       // Reference to parent message
@@ -509,7 +643,7 @@ model Message {
   replies       Message[]     @relation("MessageReplies")
 
   // Status and Metadata
-  status        MessageStatus @default(sent)
+  status        MessageStatus @default(SENT)
   isEdited      Boolean       @default(false)
   editedAt      DateTime?     // When message was last edited
 
@@ -521,6 +655,7 @@ model Message {
   // Additional tracking relations
   reads         MessageRead[]
   reactions     MessageReaction[]
+  attachments   MessageAttachment[]
 
   // Indexes
   @@index([conversationId, createdAt])
@@ -558,7 +693,7 @@ model BookingHistory {
 model UserPresence {
   id              String          @id @default(cuid())
   userId          String          @unique
-  status          PresenceStatus  @default(offline)
+  status          PresenceStatus  @default(OFFLINE)
   lastSeenAt      DateTime        @default(now())
   statusMessage   String?
 
@@ -597,4 +732,448 @@ model MessageReaction {
 
   @@unique([messageId, userId, emoji])
   @@index([messageId])
+}
+
+// Flight information model
+model Flight {
+  id              String          @id @default(cuid())
+  bookingId       String?         // Optional relation to booking
+  flightNumber    String          // e.g., "KE001"
+  airline         String          // e.g., "Korean Air"
+  origin          String          // Airport code (e.g., "ICN")
+  destination     String          // Airport code (e.g., "NRT")
+  departureTime   DateTime
+  arrivalTime     DateTime
+  status          FlightStatus    @default(SCHEDULED)
+  gate            String?         // Gate number
+  terminal        String?         // Terminal info
+  seatNumbers     String[]        // Array of seat numbers
+  paxCount        Int             @default(1)
+  confirmationNo  String?         // Airline confirmation number
+  notes           String?
+  companyCode     String          @default("ENTRIP_MAIN")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  deletedAt       DateTime?       // For soft delete
+
+  // Relations
+  booking         Booking?        @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+  @@index([flightNumber])
+  @@index([departureTime])
+  @@index([companyCode])
+}
+
+// Vehicle information for ground transportation
+model Vehicle {
+  id              String          @id @default(cuid())
+  bookingId       String?         // Optional relation to booking
+  type            VehicleType
+  licensePlate    String?         // Vehicle license plate
+  driverName      String?         // Driver name
+  driverContact   String?         // Driver contact number
+  pickupLocation  String          // Pickup location
+  dropoffLocation String          // Drop-off location
+  pickupTime      DateTime
+  dropoffTime     DateTime?
+  passengerCount  Int             @default(1)
+  status          VehicleStatus   @default(RESERVED)
+  cost            Decimal?        // Cost in local currency
+  currency        String          @default("KRW")
+  notes           String?
+  companyCode     String          @default("ENTRIP_MAIN")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  deletedAt       DateTime?       // For soft delete
+
+  // Relations
+  booking         Booking?        @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+  @@index([pickupTime])
+  @@index([status])
+  @@index([companyCode])
+}
+
+// Hotel reservation information
+model Hotel {
+  id              String          @id @default(cuid())
+  bookingId       String?         // Optional relation to booking
+  hotelName       String          // Hotel name
+  address         String          // Hotel address
+  city            String          // City
+  country         String          // Country
+  checkInDate     DateTime
+  checkOutDate    DateTime
+  roomType        String?         // e.g., "Double", "Suite"
+  roomCount       Int             @default(1)
+  guestCount      Int             @default(1)
+  confirmationNo  String?         // Hotel confirmation number
+  status          HotelStatus     @default(RESERVED)
+  ratePerNight    Decimal?        // Rate per night
+  totalAmount     Decimal?        // Total amount
+  currency        String          @default("KRW")
+  breakfast       Boolean         @default(false)
+  notes           String?
+  companyCode     String          @default("ENTRIP_MAIN")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  deletedAt       DateTime?       // For soft delete
+
+  // Relations
+  booking         Booking?        @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+  @@index([checkInDate, checkOutDate])
+  @@index([status])
+  @@index([companyCode])
+}
+
+// 정산 정보
+model Settlement {
+  id              String          @id @default(cuid())
+  bookingId       String          // FK to Booking
+
+  // 정산 정보
+  type            SettlementType  // 입금/출금 (필수)
+  currency        String          // 통화 (필수, 3글자 코드)
+  amount          Decimal         // 금액 (필수, 소수점 2자리)
+  exchangeRate    Decimal?        // 환율 (선택)
+  quantity        Int?            // 수량 (선택)
+  unitPrice       Decimal?        // 단가 (선택)
+  memo            String?         // 메모 (선택)
+
+  // 메타데이터
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  version         Int             @default(1) // Optimistic locking
+
+  // Relations
+  booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([type, currency])
+}
+
+// System messages for announcements and notifications
+model SystemMessage {
+  id              String              @id @default(cuid())
+  type            SystemMessageType   @default(INFO)
+  title           String              // Message title
+  content         String              // Message content
+  priority        Int                 @default(0) // Higher number = higher priority
+  isActive        Boolean             @default(true)
+  targetAudience  String[]            // Target user roles or groups
+  expiresAt       DateTime?           // When message expires
+  companyCode     String              @default("ENTRIP_MAIN")
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  createdBy       String?             // Admin who created the message
+
+  // Relations
+  creator         User?               @relation("SystemMessageCreator", fields: [createdBy], references: [id])
+
+  @@index([type])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@index([companyCode])
+}
+
+// Conversation settings for advanced configuration
+model ConversationSettings {
+  id                  String          @id @default(cuid())
+  conversationId      String          @unique
+  allowFileSharing    Boolean         @default(true)
+  allowVoiceMessages  Boolean         @default(true)
+  allowReactions      Boolean         @default(true)
+  maxFileSize         Int             @default(10485760) // 10MB default
+  messageRetention    Int             @default(365) // Days to retain messages
+  autoArchiveAfter    Int?            // Days of inactivity before auto-archive
+  defaultNotification Boolean         @default(true)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  // Relations
+  conversation        Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+// ==================== 추가 모델들 ====================
+
+// 거래 내역
+model Transaction {
+  id                  String          @id @default(cuid())
+  transactionNumber   String          @unique
+  type                TransactionType
+  amount              Decimal
+  currency            String
+  exchangeRate        Decimal?
+  description         String
+
+  // 계좌 정보
+  accountId           String
+  counterparty        String?
+
+  // 연관 데이터
+  bookingId           String?
+  userId              String
+
+  // 메타데이터
+  transactionDate     DateTime        @default(now())
+  createdAt           DateTime        @default(now())
+  version             Int             @default(1) // Optimistic locking
+
+  // Relations
+  account             Account         @relation(fields: [accountId], references: [id])
+  booking             Booking?        @relation(fields: [bookingId], references: [id])
+  user                User            @relation(fields: [userId], references: [id])
+
+  @@index([accountId])
+  @@index([bookingId])
+  @@index([userId, transactionDate])
+}
+
+// 문서 관리
+model Document {
+  id                  String          @id @default(cuid())
+  documentNumber      String          @unique
+  type                String          // invoice, receipt, contract, etc.
+  title               String
+  description         String?
+  filePath            String
+  fileSize            Int
+  mimeType            String
+
+  // 연관 데이터
+  bookingId           String?
+  uploadedBy          String
+
+  // 메타데이터
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  // Relations
+  booking             Booking?        @relation(fields: [bookingId], references: [id])
+  uploader            User            @relation("DocumentUploader", fields: [uploadedBy], references: [id])
+
+  @@index([bookingId])
+  @@index([uploadedBy])
+  @@index([type])
+}
+
+// 중복 생성 방지용 멱등성 키 저장 테이블
+model IdempotencyKey {
+  id                  String          @id @default(cuid())
+  key                 String          @unique
+  endpoint            String
+  requestHash         String
+  responseBody        Json?
+  createdAt           DateTime        @default(now())
+  ttl                 DateTime        // 만료 시 정리
+
+  @@index([endpoint, ttl])
+  @@index([createdAt])
+}
+
+// 소켓/외부연동 안전 전송을 위한 outbox
+model Outbox {
+  id                  String          @id @default(cuid())
+  topic               String
+  payload             Json
+  createdAt           DateTime        @default(now())
+  deliveredAt         DateTime?
+  attempts            Int             @default(0)
+
+  @@index([topic, deliveredAt])
+  @@index([createdAt])
+  @@index([attempts])
+}
+
+// 감사 로그
+model AuditLog {
+  id                  String          @id @default(cuid())
+  actorId             String?
+  action              String
+  entity              String
+  entityId            String?
+  detail              Json?
+  createdAt           DateTime        @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([entity, entityId])
+  @@index([action, createdAt])
+}
+
+// 외부 연동 공급자 상태 관리
+model IntegrationProvider {
+  id                  String          @id @default(cuid())
+  name                String          @unique // "fx_primary", "fx_secondary", "kac", "odcloud", etc.
+  baseUrl             String
+  status              ProviderStatus  @default(HEALTHY)
+  lastSuccessAt       DateTime?
+  lastErrorAt         DateTime?
+  errorCount          Int             @default(0)
+  circuitOpenUntil    DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  version             Int             @default(1) // Optimistic locking
+
+  @@index([status, circuitOpenUntil])
+}
+
+// 외부 API 호출 로그
+model ExternalCallLog {
+  id                  String          @id @default(cuid())
+  providerName        String
+  endpoint            String
+  method              String
+  statusCode          Int?
+  errorType           String?         // TIMEOUT, 429, 5XX, 4XX, PARSE, etc.
+  durationMs          Int
+  requestHash         String          // 요청 본문+쿼리 해시
+  occurredAt          DateTime        @default(now())
+
+  @@index([providerName, occurredAt])
+  @@index([statusCode, occurredAt])
+  @@index([errorType, occurredAt])
+}
+
+// 환율 캐시 (기존 ExchangeRate을 보완)
+model FxRateCache {
+  id                  String          @id @default(cuid())
+  base                String
+  quote               String
+  rate                Decimal         // @db.Decimal(18,6)
+  source              String          // provider name
+  fetchedAt           DateTime
+  ttlSec              Int             @default(86400) // 24h default
+
+  @@unique([base, quote])
+  @@index([base, fetchedAt])
+  @@index([fetchedAt, ttlSec])
+}
+
+// ============================================
+// ADDITIONAL MISSING MODELS FROM V1
+// ============================================
+
+// Exchange rate management
+model ExchangeRate {
+  id              String          @id @default(cuid())
+  fromCurrency    String
+  toCurrency      String
+  rate            Decimal
+  validFrom       DateTime
+  validUntil      DateTime
+  source          String          @default("MANUAL")
+
+  @@unique([fromCurrency, toCurrency, validFrom])
+  @@index([validFrom, validUntil])
+}
+
+// Flight status caching
+model FlightStatusCache {
+  id        String   @id @default(cuid())
+  flightNo  String
+  date      DateTime
+  payload   Json     // 전체 응답 데이터
+  status    String   // SCHEDULED, DELAYED, CANCELED, etc.
+  source    String   // provider name (kac, odcloud, etc.)
+  fetchedAt DateTime
+  ttlSec    Int      @default(300) // 5min default
+
+  @@unique([flightNo, date])
+  @@index([flightNo, fetchedAt])
+  @@index([fetchedAt, ttlSec])
+  @@index([status])
+}
+
+// External event deduplication
+model IntegrationInbox {
+  id          String   @id @default(cuid())
+  messageKey  String   @unique  // 공급자+메시지ID 조합
+  provider    String   // provider name
+  eventType   String   // event type
+  payload     Json?    // event payload
+  processedAt DateTime?
+  receivedAt  DateTime @default(now())
+
+  @@index([provider, eventType])
+  @@index([processedAt])
+  @@index([receivedAt])
+}
+
+// Message attachments (from messaging system)
+model MessageAttachment {
+  id              String          @id @default(cuid())
+  messageId       String
+  fileName        String
+  fileUrl         String
+  fileType        String
+  fileSize        Int
+  thumbnailUrl    String?         // 이미지/비디오 썸네일
+  createdAt       DateTime        @default(now())
+
+  // Relations
+  message         Message         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+}
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+model Notification {
+  id              String                @id @default(cuid())
+  companyCode     String
+  userId          String
+  type            NotificationType
+  priority        NotificationPriority  @default(NORMAL)
+  title           String
+  message         String
+  data            Json?                 // Additional data (booking ID, message ID, etc.)
+  isRead          Boolean               @default(false)
+  readAt          DateTime?
+  channel         NotificationChannel   @default(IN_APP)
+  linkUrl         String?               // Deep link URL
+  expiresAt       DateTime?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  deletedAt       DateTime?
+
+  // Relations
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([companyCode])
+  @@index([createdAt])
+  @@index([expiresAt])
+}
+
+model NotificationPreference {
+  id              String                @id @default(cuid())
+  userId          String                @unique
+  companyCode     String
+
+  // Channel preferences
+  pushEnabled     Boolean               @default(true)
+  emailEnabled    Boolean               @default(true)
+  smsEnabled      Boolean               @default(false)
+  inAppEnabled    Boolean               @default(true)
+
+  // Type preferences
+  bookingNotifications    Boolean       @default(true)
+  messageNotifications    Boolean       @default(true)
+  approvalNotifications   Boolean       @default(true)
+  paymentNotifications    Boolean       @default(true)
+  systemNotifications     Boolean       @default(true)
+
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  // Relations
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([companyCode])
 }

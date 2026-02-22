@@ -1,0 +1,3 @@
+const DEFAULT_TEST_TIMEOUT_MS = 60000;
+
+jest.setTimeout(DEFAULT_TEST_TIMEOUT_MS);

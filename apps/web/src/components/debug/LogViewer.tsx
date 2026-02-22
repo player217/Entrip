@@ -18,6 +18,9 @@ export function LogViewer({ className, maxLogs = 100 }: LogViewerProps) {
   const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
 
   useEffect(() => {
+    // 테스트 환경(jsdom)에서는 setInterval에 따른 act 경고를 피하기 위해 폴링을 비활성화
+    if (process.env.NODE_ENV === 'test') return;
+
     if (isOpen) {
       const interval = setInterval(() => {
         const recentLogs = logger.getRecentLogs(maxLogs);

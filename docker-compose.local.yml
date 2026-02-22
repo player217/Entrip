@@ -1,4 +1,4 @@
-version: "3.8"
+﻿version: "3.8"
 
 services:
   postgres:
@@ -18,15 +18,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Legacy API (apps/api) - v1
+  # Legacy API (apps/api-legacy) - v1
   api:
+    profiles: [legacy]
     build:
       context: .
-      dockerfile: apps/api/Dockerfile
-    container_name: entrip-api-local
+      dockerfile: apps/api-legacy/Dockerfile
+    container_name: entrip-api-legacy-local
     environment:
       DATABASE_URL: postgres://entrip:entrip@postgres:5432/entrip
       PORT: 4000
+      # Optional fx-free fallback URL for v1 FX service (Option C)
+      FX_FREE_URL: http://fx-free:4010
       MONITORING_ENABLED: true
       MONITORING_INTERVAL: 30
       MONITORING_AUTOFIX: true
@@ -53,27 +56,36 @@ services:
       dockerfile: packages/api/Dockerfile
       target: production
     container_name: entrip-api-v2-local
+    env_file:
+      - .env.local
     # Production container runs from compiled JavaScript
     environment:
       DATABASE_URL: postgres://entrip:entrip@postgres:5432/entrip
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-super-secret-refresh-key-change-in-production}
       JWT_EXPIRES_IN: 24h
-      PORT: 4005
+      PORT: 4000
       NODE_ENV: production
       FRONT_URL: ${FRONT_URL:-http://localhost:3000}
       # API v2 specific settings
       LOG_LEVEL: ${LOG_LEVEL:-info}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      # FX (free providers) feature gate and tuning
+      FX_ENABLE: ${FX_ENABLE:-true}
+      # Shorter TTL locally for closer parity during manual checks
+      FX_TTL_SEC: ${FX_TTL_SEC:-900}
+      FX_REQUIRED_SYMBOLS: ${FX_REQUIRED_SYMBOLS:-USD,EUR,JPY,CNY}
+      # CORS allow-list (comma-separated). Optional in local.
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     ports:
-      - "4002:4005"
+      - "4002:4000"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:4005/health"]
+      test: ["CMD", "curl", "--fail", "http://localhost:4000/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -83,7 +95,7 @@ services:
   # Crawler API service
   crawler:
     build:
-      context: ./apps/api/src/crawler
+      context: ./apps/api-legacy/src/crawler
       dockerfile: Dockerfile.simple
     container_name: entrip-crawler-local
     ports:
@@ -95,7 +107,7 @@ services:
       retries: 3
       start_period: 30s
     volumes:
-      - ./apps/api/src/crawler/korean_flight_schedules.json:/app/korean_flight_schedules.json:ro
+      - ./apps/api-legacy/src/crawler/korean_flight_schedules.json:/app/korean_flight_schedules.json:ro
 
   # Web service
   web:
@@ -104,22 +116,22 @@ services:
       dockerfile: apps/web/Dockerfile
     container_name: entrip-web-local
     depends_on:
-      api:
-        condition: service_healthy
       crawler:
         condition: service_healthy
     environment:
       # Primary API (legacy v1)
       NEXT_PUBLIC_API_URL: http://localhost:4001
       INTERNAL_API_URL: http://api:4000
-      # New API (v2) endpoints
-      INTERNAL_API_V2_URL: http://api-v2:4005
+      # New API (v2) endpoints (matches api-v2 internal PORT in this file)
+      INTERNAL_API_V2_URL: http://api-v2:4000
       NEXT_PUBLIC_API_V2_URL: http://localhost:4002
       # External services
       NEXT_PUBLIC_CRAWLER_API_URL: http://crawler:8001
       # API keys
       NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
       NEXT_PUBLIC_EXCHANGE_RATE_API_KEY: ${NEXT_PUBLIC_EXCHANGE_RATE_API_KEY:-}
+      # fx-free internal URL for fallback (Option B)
+      INTERNAL_FX_FREE_URL: http://fx-free:4010
       # Development settings
       NEXT_PUBLIC_API_MOCKING: ${NEXT_PUBLIC_API_MOCKING:-disabled}
       NODE_ENV: production
@@ -133,6 +145,22 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
+
+  # Free FX microservice (Option B)
+  fx-free:
+    build:
+      context: ./apps/fx-free
+      dockerfile: Dockerfile
+    container_name: entrip-fx-free-local
+    environment:
+      FX_FREE_PORT: 4010
+    ports:
+      - "4010:4010"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4010/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
 
   # Redis service for caching and WebSocket scaling
   redis:
@@ -181,3 +209,4 @@ volumes:
   redis_data:
   prometheus_data:
   grafana_data:
+

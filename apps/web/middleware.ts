@@ -11,8 +11,13 @@ const publicPaths = ['/login', '/api/auth/login', '/api/exchange', '/api/health'
  */
 async function validateToken(token: string): Promise<{ isValid: boolean; error?: string }> {
   try {
-    // D2.1: Server-side token validation via API route
-    const response = await fetch(`${process.env.INTERNAL_API_URL || 'http://api:4000'}/api/auth/verify`, {
+    // D2.1: Server-side token validation via API v2
+    // Prefer v2 internal URL; fall back to v1 var for legacy setups
+    const baseUrl = process.env.INTERNAL_API_V2_URL
+      || process.env.API_V2_URL
+      || process.env.INTERNAL_API_URL
+      || 'http://api-v2:4000';
+    const response = await fetch(`${baseUrl}/api/v2/auth/me`, {
       method: 'GET',
       headers: {
         'Cookie': `auth-token=${token}`,

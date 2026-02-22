@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Generate JWT token and test production routes
-cd ../apps/api
+cd ../apps/api-legacy
 
 echo "Generating JWT token..."
 JWT_TOKEN=$(node -e "

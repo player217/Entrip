@@ -1,0 +1,545 @@
+# Entrip Project Management Tool for Windows
+# Usage: .\scripts\entrip.ps1 [command] [options]
+
+param(
+    [Parameter(Position=0)]
+    [ValidateSet('start', 'stop', 'restart', 'status', 'logs', 'clean', 'reset', 'test', 'migrate', 'build', 'help')]
+    [string]$Command = 'help',
+
+    [Parameter()]
+    [ValidateSet('all', 'web', 'api', 'api-v2', 'postgres', 'redis', 'crawler')]
+    [string]$Service = 'all',
+
+    [switch]$Docker,
+    [switch]$Force,
+    [switch]$Watch,
+    [switch]$Production
+)
+
+$ErrorActionPreference = "Stop"
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = Split-Path -Parent $ScriptDir
+
+# Color output helpers
+function Write-Status {
+    param([string]$Message, [string]$Color = "White")
+    Write-Host $Message -ForegroundColor $Color
+}
+
+function Write-Header {
+    param([string]$Title)
+    Write-Host ""
+    Write-Host "=== $Title ===" -ForegroundColor Cyan
+}
+
+function Write-Success {
+    param([string]$Message)
+    Write-Host "✅ $Message" -ForegroundColor Green
+}
+
+function Write-Error {
+    param([string]$Message)
+    Write-Host "❌ $Message" -ForegroundColor Red
+}
+
+function Write-Info {
+    param([string]$Message)
+    Write-Host "ℹ️  $Message" -ForegroundColor Yellow
+}
+
+# Service port mapping
+$ServicePorts = @{
+    "postgres" = 5432
+    "redis" = 6379
+    "api" = 4001
+    "api-v2" = 4002
+    "web" = 3000
+    "crawler" = 8001
+}
+
+# Test port availability
+function Test-Port {
+    param([int]$Port)
+    try {
+        $connection = New-Object System.Net.Sockets.TcpClient
+        $connection.Connect("localhost", $Port)
+        $connection.Close()
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+# Get service status
+function Get-ServiceStatus {
+    Write-Header "Service Status"
+
+    $services = @(
+        @{Name="PostgreSQL"; Port=5432; Key="postgres"},
+        @{Name="Redis"; Port=6379; Key="redis"},
+        @{Name="API v1"; Port=4001; Key="api"},
+        @{Name="API v2"; Port=4002; Key="api-v2"},
+        @{Name="Web App"; Port=3000; Key="web"},
+        @{Name="Crawler"; Port=8001; Key="crawler"}
+    )
+
+    $statusTable = @()
+    foreach ($svc in $services) {
+        if ($Service -eq "all" -or $Service -eq $svc.Key) {
+            $status = Test-Port -Port $svc.Port
+            $statusText = if ($status) { "✅ Running" } else { "❌ Stopped" }
+            $color = if ($status) { "Green" } else { "Red" }
+
+            Write-Status "$($svc.Name.PadRight(12)) : $statusText" $color
+
+            $statusTable += @{
+                Name = $svc.Name
+                Port = $svc.Port
+                Status = $status
+            }
+        }
+    }
+
+    return $statusTable
+}
+
+# Start services
+function Start-Services {
+    Write-Header "Starting Services"
+
+    Push-Location $ProjectRoot
+    try {
+        if ($Docker) {
+            Write-Info "Starting Docker services..."
+
+            # Check if Docker is running
+            try {
+                docker info | Out-Null
+            } catch {
+                Write-Error "Docker is not running. Please start Docker Desktop."
+                return
+            }
+
+            # Determine compose file
+            $composeFile = if ($Production) {
+                "docker-compose.yml"
+            } else {
+                "docker-compose.local.yml"
+            }
+
+            if (!(Test-Path $composeFile)) {
+                Write-Error "Docker compose file not found: $composeFile"
+                return
+            }
+
+            # Start specific service or all
+            if ($Service -eq "all") {
+                docker-compose -f $composeFile up -d
+            } else {
+                docker-compose -f $composeFile up -d $Service
+            }
+
+            # Wait for services to start
+            Write-Info "Waiting for services to start..."
+            Start-Sleep -Seconds 5
+
+            # Show container status
+            docker-compose -f $composeFile ps
+
+        } else {
+            # Native start using pnpm scripts
+            Write-Info "Starting native services..."
+
+            switch ($Service) {
+                "all" {
+                    Start-Process -WindowStyle Hidden powershell -ArgumentList "cd '$ProjectRoot'; pnpm dev"
+                    Write-Success "Started all services"
+                }
+                "web" {
+                    Start-Process -WindowStyle Hidden powershell -ArgumentList "cd '$ProjectRoot'; pnpm dev:web"
+                    Write-Success "Started web service"
+                }
+                "api" {
+                    Start-Process -WindowStyle Hidden powershell -ArgumentList "cd '$ProjectRoot/apps/api'; pnpm dev"
+                    Write-Success "Started API v1 service"
+                }
+                "api-v2" {
+                    Start-Process -WindowStyle Hidden powershell -ArgumentList "cd '$ProjectRoot/packages/api'; pnpm dev"
+                    Write-Success "Started API v2 service"
+                }
+                "postgres" {
+                    Write-Error "PostgreSQL must be started via Docker or installed locally"
+                }
+                "redis" {
+                    Write-Error "Redis must be started via Docker or installed locally"
+                }
+                "crawler" {
+                    Start-Process -WindowStyle Hidden powershell -ArgumentList "cd '$ProjectRoot/apps/crawler'; python main.py"
+                    Write-Success "Started crawler service"
+                }
+            }
+        }
+
+        # Verify services started
+        Start-Sleep -Seconds 3
+        Get-ServiceStatus | Out-Null
+
+    } finally {
+        Pop-Location
+    }
+}
+
+# Stop services
+function Stop-Services {
+    Write-Header "Stopping Services"
+
+    Push-Location $ProjectRoot
+    try {
+        if ($Docker) {
+            Write-Info "Stopping Docker services..."
+
+            $composeFile = if ($Production) {
+                "docker-compose.yml"
+            } else {
+                "docker-compose.local.yml"
+            }
+
+            if ($Service -eq "all") {
+                docker-compose -f $composeFile down
+            } else {
+                docker-compose -f $composeFile stop $Service
+            }
+
+            Write-Success "Docker services stopped"
+        } else {
+            # Stop Node processes
+            Write-Info "Stopping Node.js processes..."
+
+            $processes = Get-Process -Name node -ErrorAction SilentlyContinue
+
+            if ($processes) {
+                $processes | Stop-Process -Force
+                Write-Success "Node.js processes stopped"
+            } else {
+                Write-Info "No Node.js processes running"
+            }
+
+            # Stop Python processes (crawler)
+            $pythonProcesses = Get-Process -Name python -ErrorAction SilentlyContinue
+            if ($pythonProcesses) {
+                $pythonProcesses | Stop-Process -Force
+                Write-Success "Python processes stopped"
+            }
+        }
+    } finally {
+        Pop-Location
+    }
+}
+
+# Show logs
+function Show-Logs {
+    Write-Header "Service Logs"
+
+    Push-Location $ProjectRoot
+    try {
+        if ($Docker) {
+            $composeFile = if ($Production) {
+                "docker-compose.yml"
+            } else {
+                "docker-compose.local.yml"
+            }
+
+            if ($Watch) {
+                docker-compose -f $composeFile logs -f $Service
+            } else {
+                docker-compose -f $composeFile logs --tail=50 $Service
+            }
+        } else {
+            # Show log files
+            $logFiles = @{
+                "api" = "apps/api/logs/*.log"
+                "api-v2" = "packages/api/logs/*.log"
+                "web" = "apps/web/.next/server/*.log"
+            }
+
+            if ($Service -eq "all") {
+                Get-ChildItem -Path "logs" -Filter "*.log" -Recurse | ForEach-Object {
+                    Write-Status "--- $($_.Name) ---" "Cyan"
+                    Get-Content $_.FullName -Tail 20
+                }
+            } elseif ($logFiles.ContainsKey($Service)) {
+                $pattern = $logFiles[$Service]
+                Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue | ForEach-Object {
+                    if ($Watch) {
+                        Get-Content $_.FullName -Wait
+                    } else {
+                        Get-Content $_.FullName -Tail 50
+                    }
+                }
+            } else {
+                Write-Error "No logs available for service: $Service"
+            }
+        }
+    } finally {
+        Pop-Location
+    }
+}
+
+# Clean project
+function Clean-Project {
+    Write-Header "Cleaning Project"
+
+    if (!$Force) {
+        $response = Read-Host "This will delete all generated files and dependencies. Continue? (y/N)"
+        if ($response -ne 'y') {
+            Write-Info "Clean cancelled"
+            return
+        }
+    }
+
+    Push-Location $ProjectRoot
+    try {
+        Write-Info "Cleaning build artifacts..."
+
+        $targets = @(
+            "node_modules",
+            "**/.next",
+            "**/dist",
+            "**/.turbo",
+            "**/coverage",
+            "**/*.log",
+            "**/.prisma",
+            "**/tsconfig.tsbuildinfo"
+        )
+
+        foreach ($target in $targets) {
+            $items = Get-ChildItem -Path . -Filter $target -Recurse -Force -ErrorAction SilentlyContinue
+
+            foreach ($item in $items) {
+                try {
+                    Remove-Item -Path $item.FullName -Recurse -Force
+                    Write-Success "Removed: $($item.Name)"
+                } catch {
+                    Write-Error "Failed to remove: $($item.Name)"
+                }
+            }
+        }
+
+        if ($Docker) {
+            Write-Info "Cleaning Docker volumes..."
+            docker-compose -f docker-compose.local.yml down -v
+            Write-Success "Docker volumes cleaned"
+        }
+
+        Write-Success "Project cleaned"
+    } finally {
+        Pop-Location
+    }
+}
+
+# Run database migrations
+function Run-Migration {
+    Write-Header "Database Migration"
+
+    Push-Location $ProjectRoot
+    try {
+        # Check database availability
+        if (!(Test-Port -Port 5432)) {
+            Write-Error "Database is not running. Start PostgreSQL first."
+            return
+        }
+
+        Write-Info "Running Prisma migrations..."
+        pnpm prisma:migrate
+
+        Write-Info "Generating Prisma client..."
+        pnpm prisma:generate
+
+        if (!$Production) {
+            Write-Info "Seeding database with test data..."
+            pnpm prisma:seed
+        }
+
+        Write-Success "Migration complete"
+    } catch {
+        Write-Error "Migration failed: $_"
+    } finally {
+        Pop-Location
+    }
+}
+
+# Run tests
+function Run-Tests {
+    Write-Header "Running Tests"
+
+    Push-Location $ProjectRoot
+    try {
+        $testSuites = @{
+            "Unit" = "test:unit"
+            "Integration" = "test:integration"
+            "E2E" = "test:e2e"
+            "Contract" = "test:contract"
+        }
+
+        if ($Service -ne "all") {
+            # Run specific test suite
+            if ($testSuites.ContainsKey($Service)) {
+                Write-Info "Running $Service tests..."
+                pnpm $testSuites[$Service]
+            } else {
+                Write-Error "Unknown test suite: $Service"
+            }
+        } else {
+            # Run all test suites
+            foreach ($suite in $testSuites.Keys) {
+                Write-Info "Running $suite tests..."
+                try {
+                    pnpm $testSuites[$suite]
+                    Write-Success "$suite tests passed"
+                } catch {
+                    Write-Error "$suite tests failed"
+                }
+            }
+        }
+    } finally {
+        Pop-Location
+    }
+}
+
+# Build project
+function Build-Project {
+    Write-Header "Building Project"
+
+    Push-Location $ProjectRoot
+    try {
+        if ($Service -eq "all") {
+            Write-Info "Building all packages..."
+            pnpm build
+        } else {
+            Write-Info "Building $Service..."
+            pnpm build --filter=$Service
+        }
+
+        Write-Success "Build complete"
+    } catch {
+        Write-Error "Build failed: $_"
+    } finally {
+        Pop-Location
+    }
+}
+
+# Reset project
+function Reset-Project {
+    Write-Header "Resetting Project"
+
+    Write-Info "This will clean, reinstall, migrate, and restart everything."
+
+    if (!$Force) {
+        $response = Read-Host "Continue? (y/N)"
+        if ($response -ne 'y') {
+            Write-Info "Reset cancelled"
+            return
+        }
+    }
+
+    # Execute reset sequence
+    Stop-Services
+    Clean-Project
+    Write-Info "Installing dependencies..."
+    Push-Location $ProjectRoot
+    pnpm install
+    Pop-Location
+    Run-Migration
+    Start-Services
+
+    Write-Success "Project reset complete"
+}
+
+# Show help
+function Show-Help {
+    Write-Host @"
+
+Entrip Project Management Tool
+
+USAGE:
+    .\scripts\entrip.ps1 [command] [options]
+
+COMMANDS:
+    start     Start services
+    stop      Stop services
+    restart   Restart services
+    status    Show service status
+    logs      Show service logs
+    clean     Clean project files and dependencies
+    reset     Full reset (clean + install + migrate + start)
+    test      Run test suites
+    migrate   Run database migrations
+    build     Build project
+    help      Show this help message
+
+OPTIONS:
+    -Service  [all|web|api|api-v2|postgres|redis|crawler]
+              Target specific service (default: all)
+
+    -Docker   Use Docker Compose instead of native processes
+
+    -Force    Skip confirmation prompts
+
+    -Watch    Watch mode for logs (tail -f)
+
+    -Production  Use production configuration
+
+EXAMPLES:
+    # Start all services with Docker
+    .\scripts\entrip.ps1 start -Docker
+
+    # Stop specific service
+    .\scripts\entrip.ps1 stop -Service api
+
+    # Watch logs for web service
+    .\scripts\entrip.ps1 logs -Service web -Watch
+
+    # Run all tests
+    .\scripts\entrip.ps1 test
+
+    # Reset entire project
+    .\scripts\entrip.ps1 reset -Force
+
+    # Build for production
+    .\scripts\entrip.ps1 build -Production
+
+SERVICE PORTS:
+    PostgreSQL : 5432
+    Redis      : 6379
+    API v1     : 4001
+    API v2     : 4002
+    Web App    : 3000
+    Crawler    : 8001
+
+"@ -ForegroundColor Cyan
+}
+
+# Main execution
+try {
+    switch ($Command) {
+        'start' { Start-Services }
+        'stop' { Stop-Services }
+        'restart' {
+            Stop-Services
+            Start-Sleep -Seconds 2
+            Start-Services
+        }
+        'status' { Get-ServiceStatus | Out-Null }
+        'logs' { Show-Logs }
+        'clean' { Clean-Project }
+        'reset' { Reset-Project }
+        'test' { Run-Tests }
+        'migrate' { Run-Migration }
+        'build' { Build-Project }
+        'help' { Show-Help }
+        default { Show-Help }
+    }
+} catch {
+    Write-Error "Command failed: $_"
+    exit 1
+}

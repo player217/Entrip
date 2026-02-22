@@ -1,0 +1,82 @@
+# Development Dockerfile for API v2 (New) with pnpm workspace support
+FROM node:20-slim AS deps
+
+# Install dependencies needed for Prisma and builds
+RUN apt-get update && apt-get install -y \
+    curl \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install pnpm
+RUN npm install -g pnpm@10.13.1
+
+WORKDIR /app
+
+# Copy workspace configuration first
+COPY pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
+COPY .npmrc* ./
+
+# Copy all package.json files to maintain workspace structure
+COPY packages/api/package.json ./packages/api/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/design-tokens/package.json ./packages/design-tokens/
+
+# Copy Prisma schemas to prevent postinstall failure
+COPY apps/api-legacy/prisma ./apps/api/prisma
+COPY packages/api/prisma ./packages/api/prisma
+
+# Install ALL dependencies including devDependencies (needed for build)
+RUN pnpm install --frozen-lockfile --prod=false
+
+# Builder stage
+FROM deps AS builder
+
+WORKDIR /app
+
+# Copy all source code
+COPY . .
+
+# Generate Prisma client for API v2
+RUN cd packages/api && npx prisma generate
+
+# Build dependencies in correct order
+RUN pnpm --filter @entrip/design-tokens build
+RUN pnpm --filter @entrip/shared build
+
+# Development runner stage
+FROM deps AS runner
+
+WORKDIR /app
+
+# Install PostgreSQL client for migration checks
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
+# Copy Prisma schemas (client will be generated in runner)
+COPY --from=builder /app/packages/api/prisma ./packages/api/prisma
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+
+# Copy built dependencies from builder
+COPY --from=builder /app/packages/design-tokens/build ./packages/design-tokens/build
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+
+# Copy source code for hot reload
+COPY . .
+
+# Copy entrypoint scripts and make them executable
+COPY scripts/wait-for-postgres.sh /usr/local/bin/
+COPY scripts/docker-entrypoint-v2.sh /usr/local/bin/
+COPY scripts/test-db.prepare.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/wait-for-postgres.sh /usr/local/bin/docker-entrypoint-v2.sh /usr/local/bin/test-db.prepare.sh || true
+
+# Expose port
+EXPOSE 4000
+
+# Set environment variables for development
+ENV NODE_ENV=development
+ENV DATABASE_URL=postgresql://entrip:entrip@postgres:5432/entrip
+
+# Start via entrypoint to ensure Prisma generate and DB readiness
+WORKDIR /app/packages/api
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint-v2.sh"]

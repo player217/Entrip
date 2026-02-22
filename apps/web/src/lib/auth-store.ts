@@ -28,12 +28,32 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true, error: null });
 
         try {
-          const response = await fetch('/api/auth/login', {
+          // Map legacy LoginRequest -> v2 login DTO
+          const companyAliases: Record<string, string> = {
+            entrip: 'ENTRIP_MAIN',
+            ENTRIP: 'ENTRIP_MAIN',
+            ENTRIP_MAIN: 'ENTRIP_MAIN',
+            startour: 'star',
+            Startour: 'star',
+            STAR: 'star',
+            star: 'star',
+            happytravel: 'happy',
+            HAPPY: 'happy',
+            happy: 'happy',
+            j1: 'j1',
+          };
+          const normalizedCompany = companyAliases[credentials.companyCode] || credentials.companyCode;
+          const v2Body = {
+            email: credentials.username,
+            password: credentials.password,
+            companyCode: normalizedCompany,
+          };
+          const response = await fetch('/api/v2/auth/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(credentials),
+            body: JSON.stringify(v2Body),
             credentials: 'include', // Important for cookies
           });
 
@@ -78,7 +98,7 @@ export const useAuthStore = create<AuthStore>()(
         const performLogout = async () => {
           try {
             // Call logout API to clear HttpOnly cookie
-            const response = await fetch('/api/auth/logout', {
+            const response = await fetch('/api/v2/auth/logout', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -135,7 +155,7 @@ export const useAuthStore = create<AuthStore>()(
           set({ isLoading: true });
           
           // HttpOnly cookie will be sent automatically with credentials: 'include'
-          const response = await fetch('/api/auth/verify', {
+          const response = await fetch('/api/v2/auth/me', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',

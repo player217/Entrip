@@ -1,0 +1,154 @@
+====================================================================================================
+ENTRIP API DIAGNOSTICS - PHASE 0 BASELINE
+Date: 2025-09-27 10:42:00
+====================================================================================================
+
+1. DOCKER CONTAINER STATUS
+----------------------------------------------------------------------------------------------------
+Command: docker ps -a
+Result:
+CONTAINER ID   IMAGE                COMMAND                   CREATED       STATUS                 PORTS                    NAMES
+a1339f3f46b7   entrip-web           "docker-entrypoint.s…"   3 hours ago   Up 3 hours             0.0.0.0:3000->3000/tcp   entrip-web-local
+d3c3f01b56f6   entrip-api-v2        "docker-entrypoint.s…"   3 hours ago   Up 3 hours (healthy)   0.0.0.0:4002->4000/tcp   entrip-api-v2-local
+dc17f55ded88   entrip-api           "docker-entrypoint.s…"   3 hours ago   Up 3 hours (healthy)   0.0.0.0:4001->4000/tcp   entrip-api-local
+b3aee23d3c68   postgres:15-alpine   "docker-entrypoint.s…"   3 hours ago   Up 3 hours (healthy)   0.0.0.0:5432->5432/tcp   entrip-postgres-local
+154c1a78e4f6   redis:7-alpine       "docker-entrypoint.s…"   3 hours ago   Up 3 hours (healthy)   0.0.0.0:6379->6379/tcp   entrip-redis-local
+42f4c0ea08df   node:18-alpine       "docker-entrypoint.s…"   3 hours ago   Up 3 hours                                      entrip-workspace
+
+Status: ✅ All containers running
+
+====================================================================================================
+
+2. API V1 HEALTH CHECK (http://localhost:4001/healthz)
+----------------------------------------------------------------------------------------------------
+Command: curl -i http://localhost:4001/healthz
+Result:
+HTTP/1.1 200 OK
+Content-Security-Policy: default-src 'self';script-src 'self' 'unsafe-inline';style-src 'self' 'unsafe-inline';img-src 'self' data: https:;connect-src 'self';font-src 'self' data:;object-src 'none';media-src 'self';frame-src 'none';child-src 'none';worker-src 'none';frame-ancestors 'none';base-uri 'self';form-action 'self';script-src-attr 'none';upgrade-insecure-requests
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: strict-origin-when-cross-origin
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+RateLimit-Policy: 1000;w=900
+RateLimit-Limit: 1000
+RateLimit-Remaining: 974
+RateLimit-Reset: 524
+X-API-Version: 1.0.0
+X-Request-Id: f1adafe7-2f57-4ea4-b1f4-13af07d833e3
+Cache-Control: no-store, no-cache, must-revalidate, private
+Pragma: no-cache
+Expires: 0
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Access-Control-Expose-Headers: X-Request-ID,X-API-Version
+Content-Type: application/json; charset=utf-8
+Content-Length: 54
+ETag: W/"36-8ca5vDNk52YlMuiwrHFyDMHFEVk"
+Date: Sat, 27 Sep 2025 10:40:13 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"status":"ok","timestamp":"2025-09-27T10:40:13.649Z"}
+
+Status: ✅ API v1 is healthy
+
+====================================================================================================
+
+3. API ENDPOINT TEST (http://localhost:3000/api/bookings/stats)
+----------------------------------------------------------------------------------------------------
+Command: curl -i -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/bookings/stats
+Result:
+HTTP/1.1 307 Temporary Redirect
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:4001 ws://localhost:4001 https://api.iconify.design https://api.simplesvg.com https://api.unisvg.com https://cdn.jsdelivr.net; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+X-Powered-By:
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: http://localhost:3000
+Access-Control-Allow-Methods: GET,DELETE,PATCH,POST,PUT,OPTIONS
+Access-Control-Allow-Headers: Accept, Accept-Version, Authorization, Content-Length, Content-MD5, Content-Type, Date, X-Requested-With, X-Request-ID
+Access-Control-Max-Age: 86400
+X-API-Version: 0.0.0
+Cache-Control: no-store, must-revalidate
+location: /login?from=%2Fapi%2Fbookings%2Fstats
+Date: Sat, 27 Sep 2025 10:41:57 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+/login?from=%2Fapi%2Fbookings%2Fstats
+
+Status: ⚠️ Redirected to login (authentication required)
+
+====================================================================================================
+
+4. API V2 HEALTH CHECK (http://localhost:3000/api/v2/health)
+----------------------------------------------------------------------------------------------------
+Command: curl -i http://localhost:3000/api/v2/health
+Result:
+HTTP/1.1 502 Bad Gateway
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:4001 ws://localhost:4001 https://api.iconify.design https://api.simplesvg.com https://api.unisvg.com https://cdn.jsdelivr.net; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+X-Powered-By:
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: http://localhost:3000
+Access-Control-Allow-Methods: GET,DELETE,PATCH,POST,PUT,OPTIONS
+Access-Control-Allow-Headers: Accept, Accept-Version, Authorization, Content-Length, Content-MD5, Content-Type, Date, X-Requested-With, X-Request-ID
+Access-Control-Max-Age: 86400
+X-API-Version: 0.0.0
+Cache-Control: no-store, must-revalidate
+vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Url
+content-type: application/json
+Date: Sat, 27 Sep 2025 10:42:14 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"success":false,"message":"Failed to connect to API v2","error":"TypeError: fetch failed"}
+
+Status: ❌ API v2 proxy not working (502 Bad Gateway)
+
+====================================================================================================
+
+5. WEBSOCKET PORT VERIFICATION (Port 4001)
+----------------------------------------------------------------------------------------------------
+Command: node -e "const net=require('net');net.connect(4001,'127.0.0.1',()=>{console.log('socket ok');process.exit(0);}).on('error',e=>{console.error(e);process.exit(1);});"
+Result:
+socket ok
+
+Status: ✅ WebSocket port 4001 is accessible
+
+====================================================================================================
+
+SUMMARY
+----------------------------------------------------------------------------------------------------
+✅ Docker containers: All 6 containers running (web, api, api-v2, postgres, redis, workspace)
+✅ API v1 health: Operational (http://localhost:4001/healthz returns 200 OK)
+⚠️ API endpoint: Authentication required (307 redirect to login)
+❌ API v2 proxy: Not working (502 Bad Gateway via Next.js proxy)
+✅ WebSocket: Port 4001 is accessible
+
+====================================================================================================
+
+NOTES:
+- API v1 is running on port 4001 and is healthy
+- API v2 is running on port 4002 (container healthy) but proxy route is not configured
+- Authentication middleware is active (redirects unauthenticated requests to login)
+- WebSocket connectivity is available on port 4001
+
+====================================================================================================

@@ -27,6 +27,12 @@ yarn-error.log*
 pnpm-debug.log*
 .pnpm-debug.log*
 
+# Process management
+.entrip-pids.json
+.prisma.lock
+.prisma.pid
+*.pid
+
 # local env files
 .env*.local
 .env
@@ -56,6 +62,7 @@ Thumbs.db
 temp_*.sql
 test-*.html
 *.tmp
+.tmp-*
 
 # Logs
 logs
@@ -66,6 +73,11 @@ playwright-report/
 playwright/.cache/
 e2e/screenshots/
 test-results/
+apps/web/junit.xml
+apps/web/reports/junit/*.xml
+packages/api/reports/junit/*.xml
+packages/shared/reports/junit/*.xml
+packages/ui/reports/junit/*.xml
 
 # Generated files
 packages/shared/src/generated/
@@ -78,3 +90,20 @@ ui_backup_*
 app_backup_*
 packages_backup_*
 Entrip_demo_backup_*
+
+# Archived stray Windows-path artifacts (quarantined)
+archive/_windows_artifacts/
+
+# Broken Windows-path artifact patterns
+C*Users*db_tables_list.txt
+apps/web/C*Users*/
+
+# Windows reserved-name artifact
+nul
+
+# Local scratch workspaces
+work/
+workspace/
+
+# One-off local SQL scratch file
+tmp_update.sql

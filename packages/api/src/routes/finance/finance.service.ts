@@ -155,7 +155,7 @@ export class FinanceService extends BaseService<FinanceRecord> {
       exchangeRate: input.exchangeRate || 1,
       occurredAt: new Date(input.occurredAt),
       description: input.description,
-      status: FinanceStatus.pending,
+      status: FinanceStatus.PENDING,
       companyCode,
       createdById: userId,
     };
@@ -214,7 +214,7 @@ export class FinanceService extends BaseService<FinanceRecord> {
     const record = await this.findById(id, companyCode);
 
     // Can't update approved or rejected records
-    if (record.status !== FinanceStatus.pending) {
+    if (record.status !== FinanceStatus.PENDING) {
       throw new ApiError(400, `Cannot update ${record.status} records`);
     }
 
@@ -266,12 +266,12 @@ export class FinanceService extends BaseService<FinanceRecord> {
     const record = await this.findById(id, companyCode);
 
     // Can only approve/reject pending records
-    if (record.status !== FinanceStatus.pending) {
+    if (record.status !== FinanceStatus.PENDING) {
       throw new ApiError(400, `Cannot update status. Current status is ${record.status}`);
     }
 
     const updateData: any = {
-      status: input.status === 'approved' ? FinanceStatus.approved : FinanceStatus.rejected,
+      status: input.status === 'approved' ? FinanceStatus.APPROVED : FinanceStatus.REJECTED,
       remarks: input.remarks,
       updatedAt: new Date(),
     };
@@ -314,7 +314,7 @@ export class FinanceService extends BaseService<FinanceRecord> {
         companyCode,
         deletedAt: null,
         status: {
-          in: [FinanceStatus.pending, FinanceStatus.approved],
+          in: [FinanceStatus.PENDING, FinanceStatus.APPROVED],
         },
         occurredAt: {
           gte: startDate,
@@ -330,7 +330,7 @@ export class FinanceService extends BaseService<FinanceRecord> {
     records.forEach((record: FinanceRecord) => {
       const amount = Number(record.amount) * Number(record.exchangeRate);
 
-      if (record.type === FinanceType.income) {
+      if (record.type === FinanceType.INCOME) {
         totalIncome += amount;
       } else {
         totalExpense += amount;
@@ -340,7 +340,7 @@ export class FinanceService extends BaseService<FinanceRecord> {
         byCategory[record.category] = { income: 0, expense: 0 };
       }
 
-      if (record.type === FinanceType.income) {
+      if (record.type === FinanceType.INCOME) {
         byCategory[record.category].income += amount;
       } else {
         byCategory[record.category].expense += amount;
@@ -365,9 +365,9 @@ export class FinanceService extends BaseService<FinanceRecord> {
   async getStats(companyCode: string) {
     const [total, pending, approved, rejected] = await Promise.all([
       this.count(companyCode),
-      this.count(companyCode, { status: FinanceStatus.pending }),
-      this.count(companyCode, { status: FinanceStatus.approved }),
-      this.count(companyCode, { status: FinanceStatus.rejected }),
+      this.count(companyCode, { status: FinanceStatus.PENDING }),
+      this.count(companyCode, { status: FinanceStatus.APPROVED }),
+      this.count(companyCode, { status: FinanceStatus.REJECTED }),
     ]);
 
     const currentYear = new Date().getFullYear();

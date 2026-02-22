@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
         'Authorization': request.headers.get('authorization') || '',
         'Content-Type': 'application/json',
         'Cookie': cookieHeader, // Forward cookies for authentication
+        'X-Test-Run-Id': request.headers.get('x-test-run-id') || '',
       },
       // timeout 설정
       signal: AbortSignal.timeout(10000), // 10초 타임아웃
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
         'Authorization': request.headers.get('authorization') || '',
         'Content-Type': 'application/json',
         'Cookie': cookieHeader, // Forward cookies for authentication
+        'X-Test-Run-Id': request.headers.get('x-test-run-id') || '',
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(10000),

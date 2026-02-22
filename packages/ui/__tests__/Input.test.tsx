@@ -1,7 +1,7 @@
 import React from 'react'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import { Input } from '../primitives/Input'
+import { Input } from '../src/components/primitives/Input'
 
 describe('Input', () => {
   it('renders input element', () => {

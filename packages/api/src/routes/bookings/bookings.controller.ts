@@ -67,6 +67,15 @@ export class BookingsController {
 
       const booking = await bookingsService.findById(req.params.id!, companyCode);
 
+      // Emit weak ETag based on version and updatedAt
+      try {
+        const { makeETag } = await import('../../lib/etag');
+        const etag = makeETag([booking.id, (booking as any).version, (booking as any).updatedAt?.toISOString?.()]);
+        res.setHeader('ETag', etag);
+      } catch {
+        // ignore ETag errors
+      }
+
       res.json({
         success: true,
         data: booking,
@@ -90,6 +99,12 @@ export class BookingsController {
       const input: BookingCreateInput = req.body;
       const booking = await bookingsService.createBooking(companyCode, userId, input);
 
+      // Broadcast WS event
+      try {
+        const { broadcastBookingUpdateForCompany } = await import('../../ws');
+        broadcastBookingUpdateForCompany(companyCode, 'create', booking.id, { bookingNumber: (booking as any).bookingNumber });
+      } catch (_) {}
+
       res.status(201).json({
         success: true,
         data: booking,
@@ -110,8 +125,15 @@ export class BookingsController {
         });
       }
 
+      // Require If-Match for optimistic locking
+      const ifMatch = req.headers['if-match'] as string | undefined;
       const input: BookingUpdateInput = req.body;
-      const booking = await bookingsService.updateBooking(req.params.id!, companyCode, input);
+      const booking = await bookingsService.updateBooking(req.params.id!, companyCode, input, ifMatch);
+
+      try {
+        const { broadcastBookingUpdateForCompany } = await import('../../ws');
+        broadcastBookingUpdateForCompany(companyCode, 'update', booking.id);
+      } catch (_) {}
 
       res.json({
         success: true,
@@ -156,7 +178,13 @@ export class BookingsController {
         });
       }
 
-      await bookingsService.delete(req.params.id!, companyCode);
+      const ifMatch = req.headers['if-match'] as string | undefined;
+      await bookingsService.deleteWithLock(req.params.id!, companyCode, ifMatch);
+
+      try {
+        const { broadcastBookingUpdateForCompany } = await import('../../ws');
+        broadcastBookingUpdateForCompany(companyCode, 'delete', req.params.id!);
+      } catch (_) {}
 
       res.status(204).send();
     } catch (error) {

@@ -3,6 +3,7 @@ import { bookingsController } from './bookings.controller';
 import { validateBody } from '../../middlewares/validate.middleware';
 import { cacheMiddleware, invalidateCacheMiddleware } from '../../middlewares/cache.middleware';
 import { authMiddleware } from '../../middlewares/auth.middleware';
+import { strictRateLimit } from '../../middlewares/rateLimit.middleware';
 import { extractCompanyCode, validateCompanyAccess } from '../../middlewares/multitenancy.middleware';
 import { BookingCreateDto } from './dtos/BookingCreate.dto';
 import { BookingUpdateDto } from './dtos/BookingUpdate.dto';
@@ -23,6 +24,7 @@ router.get('/:id', cacheMiddleware({ ttl: 600 }), bookingsController.getById);
 
 // POST /api/v2/bookings (with cache invalidation)
 router.post('/', 
+  strictRateLimit,
   validateBody(BookingCreateDto), 
   invalidateCacheMiddleware(['bookings']),
   bookingsController.create
@@ -30,6 +32,7 @@ router.post('/',
 
 // PUT /api/v2/bookings/:id (with cache invalidation)
 router.put('/:id', 
+  strictRateLimit,
   validateBody(BookingUpdateDto), 
   invalidateCacheMiddleware(['bookings']),
   bookingsController.update
@@ -37,6 +40,7 @@ router.put('/:id',
 
 // PATCH /api/v2/bookings/:id/status (with cache invalidation)
 router.patch('/:id/status', 
+  strictRateLimit,
   validateBody(BookingStatusPatchDto), 
   invalidateCacheMiddleware(['bookings']),
   bookingsController.updateStatus
@@ -44,6 +48,7 @@ router.patch('/:id/status',
 
 // DELETE /api/v2/bookings/:id (with cache invalidation)
 router.delete('/:id', 
+  strictRateLimit,
   invalidateCacheMiddleware(['bookings']),
   bookingsController.delete
 );

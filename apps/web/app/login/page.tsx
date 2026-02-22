@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@entrip/ui';
@@ -17,39 +17,35 @@ interface LoginFormData {
 // Demo accounts for quick testing - 원클릭 자동 로그인
 const DEMO_DEFAULT_PASSWORD = process.env.DEMO_DEFAULT_PASSWORD || 'pass1234';
 
-// Company information
+// Company information - Updated to match actual database
 const COMPANIES = [
-  { code: 'ENTRIP_MAIN', name: '엔트립 본사', color: 'blue' },
+  { code: 'entrip', name: '엔트립 본사', color: 'blue' },
   { code: 'j1', name: 'J1 여행사', color: 'green' },
-  { code: 'star', name: '스타투어', color: 'yellow' },
-  { code: 'happy', name: '해피트래블', color: 'pink' },
+  { code: 'startour', name: '스타투어', color: 'yellow' },
+  { code: 'happytravel', name: '해피트래블', color: 'pink' },
 ];
 
-// Demo accounts - Updated to match actual database users exactly
-const DEMO_ACCOUNTS = [
-  // ENTRIP_MAIN (본사) - 실제 DB 계정 (3개)
-  { label: '본사 관리자', companyCode: 'ENTRIP_MAIN', username: 'admin@entrip.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
-  { label: '본사 매니저', companyCode: 'ENTRIP_MAIN', username: 'manager@entrip.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
-  { label: '본사 직원', companyCode: 'ENTRIP_MAIN', username: 'user@entrip.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
-  
-  // J1 여행사 - 실제 DB 계정 (4개)
-  { label: 'J1 관리자', companyCode: 'J1', username: 'admin@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
-  { label: 'J1 매니저', companyCode: 'J1', username: 'manager@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
-  { label: 'J1 직원1', companyCode: 'J1', username: 'user1@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
-  { label: 'J1 직원2', companyCode: 'J1', username: 'user2@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
-  
-  // 해피트래블 - 실제 DB 계정 (3개)  
-  { label: '해피 관리자', companyCode: 'HAPPY', username: 'admin@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
-  { label: '해피 매니저', companyCode: 'HAPPY', username: 'manager@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
-  { label: '해피 직원', companyCode: 'HAPPY', username: 'user@happy.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+type DemoAccount = { label: string; companyCode: string; username: string; password: string; role: string };
 
-  // 스타투어 - 실제 DB 계정 (3개)
-  { label: '스타 관리자', companyCode: 'STAR', username: 'admin@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
-  { label: '스타 매니저', companyCode: 'STAR', username: 'manager@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
-  { label: '스타 직원', companyCode: 'STAR', username: 'user@star.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+// 기본값(백업). 실제로는 /api/demo-accounts에서 동적으로 가져옵니다.
+const DEMO_STATIC_FALLBACK: DemoAccount[] = [
+  { label: '본사 관리자', companyCode: 'entrip', username: 'admin@entrip.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: '본사 매니저1', companyCode: 'entrip', username: 'manager1@entrip.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: '본사 매니저2', companyCode: 'entrip', username: 'manager2@entrip.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: '본사 직원1', companyCode: 'entrip', username: 'user1@entrip.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+
+  { label: 'J1 관리자', companyCode: 'j1', username: 'admin@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: 'J1 매니저1', companyCode: 'j1', username: 'manager1@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: 'J1 직원1', companyCode: 'j1', username: 'user1@j1.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+
+  { label: '스타 관리자', companyCode: 'startour', username: 'admin@startour.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: '스타 매니저1', companyCode: 'startour', username: 'manager1@startour.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: '스타 직원1', companyCode: 'startour', username: 'user1@startour.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
+
+  { label: '해피 관리자', companyCode: 'happytravel', username: 'admin@happytravel.com', password: DEMO_DEFAULT_PASSWORD, role: 'ADMIN' },
+  { label: '해피 매니저1', companyCode: 'happytravel', username: 'manager1@happytravel.com', password: DEMO_DEFAULT_PASSWORD, role: 'MANAGER' },
+  { label: '해피 직원1', companyCode: 'happytravel', username: 'user1@happytravel.com', password: DEMO_DEFAULT_PASSWORD, role: 'USER' },
 ];
-
-console.log('🔍 DEMO_ACCOUNTS length:', DEMO_ACCOUNTS.length, 'accounts loaded');
 
 export default function LoginPage() {
   const router = useRouter();
@@ -63,6 +59,43 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedDemo, setSelectedDemo] = useState(0);
+  const [demoAccounts, setDemoAccounts] = useState<DemoAccount[]>(DEMO_STATIC_FALLBACK);
+
+  useEffect(() => {
+    let active = true;
+    // 개발/스테이징에서만 자동 불러오기 시도
+    const shouldFetch = process.env.NODE_ENV !== 'production';
+    if (!shouldFetch) return;
+    (async () => {
+      try {
+        const res = await fetch('/api/demo-accounts', { method: 'GET', headers: { 'x-test-run-id': 'login-page' } });
+        if (!res.ok) return; // fallback 유지
+        const data = await res.json();
+        if (active && data?.success && Array.isArray(data.data)) {
+          const dynamic: DemoAccount[] = data.data.map((d: any) => ({
+            label: `${d.companyCode} ${d.role}`,
+            companyCode: d.companyCode,
+            username: d.username,
+            password: DEMO_DEFAULT_PASSWORD,
+            role: d.role,
+          }));
+          // 회사/역할 정렬: ADMIN -> MANAGER -> USER
+          const order = { ADMIN: 0, MANAGER: 1, USER: 2 } as any;
+          dynamic.sort((a, b) => (a.companyCode + order[a.role]) > (b.companyCode + order[b.role]) ? 1 : -1);
+          setDemoAccounts(dynamic);
+          // 폼 기본값도 첫 계정으로 동기화
+          const first = dynamic[0];
+          if (first) {
+            setFormData({ companyCode: first.companyCode, username: first.username, password: first.password });
+          }
+        }
+      } catch (e) {
+        // 무시하고 fallback 유지
+        console.warn('Failed to load dynamic demo accounts; using fallback.');
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -75,7 +108,7 @@ export default function LoginPage() {
   };
 
   const selectDemoAccount = async (index: number) => {
-    const account = DEMO_ACCOUNTS[index];
+    const account = demoAccounts[index];
     if (!account) return;
     
     setSelectedDemo(index);
@@ -203,13 +236,13 @@ export default function LoginPage() {
             <div className="mb-6 p-4 bg-blue-50 rounded-lg">
               <p className="text-sm font-semibold text-blue-900 mb-3">데모 계정 선택 (Quick Login):</p>
               {COMPANIES.map((company) => {
-                const companyAccounts = DEMO_ACCOUNTS.filter(acc => acc.companyCode === company.code);
+                const companyAccounts = demoAccounts.filter(acc => acc.companyCode === company.code);
                 return (
                   <div key={company.code} className="mb-3">
                     <p className="text-xs font-medium text-gray-700 mb-1">{company.name}:</p>
                     <div className="flex flex-wrap gap-2">
                       {companyAccounts.map((account, index) => {
-                        const globalIndex = DEMO_ACCOUNTS.indexOf(account);
+                        const globalIndex = demoAccounts.indexOf(account);
                         return (
                           <button
                             key={globalIndex}

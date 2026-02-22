@@ -29,6 +29,7 @@
       "@entrip/ui/*": ["packages/ui/src/*"]
     }
   },
+  "files": [],
   "references": [
     { "path": "packages/design-tokens" },
     { "path": "packages/shared" },
@@ -38,9 +39,13 @@
   "exclude": [
     "node_modules",
     "dist",
+    "**/dist/**",
     "build",
+    "**/build/**",
     ".next",
+    "**/.next/**",
     "out",
+    "**/out/**",
     "docs",
     "**/*.md",
     "**/*_backup_*/**",

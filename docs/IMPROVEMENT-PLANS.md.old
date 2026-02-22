@@ -1,0 +1,976 @@
+# Entrip 개선 항목 실행 계획서
+
+## 📋 Executive Summary
+본 문서는 v1→v2 API 마이그레이션 과정에서 발견된 즉시 개선 항목과 중기 개선 항목에 대한 상세 실행 계획입니다.
+
+## 🔴 즉시 개선 항목 (Immediate Improvements)
+
+### 1. Prisma File Lock 문제 근본 해결
+
+#### 1.1 문제 분석
+```
+현재 상황:
+- Windows에서 Prisma 엔진 파일 잠금 오류 지속 발생
+- 임시 조치: Prisma generate 단계 우회
+- 영향: 스키마 변경 시 타입 불일치 위험
+```
+
+#### 1.2 근본 해결 방안
+
+##### Option A: Docker 기반 개발 환경 전환 (권장)
+```yaml
+# docker-compose.dev.yml
+version: '3.8'
+services:
+  workspace:
+    image: node:18-alpine
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+      - /workspace/.pnpm-store
+    working_dir: /workspace
+    command: tail -f /dev/null
+    environment:
+      - PRISMA_ENGINES_MIRROR=https://binaries.prisma.sh
+```
+
+**실행 스크립트:**
+```powershell
+# scripts/dev-docker.ps1
+$ErrorActionPreference = "Stop"
+
+function Start-DockerDev {
+    Write-Host "Starting Docker development environment..." -ForegroundColor Green
+
+    # Docker 실행 확인
+    if (!(Get-Process "Docker Desktop" -ErrorAction SilentlyContinue)) {
+        Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+        Start-Sleep -Seconds 30
+    }
+
+    # 개발 컨테이너 시작
+    docker-compose -f docker-compose.dev.yml up -d
+
+    # Prisma generate 실행
+    docker-compose -f docker-compose.dev.yml exec workspace pnpm prisma:generate
+
+    Write-Host "Development environment ready!" -ForegroundColor Green
+}
+
+Start-DockerDev
+```
+
+##### Option B: WSL2 기반 개발
+```bash
+# WSL2 설치 및 설정
+wsl --install -d Ubuntu-22.04
+wsl --set-version Ubuntu-22.04 2
+
+# WSL2 내부 설정 스크립트
+#!/bin/bash
+# scripts/setup-wsl.sh
+
+# Node.js 18 설치
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# pnpm 설치
+npm install -g pnpm
+
+# 프로젝트 설정
+pnpm install
+pnpm prisma:generate
+```
+
+##### Option C: Prisma Binary 직접 관리
+```typescript
+// prisma/binary-manager.ts
+import { execSync } from 'child_process';
+import { platform } from 'os';
+import { existsSync, unlinkSync } from 'fs';
+import path from 'path';
+
+export class PrismaBinaryManager {
+  private static readonly BINARY_PATHS = {
+    win32: [
+      'node_modules/.prisma/client/query_engine-windows.dll.node',
+      'node_modules/@prisma/engines/query_engine-windows.dll.node'
+    ]
+  };
+
+  static async cleanAndGenerate() {
+    if (platform() !== 'win32') return;
+
+    // 기존 바이너리 프로세스 종료
+    try {
+      execSync('taskkill /F /IM node.exe', { stdio: 'ignore' });
+    } catch {}
+
+    // 파일 삭제
+    const paths = this.BINARY_PATHS.win32;
+    for (const p of paths) {
+      if (existsSync(p)) {
+        try {
+          unlinkSync(p);
+          console.log(`Cleaned: ${p}`);
+        } catch (error) {
+          console.warn(`Could not delete ${p}:`, error);
+        }
+      }
+    }
+
+    // 재생성
+    execSync('npx prisma generate', { stdio: 'inherit' });
+  }
+}
+```
+
+#### 1.3 실행 우선순위
+1. **즉시 (Day 1)**: Option C 구현 - 빠른 완화책
+2. **단기 (Week 1)**: Option A 구현 - Docker 환경 구축
+3. **중기 (Month 1)**: 팀 전체 Docker/WSL2 전환
+
+### 2. Docker 개발 환경 표준화
+
+#### 2.1 전체 Docker 환경 구성
+```yaml
+# docker-compose.full.yml
+version: '3.8'
+
+services:
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: entrip
+      POSTGRES_PASSWORD: entrip
+      POSTGRES_DB: entrip
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U entrip"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (캐싱/세션)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API v1
+  api-v1:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://entrip:entrip@postgres:5432/entrip
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: development
+    ports:
+      - "4001:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app/apps/api
+      - /app/node_modules
+
+  # API v2
+  api-v2:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://entrip:entrip@postgres:5432/entrip
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: development
+    ports:
+      - "4002:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./packages/api:/app/packages/api
+      - /app/node_modules
+
+  # Web (Next.js)
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile.dev
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4001
+      API_V2_URL: http://api-v2:4000
+      INTERNAL_API_URL: http://api-v1:4000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-v1
+      - api-v2
+    volumes:
+      - ./apps/web:/app/apps/web
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/.next
+
+  # Crawler
+  crawler:
+    build:
+      context: .
+      dockerfile: apps/crawler/Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./apps/crawler:/app
+
+volumes:
+  postgres_data:
+```
+
+#### 2.2 개발자 온보딩 스크립트
+```powershell
+# scripts/dev-setup.ps1
+param(
+    [string]$Environment = "development"
+)
+
+$ErrorActionPreference = "Stop"
+
+Write-Host "==================================" -ForegroundColor Cyan
+Write-Host " Entrip Development Setup " -ForegroundColor Cyan
+Write-Host "==================================" -ForegroundColor Cyan
+
+# 1. 필수 도구 확인
+function Test-Prerequisites {
+    $required = @{
+        "Docker" = { docker --version }
+        "Node.js" = { node --version }
+        "pnpm" = { pnpm --version }
+        "Git" = { git --version }
+    }
+
+    $missing = @()
+    foreach ($tool in $required.Keys) {
+        try {
+            & $required[$tool] | Out-Null
+            Write-Host "✅ $tool installed" -ForegroundColor Green
+        } catch {
+            Write-Host "❌ $tool missing" -ForegroundColor Red
+            $missing += $tool
+        }
+    }
+
+    if ($missing.Count -gt 0) {
+        Write-Host "`nMissing tools: $($missing -join ', ')" -ForegroundColor Red
+        Write-Host "Please install missing tools and retry." -ForegroundColor Yellow
+        exit 1
+    }
+}
+
+# 2. 환경 설정 파일 생성
+function Setup-Environment {
+    Write-Host "`nSetting up environment files..." -ForegroundColor Yellow
+
+    $envFiles = @{
+        ".env.local" = @"
+NODE_ENV=development
+DATABASE_URL=postgresql://entrip:entrip@localhost:5432/entrip
+JWT_SECRET=local-dev-secret-change-in-production
+REDIS_URL=redis://localhost:6379
+"@
+        "apps/api/.env" = @"
+DATABASE_URL=postgresql://entrip:entrip@localhost:5432/entrip
+JWT_SECRET=local-dev-secret-change-in-production
+PORT=4001
+"@
+        "packages/api/.env" = @"
+DATABASE_URL=postgresql://entrip:entrip@localhost:5432/entrip
+JWT_SECRET=local-dev-secret-change-in-production
+PORT=4002
+"@
+        "apps/web/.env.local" = @"
+NEXT_PUBLIC_API_URL=http://localhost:4001
+INTERNAL_API_URL=http://api:4000
+"@
+    }
+
+    foreach ($file in $envFiles.Keys) {
+        $path = Join-Path $PSScriptRoot ".." $file
+        if (!(Test-Path $path)) {
+            Set-Content -Path $path -Value $envFiles[$file]
+            Write-Host "Created $file" -ForegroundColor Green
+        }
+    }
+}
+
+# 3. Docker 환경 시작
+function Start-Docker {
+    Write-Host "`nStarting Docker services..." -ForegroundColor Yellow
+
+    docker-compose -f docker-compose.full.yml up -d
+
+    Write-Host "Waiting for services to be healthy..." -ForegroundColor Yellow
+    Start-Sleep -Seconds 10
+
+    docker-compose -f docker-compose.full.yml ps
+}
+
+# 4. 데이터베이스 초기화
+function Initialize-Database {
+    Write-Host "`nInitializing database..." -ForegroundColor Yellow
+
+    # Prisma migrate
+    docker-compose -f docker-compose.full.yml exec api-v1 pnpm prisma:migrate
+
+    # Seed data
+    docker-compose -f docker-compose.full.yml exec api-v1 pnpm prisma:seed
+
+    Write-Host "Database initialized successfully!" -ForegroundColor Green
+}
+
+# 5. 실행
+Test-Prerequisites
+Setup-Environment
+Start-Docker
+Initialize-Database
+
+Write-Host "`n==================================" -ForegroundColor Cyan
+Write-Host " Setup Complete! " -ForegroundColor Cyan
+Write-Host "==================================" -ForegroundColor Cyan
+Write-Host "`nAccess points:" -ForegroundColor Yellow
+Write-Host "  Web App: http://localhost:3000" -ForegroundColor White
+Write-Host "  API v1: http://localhost:4001" -ForegroundColor White
+Write-Host "  API v2: http://localhost:4002" -ForegroundColor White
+Write-Host "  Crawler: http://localhost:8001" -ForegroundColor White
+Write-Host "`nRun 'pnpm dev' to start development" -ForegroundColor Green
+```
+
+## 🟡 중기 개선 항목 (Mid-term Improvements)
+
+### 3. CI/CD 파이프라인 구축
+
+#### 3.1 GitHub Actions 워크플로우
+```yaml
+# .github/workflows/ci.yml
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Prisma 생성 및 캐싱
+  prisma-generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Cache Prisma binaries
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules/.prisma
+            node_modules/@prisma/engines
+          key: ${{ runner.os }}-prisma-${{ hashFiles('**/prisma/schema.prisma') }}
+          restore-keys: |
+            ${{ runner.os }}-prisma-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma:generate
+
+      - name: Upload Prisma artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: prisma-client
+          path: |
+            node_modules/.prisma
+            packages/api/src/generated
+
+  # 타입 체크
+  type-check:
+    needs: prisma-generate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Download Prisma artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: prisma-client
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm type-check
+
+  # 린트
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+  # 테스트
+  test:
+    needs: prisma-generate
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: entrip
+          POSTGRES_PASSWORD: entrip
+          POSTGRES_DB: entrip_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Download Prisma artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: prisma-client
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup test database
+        run: |
+          pnpm prisma:push
+          pnpm prisma:seed
+        env:
+          DATABASE_URL: postgresql://entrip:entrip@localhost:5432/entrip_test
+
+      - name: Run tests
+        run: pnpm test
+        env:
+          DATABASE_URL: postgresql://entrip:entrip@localhost:5432/entrip_test
+
+  # 빌드
+  build:
+    needs: [type-check, lint, test]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [web, api, api-v2]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build ${{ matrix.app }}
+        run: pnpm build --filter=${{ matrix.app }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.app }}-build
+          path: |
+            apps/*/dist
+            apps/*/.next
+            packages/*/dist
+```
+
+#### 3.2 배포 파이프라인
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy-staging:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment"
+          # Docker 이미지 빌드 및 푸시
+          docker build -t entrip-api:staging .
+          docker push ${{ secrets.DOCKER_REGISTRY }}/entrip-api:staging
+
+          # Kubernetes 배포
+          kubectl set image deployment/api api=entrip-api:staging
+          kubectl rollout status deployment/api
+
+  deploy-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run smoke tests on staging
+        run: |
+          npm run test:e2e -- --env=staging
+
+      - name: Deploy to production
+        if: success()
+        run: |
+          echo "Deploying to production environment"
+          # 프로덕션 배포 로직
+```
+
+### 4. Windows PowerShell 관리 스크립트
+
+#### 4.1 프로젝트 관리 도구
+```powershell
+# scripts/entrip.ps1
+# Entrip Project Management Tool
+
+param(
+    [Parameter(Position=0)]
+    [ValidateSet('start', 'stop', 'restart', 'status', 'logs', 'clean', 'reset', 'test', 'migrate')]
+    [string]$Command = 'help',
+
+    [Parameter()]
+    [ValidateSet('all', 'web', 'api', 'api-v2', 'postgres', 'redis', 'crawler')]
+    [string]$Service = 'all',
+
+    [switch]$Docker,
+    [switch]$Force
+)
+
+$ErrorActionPreference = "Stop"
+
+# 색상 출력 헬퍼
+function Write-Status {
+    param([string]$Message, [string]$Color = "White")
+    Write-Host $Message -ForegroundColor $Color
+}
+
+# 서비스 상태 확인
+function Get-ServiceStatus {
+    $services = @{
+        "PostgreSQL" = { Test-Connection -ComputerName localhost -Port 5432 -Count 1 -Quiet }
+        "API v1" = { Test-Connection -ComputerName localhost -Port 4001 -Count 1 -Quiet }
+        "API v2" = { Test-Connection -ComputerName localhost -Port 4002 -Count 1 -Quiet }
+        "Web" = { Test-Connection -ComputerName localhost -Port 3000 -Count 1 -Quiet }
+        "Redis" = { Test-Connection -ComputerName localhost -Port 6379 -Count 1 -Quiet }
+        "Crawler" = { Test-Connection -ComputerName localhost -Port 8001 -Count 1 -Quiet }
+    }
+
+    Write-Status "`n=== Service Status ===" "Cyan"
+    foreach ($svc in $services.Keys) {
+        $status = & $services[$svc]
+        $statusText = if ($status) { "✅ Running" } else { "❌ Stopped" }
+        $color = if ($status) { "Green" } else { "Red" }
+        Write-Status "$svc : $statusText" $color
+    }
+}
+
+# 서비스 시작
+function Start-Services {
+    Write-Status "Starting services..." "Yellow"
+
+    if ($Docker) {
+        docker-compose -f docker-compose.full.yml up -d $Service
+    } else {
+        # Native 시작
+        Start-Process -NoNewWindow -FilePath "pnpm" -ArgumentList "dev:$Service"
+    }
+
+    Start-Sleep -Seconds 5
+    Get-ServiceStatus
+}
+
+# 서비스 중지
+function Stop-Services {
+    Write-Status "Stopping services..." "Yellow"
+
+    if ($Docker) {
+        docker-compose -f docker-compose.full.yml stop $Service
+    } else {
+        # Node 프로세스 종료
+        Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force
+    }
+
+    Write-Status "Services stopped" "Green"
+}
+
+# 로그 보기
+function Show-Logs {
+    if ($Docker) {
+        docker-compose -f docker-compose.full.yml logs -f $Service
+    } else {
+        Get-Content -Path "logs/*.log" -Tail 50 -Wait
+    }
+}
+
+# 클린업
+function Clean-Project {
+    Write-Status "Cleaning project..." "Yellow"
+
+    $targets = @(
+        "node_modules",
+        ".next",
+        "dist",
+        ".turbo",
+        "coverage",
+        "*.log"
+    )
+
+    foreach ($target in $targets) {
+        Get-ChildItem -Path . -Include $target -Recurse -Force | Remove-Item -Recurse -Force
+        Write-Status "Cleaned: $target" "Green"
+    }
+
+    if ($Docker) {
+        docker-compose -f docker-compose.full.yml down -v
+        Write-Status "Docker volumes cleaned" "Green"
+    }
+}
+
+# 데이터베이스 마이그레이션
+function Run-Migration {
+    Write-Status "Running database migration..." "Yellow"
+
+    pnpm prisma:migrate
+    pnpm prisma:generate
+    pnpm prisma:seed
+
+    Write-Status "Migration complete!" "Green"
+}
+
+# 테스트 실행
+function Run-Tests {
+    Write-Status "Running tests..." "Yellow"
+
+    $testSuites = @{
+        "Unit" = "test:unit"
+        "Integration" = "test:integration"
+        "E2E" = "test:e2e"
+        "Contract" = "test:contract"
+    }
+
+    foreach ($suite in $testSuites.Keys) {
+        Write-Status "`nRunning $suite tests..." "Cyan"
+        pnpm $testSuites[$suite]
+    }
+}
+
+# 메인 실행
+switch ($Command) {
+    'start' { Start-Services }
+    'stop' { Stop-Services }
+    'restart' { Stop-Services; Start-Services }
+    'status' { Get-ServiceStatus }
+    'logs' { Show-Logs }
+    'clean' { Clean-Project }
+    'reset' { Clean-Project; pnpm install; Run-Migration; Start-Services }
+    'test' { Run-Tests }
+    'migrate' { Run-Migration }
+    default {
+        Write-Status @"
+Entrip Project Management Tool
+
+Usage: .\entrip.ps1 [command] [options]
+
+Commands:
+  start     Start services
+  stop      Stop services
+  restart   Restart services
+  status    Show service status
+  logs      Show logs
+  clean     Clean project files
+  reset     Full reset (clean + install + migrate)
+  test      Run tests
+  migrate   Run database migrations
+
+Options:
+  -Service  [all|web|api|api-v2|postgres|redis|crawler]
+  -Docker   Use Docker instead of native
+  -Force    Force operation
+
+Examples:
+  .\entrip.ps1 start -Docker
+  .\entrip.ps1 logs -Service api
+  .\entrip.ps1 reset -Force
+"@ "Cyan"
+    }
+}
+```
+
+### 5. 환경별 설정 관리
+
+#### 5.1 설정 구조
+```typescript
+// packages/shared/src/config/index.ts
+export interface EnvironmentConfig {
+  name: 'development' | 'staging' | 'production';
+  api: {
+    v1: { url: string; timeout: number; };
+    v2: { url: string; timeout: number; };
+    migrationPhase: number;
+  };
+  database: {
+    url: string;
+    poolMin: number;
+    poolMax: number;
+  };
+  redis: {
+    url: string;
+    ttl: number;
+  };
+  features: {
+    useV2Auth: boolean;
+    useV2Bookings: boolean;
+    useWebSocket: boolean;
+    useCache: boolean;
+  };
+  monitoring: {
+    enabled: boolean;
+    sampleRate: number;
+  };
+}
+
+// 환경별 설정
+const configs: Record<string, EnvironmentConfig> = {
+  development: {
+    name: 'development',
+    api: {
+      v1: { url: 'http://localhost:4001', timeout: 30000 },
+      v2: { url: 'http://localhost:4002', timeout: 30000 },
+      migrationPhase: 2
+    },
+    database: {
+      url: process.env.DATABASE_URL!,
+      poolMin: 2,
+      poolMax: 10
+    },
+    redis: {
+      url: process.env.REDIS_URL || 'redis://localhost:6379',
+      ttl: 3600
+    },
+    features: {
+      useV2Auth: true,
+      useV2Bookings: false,
+      useWebSocket: true,
+      useCache: false
+    },
+    monitoring: {
+      enabled: false,
+      sampleRate: 1.0
+    }
+  },
+
+  staging: {
+    name: 'staging',
+    api: {
+      v1: { url: 'https://staging-api.entrip.com', timeout: 10000 },
+      v2: { url: 'https://staging-api-v2.entrip.com', timeout: 10000 },
+      migrationPhase: 3
+    },
+    database: {
+      url: process.env.DATABASE_URL!,
+      poolMin: 5,
+      poolMax: 20
+    },
+    redis: {
+      url: process.env.REDIS_URL!,
+      ttl: 7200
+    },
+    features: {
+      useV2Auth: true,
+      useV2Bookings: true,
+      useWebSocket: true,
+      useCache: true
+    },
+    monitoring: {
+      enabled: true,
+      sampleRate: 0.1
+    }
+  },
+
+  production: {
+    name: 'production',
+    api: {
+      v1: { url: 'https://api.entrip.com', timeout: 5000 },
+      v2: { url: 'https://api-v2.entrip.com', timeout: 5000 },
+      migrationPhase: 1
+    },
+    database: {
+      url: process.env.DATABASE_URL!,
+      poolMin: 10,
+      poolMax: 30
+    },
+    redis: {
+      url: process.env.REDIS_URL!,
+      ttl: 86400
+    },
+    features: {
+      useV2Auth: false,
+      useV2Bookings: false,
+      useWebSocket: true,
+      useCache: true
+    },
+    monitoring: {
+      enabled: true,
+      sampleRate: 0.01
+    }
+  }
+};
+
+export function getConfig(): EnvironmentConfig {
+  const env = process.env.NODE_ENV || 'development';
+  return configs[env] || configs.development;
+}
+```
+
+#### 5.2 Feature Flag 시스템
+```typescript
+// packages/shared/src/features/flags.ts
+export class FeatureFlags {
+  private static config = getConfig();
+
+  static isEnabled(feature: keyof EnvironmentConfig['features']): boolean {
+    return this.config.features[feature];
+  }
+
+  static getMigrationPhase(): number {
+    return this.config.api.migrationPhase;
+  }
+
+  static shouldUseV2(endpoint: string): boolean {
+    const phase = this.getMigrationPhase();
+    const v2Endpoints = {
+      1: ['/api/health'],
+      2: ['/api/health', '/api/auth'],
+      3: ['/api/health', '/api/auth', '/api/bookings'],
+      4: ['*'] // 모든 엔드포인트
+    };
+
+    const allowedEndpoints = v2Endpoints[phase] || [];
+    return allowedEndpoints.includes('*') || allowedEndpoints.includes(endpoint);
+  }
+}
+```
+
+## 📊 실행 타임라인
+
+### Week 1 (즉시)
+- [ ] Prisma Binary Manager 구현 및 배포
+- [ ] Docker 개발 환경 설정 파일 작성
+- [ ] 개발팀 Docker 환경 전환 가이드 작성
+
+### Week 2-3 (단기)
+- [ ] CI/CD 파이프라인 구축
+- [ ] Windows PowerShell 스크립트 배포
+- [ ] 환경별 설정 시스템 구현
+
+### Week 4+ (중기)
+- [ ] 전체 팀 Docker/WSL2 전환
+- [ ] CI/CD 파이프라인 최적화
+- [ ] 모니터링 대시보드 구축
+
+## 📈 성공 지표
+
+### 즉시 개선 효과
+- Prisma 오류 발생률: 100% → 0%
+- 개발 환경 구축 시간: 2시간 → 10분
+- Windows 개발자 생산성: 50% 향상
+
+### 중기 개선 효과
+- CI/CD 파이프라인 실행 시간: 30분 → 10분
+- 배포 실패율: 10% → 1%
+- 환경별 설정 오류: 완전 제거
+
+## 🚀 다음 단계
+
+1. **즉시 실행**: Prisma Binary Manager 스크립트 실행
+2. **팀 공유**: Docker 환경 전환 가이드 배포
+3. **점진적 적용**: 개발자별 순차적 전환
+4. **모니터링**: 개선 효과 측정 및 피드백 수집
+
+---
+
+*작성일: 2025-09-17*
+*작성자: Entrip Development Team*
+*버전: 1.0.0*

@@ -1,0 +1,156 @@
+name: Full Monorepo Tests (Container)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  full-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare CI env file
+        run: |
+          if [ ! -f .env.local ]; then
+            cp .env.example .env.local
+          fi
+
+      - name: Show Docker versions
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Build api-v2 image
+        run: docker compose -f docker-compose.dev.yml build api-v2
+
+      - name: Start infra (postgres, redis)
+        run: docker compose -f docker-compose.dev.yml up -d postgres redis
+
+      - name: Wait for Postgres healthy
+        run: |
+          for i in {1..60}; do
+            state=$(docker inspect -f '{{.State.Health.Status}}' entrip-postgres-local 2>/dev/null || echo "")
+            if [ "$state" = "healthy" ]; then echo "Postgres healthy"; break; fi
+            echo "Waiting for Postgres... ($i)"; sleep 2;
+          done
+
+      - name: Run full test suite inside api-v2 container (with JUnit + coverage)
+        env:
+          RATE_LIMIT_PREFIX: ci-${{ github.run_id }}
+          TEST_DATABASE_URL: postgresql://entrip:entrip@postgres:5432/entrip_test
+          DATABASE_URL: postgresql://entrip:entrip@postgres:5432/entrip_test
+        run: |
+          docker compose -f docker-compose.dev.yml run --rm \
+            --entrypoint '' \
+            -e RATE_LIMIT_PREFIX \
+            -e TEST_DATABASE_URL \
+            -e DATABASE_URL \
+            api-v2 sh -lc '
+              set -e
+              cd /app
+              echo ":: @entrip/shared ::"
+              mkdir -p /app/packages/shared/reports/junit
+              JEST_JUNIT_OUTPUT_DIR=/app/packages/shared/reports/junit \
+              JEST_JUNIT_OUTPUT_NAME=junit.xml \
+              pnpm exec jest --config packages/shared/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage
+              echo ":: @entrip/ui ::"
+              mkdir -p /app/packages/ui/reports/junit
+              JEST_JUNIT_OUTPUT_DIR=/app/packages/ui/reports/junit \
+              JEST_JUNIT_OUTPUT_NAME=junit.xml \
+              pnpm exec jest --config packages/ui/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage
+              echo ":: @entrip/web ::"
+              mkdir -p /app/apps/web/reports/junit
+              JEST_JUNIT_OUTPUT_DIR=/app/apps/web/reports/junit \
+              JEST_JUNIT_OUTPUT_NAME=junit.xml \
+              pnpm exec jest --config apps/web/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage
+              echo ":: @entrip/api ::"
+              cd /app/packages/api
+              mkdir -p /app/packages/api/reports/junit
+              JEST_JUNIT_OUTPUT_DIR=/app/packages/api/reports/junit \
+              JEST_JUNIT_OUTPUT_NAME=junit.xml \
+              pnpm exec jest --runInBand --verbose --reporters=default --reporters=jest-junit --coverage
+            '
+
+      - name: Upload JUnit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-reports
+          path: |
+            packages/shared/reports/junit
+            packages/ui/reports/junit
+            apps/web/reports/junit
+            packages/api/reports/junit
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            packages/shared/coverage
+            packages/ui/coverage
+            apps/web/coverage
+            packages/api/coverage
+
+      - name: Print coverage summaries
+        if: always()
+        run: |
+          echo "\n== Coverage summaries ==\n"
+          for f in \
+            packages/shared/coverage/coverage-summary.json \
+            packages/ui/coverage/coverage-summary.json \
+            apps/web/coverage/coverage-summary.json \
+            packages/api/coverage/coverage-summary.json; do
+            if [ -f "$f" ]; then
+              echo "-- $(dirname "$f") --"
+              cat "$f" | jq '{total: .total.lines.pct, statements: .total.statements.pct, functions: .total.functions.pct, branches: .total.branches.pct}' || true
+            fi
+          done
+
+      - name: Comment coverage summary on PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const paths = [
+              'packages/shared/coverage/coverage-summary.json',
+              'packages/ui/coverage/coverage-summary.json',
+              'apps/web/coverage/coverage-summary.json',
+              'packages/api/coverage/coverage-summary.json',
+            ];
+            const read = (p) => {
+              try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; }
+            };
+            const rows = [];
+            for (const p of paths) {
+              const data = read(p);
+              if (!data) continue;
+              const dir = p.split('/coverage/')[0];
+              const t = data.total || {};
+              rows.push(`| ${dir} | ${t.lines?.pct ?? 0}% | ${t.statements?.pct ?? 0}% | ${t.functions?.pct ?? 0}% | ${t.branches?.pct ?? 0}% |`);
+            }
+            const body = [
+              '### ✅ Test & Coverage Summary',
+              '',
+              '| Package | Lines | Statements | Functions | Branches |',
+              '|---|---:|---:|---:|---:|',
+              ...rows,
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+      - name: Cleanup
+        if: always()
+        run: docker compose -f docker-compose.dev.yml down -v || true

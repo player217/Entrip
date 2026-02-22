@@ -15,6 +15,8 @@ import { logger } from './lib/logger';
 import { errorHandler } from './middlewares/error.middleware';
 import { loggingMiddleware, errorLoggingMiddleware } from './middlewares/logging.middleware';
 import { apiRateLimit } from './middlewares/rateLimit.middleware';
+import { requestId } from './middlewares/requestId.middleware';
+import { ipValidation } from './middlewares/ipValidation.middleware';
 
 // WebSocket import
 import { initializeWebSocket } from './ws';
@@ -29,6 +31,8 @@ import financeRoutes from './routes/finance/finance.route';
 import approvalsRoutes from './routes/approvals/approvals.route';
 import healthRoutes from './routes/health/health.route';
 import metricsRoutes from './routes/metrics/metrics.route';
+import notificationsRoutes from './routes/notifications/notifications.route';
+import teamBookingsRoutes from './routes/team-bookings/team-bookings.route';
 
 // Swagger
 import { setupSwagger } from './docs/swagger';
@@ -41,6 +45,8 @@ export const app: Application = express();
 
 // Global middlewares
 app.use(loggingMiddleware);
+app.use(requestId);
+app.use(ipValidation);
 
 // Enhanced Helmet security configuration - All TypeScript errors resolved
 app.use(helmet({
@@ -152,15 +158,16 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With', 'If-Match', 'X-Request-ID'],
+  exposedHeaders: ['ETag', 'X-Request-ID'],
   // Security headers
   optionsSuccessStatus: 200, // Some legacy browsers choke on 204
   maxAge: appConfig.server.isProduction ? 86400 : 3600, // Cache preflight for 24h (prod) or 1h (dev)
   preflightContinue: false, // Pass control to next handler
 }));
 app.use(compression());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(cookieParser());
 
 // Health check
@@ -186,10 +193,11 @@ apiV2.use('/accounts', accountsRoutes);
 apiV2.use('/finance', financeRoutes);
 apiV2.use('/approvals', approvalsRoutes);
 apiV2.use('/metrics', metricsRoutes);
+apiV2.use('/notifications', notificationsRoutes);
+apiV2.use('/team-bookings', teamBookingsRoutes);
 // apiV1.use('/payments', paymentRoutes);
 // apiV1.use('/messaging', messagingRoutes);
 // apiV1.use('/mail', mailRoutes);
-// apiV1.use('/notifications', notificationRoutes);
 
 // Swagger documentation
 setupSwagger(app);

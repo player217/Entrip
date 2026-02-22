@@ -1,0 +1,142 @@
+name: V2 Cutover Required Gates
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  static-contract-gates:
+    name: Static + Contract Gates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare CI env file
+        run: |
+          if [ ! -f .env.local ]; then
+            cp .env.example .env.local
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.13.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify v2 cutover config
+        run: pnpm run verify:v2-cutover
+
+      - name: Verify v2 schema (schema-only)
+        run: pnpm run verify:schema:v2
+
+      - name: Web v2 proxy contract tests
+        run: pnpm --filter @entrip/web test -- app/api/v2 app/api/auth
+
+      - name: Web bookings v2 mapping tests
+        run: pnpm --filter @entrip/web test -- route.v2-mapping.test.ts
+
+  db-and-runtime-gates:
+    name: DB + Runtime Smoke Gates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare CI env file
+        run: |
+          if [ ! -f .env.local ]; then
+            cp .env.example .env.local
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.13.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build api-v2 image
+        run: docker compose -f docker-compose.dev.yml build api-v2
+
+      - name: Start infra + api-v2
+        run: docker compose -f docker-compose.dev.yml up -d postgres redis api-v2
+
+      - name: Wait for postgres healthy
+        run: |
+          for i in {1..60}; do
+            state=$(docker inspect -f '{{.State.Health.Status}}' entrip-postgres-local 2>/dev/null || echo "")
+            if [ "$state" = "healthy" ]; then
+              echo "Postgres healthy"
+              break
+            fi
+            if [ $i -eq 60 ]; then
+              echo "Postgres health timeout"
+              exit 1
+            fi
+            sleep 2
+          done
+
+      - name: Apply DB migrations (v2)
+        env:
+          DATABASE_URL: postgresql://entrip:entrip@localhost:5432/entrip
+        run: pnpm --filter @entrip/api exec prisma migrate deploy --schema prisma/schema.prisma
+
+      - name: Verify v2 schema (with DB)
+        env:
+          DATABASE_URL: postgresql://entrip:entrip@localhost:5432/entrip
+        run: pnpm run verify:schema:v2:db
+
+      - name: Wait for api-v2 health
+        run: |
+          for i in {1..90}; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:4002/api/v2/health || echo "000")
+            if [ "$code" = "200" ]; then
+              echo "api-v2 healthy"
+              break
+            fi
+            if [ $i -eq 90 ]; then
+              echo "api-v2 health timeout"
+              docker logs --tail 300 entrip-api-v2-local || true
+              exit 1
+            fi
+            sleep 2
+          done
+
+      - name: Runtime smoke gate
+        env:
+          SMOKE_BASE_URL: http://localhost:4002
+        run: pnpm run smoke:v2
+
+      - name: Upload gate diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-cutover-gate-diagnostics
+          path: |
+            docker-compose.dev.yml
+            scripts/verify-v2-cutover.mjs
+            scripts/verify-v2-schema.mjs
+            scripts/smoke-v2-endpoints.mjs
+
+      - name: Cleanup
+        if: always()
+        run: docker compose -f docker-compose.dev.yml down -v || true
+

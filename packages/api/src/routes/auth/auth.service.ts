@@ -52,12 +52,24 @@ export class AuthService {
   /**
    * Register a new user
    */
-  async register(input: RegisterInput, companyCode: string = 'ENTRIP_MAIN'): Promise<AuthResponse> {
+  async register(input: RegisterInput, companyCode: string = 'entrip'): Promise<AuthResponse> {
+    const normalizeCompany = (code?: string) => {
+      const raw = (code || 'entrip').trim();
+      const lc = raw.toLowerCase();
+      // Map common aliases to canonical DB company codes
+      // ENTRIP uses canonical code 'ENTRIP_MAIN' in the database
+      if (lc === 'entrip' || lc === 'entrip_main' || lc === 'entrip-main') return 'ENTRIP_MAIN';
+      if (lc === 'startour' || lc === 'star') return 'star';
+      if (lc === 'happytravel' || lc === 'happy') return 'happy';
+      if (lc === 'j1') return 'j1';
+      return raw;
+    };
+    const normalizedCompany = normalizeCompany(companyCode);
     // Check if user already exists in this company
     const existingUser = await prisma.user.findFirst({
       where: {
         email: input.email,
-        companyCode: companyCode,
+        companyCode: normalizedCompany,
       },
     });
 
@@ -76,7 +88,7 @@ export class AuthService {
         password: hashedPassword,
         role: input.role || UserRole.USER,
         department: input.department,
-        companyCode: companyCode,
+        companyCode: normalizedCompany,
         isActive: true,
       },
     });
@@ -96,12 +108,23 @@ export class AuthService {
   /**
    * Authenticate user login
    */
-  async login(input: LoginInput, companyCode: string = 'ENTRIP_MAIN'): Promise<AuthResponse> {
-    // Find user by email and company
+  async login(input: LoginInput, companyCode: string = 'entrip'): Promise<AuthResponse> {
+    const normalizeCompany = (code?: string) => {
+      const raw = (code || 'entrip').trim();
+      const lc = raw.toLowerCase();
+      // Map common aliases to canonical DB company codes
+      if (lc === 'entrip' || lc === 'entrip_main' || lc === 'entrip-main') return 'ENTRIP_MAIN';
+      if (lc === 'startour' || lc === 'star') return 'star';
+      if (lc === 'happytravel' || lc === 'happy') return 'happy';
+      if (lc === 'j1') return 'j1';
+      return raw;
+    };
+    const normalizedCompany = normalizeCompany(companyCode);
+    // Find user by email AND companyCode (enforce multi-tenancy)
     const user = await prisma.user.findFirst({
       where: {
         email: input.email,
-        companyCode: companyCode,
+        companyCode: normalizedCompany,
         isActive: true,
       },
     });

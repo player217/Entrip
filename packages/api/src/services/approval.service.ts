@@ -1,4 +1,4 @@
-import { Approval, ApprovalStep, ApprovalStatus, ApprovalTargetType, ApprovalAction } from '@prisma/client';
+import { Approval, ApprovalStep, ApprovalStatus, ApprovalType, ApprovalAction } from '@prisma/client';
 import prisma from '../lib/prisma';
 
 // ============================================
@@ -8,7 +8,7 @@ import prisma from '../lib/prisma';
 export interface ApprovalCreateDto {
   title: string;
   content: string;
-  targetType: ApprovalTargetType;
+  targetType: ApprovalType;
   targetId?: string;
   amount?: number;
   currency?: string;
@@ -35,7 +35,7 @@ export interface ApprovalQueryDto {
   status?: ApprovalStatus;
   requesterId?: string;
   approverId?: string;
-  targetType?: ApprovalTargetType;
+  targetType?: ApprovalType;
   targetId?: string;
 }
 
@@ -202,7 +202,7 @@ export const processApprovalAction = async (
     throw new Error('Approval not found');
   }
 
-  if (approval.status !== 'pending') {
+  if (approval.status !== ApprovalStatus.PENDING) {
     throw new Error(`Cannot ${dto.action} ${approval.status} approval`);
   }
 
@@ -236,15 +236,15 @@ export const processApprovalAction = async (
   let newStatus: ApprovalStatus = approval.status;
   let newCurrentStep = approval.currentStep;
 
-  if (dto.action === 'reject') {
-    newStatus = 'rejected';
+  if (dto.action === ApprovalAction.REJECT) {
+    newStatus = ApprovalStatus.REJECTED;
   } else {
     // Move to next step
     newCurrentStep++;
     
     if (newCurrentStep >= approval.steps.length) {
       // All steps completed
-      newStatus = 'approved';
+      newStatus = ApprovalStatus.APPROVED;
     }
   }
 
@@ -269,7 +269,7 @@ export const processApprovalAction = async (
 export const cancelApproval = async (id: string): Promise<ApprovalWithSteps> => {
   return prisma.approval.update({
     where: { id },
-    data: { status: 'cancelled' },
+    data: { status: ApprovalStatus.CANCELLED },
     include: {
       steps: {
         orderBy: { order: 'asc' },
@@ -346,11 +346,11 @@ async function getAverageApprovalTime(whereCondition: Record<string, unknown>): 
   const approvedApprovals = await prisma.approval.findMany({
     where: {
       ...whereCondition,
-      status: 'approved',
+      status: ApprovalStatus.APPROVED,
     },
     include: {
       steps: {
-        where: { action: 'approve' },
+        where: { action: ApprovalAction.APPROVE },
         orderBy: { order: 'desc' },
         take: 1, // Get the last approval step
       },
@@ -379,7 +379,7 @@ export const getPendingApprovalsForUser = async (userId: string): Promise<Approv
   return prisma.approval.findMany({
     where: {
       deletedAt: null,
-      status: 'pending',
+      status: ApprovalStatus.PENDING,
       steps: {
         some: {
           approverId: userId,
@@ -400,7 +400,7 @@ export const getPendingApprovalsForUser = async (userId: string): Promise<Approv
  * Get approvals by target (e.g., finance record)
  */
 export const getApprovalsByTarget = async (
-  targetType: ApprovalTargetType, 
+  targetType: ApprovalType, 
   targetId: string
 ): Promise<ApprovalWithSteps[]> => {
   return prisma.approval.findMany({

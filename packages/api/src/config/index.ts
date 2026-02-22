@@ -7,7 +7,8 @@ dotenv.config();
 // Define the configuration schema with validation
 const configSchema = z.object({
   // Server Configuration
-  port: z.coerce.number().min(1).max(65535).default(4005),
+  // Align default internal port with docker-compose.dev.yml (4000)
+  port: z.coerce.number().min(1).max(65535).default(4000),
   nodeEnv: z.enum(['development', 'production', 'test']).default('development'),
   apiVersion: z.string().default('v2'),
 

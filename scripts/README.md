@@ -1,8 +1,8 @@
-# WSL/Docker Environment Scripts for Phase 2A Testing
+﻿# WSL/Docker Environment Scripts for Phase 2A Testing
 
 This directory contains comprehensive scripts for validating, setting up, and testing the Phase 2A optimistic locking implementation in WSL/Docker environments.
 
-## 🎯 Quick Start
+## ?렞 Quick Start
 
 ```bash
 # 1. Make scripts executable
@@ -18,7 +18,7 @@ scripts/setup-database.sh
 scripts/test-optimistic-locking.sh
 ```
 
-## 📋 Script Overview
+## ?뱥 Script Overview
 
 ### `validate-wsl-environment.sh`
 **Purpose**: Validates WSL/Docker environment prerequisites before testing.
@@ -40,8 +40,8 @@ VERBOSE=true scripts/validate-wsl-environment.sh
 ```
 
 **Expected Output**:
-- ✅ All checks pass → Ready for database setup
-- ❌ Issues found → Fix reported problems before proceeding
+- ??All checks pass ??Ready for database setup
+- ??Issues found ??Fix reported problems before proceeding
 
 ### `setup-database.sh`
 **Purpose**: Starts Docker services and initializes database for testing.
@@ -144,7 +144,7 @@ scripts/troubleshoot-wsl.sh --all
 - **Filesystem**: File permissions, line endings, structure
 - **Performance**: Resource usage, response times
 
-## 🔧 Environment Configuration
+## ?뵩 Environment Configuration
 
 ### Required Environment Variables
 
@@ -153,7 +153,7 @@ scripts/troubleshoot-wsl.sh --all
 export API_URL="http://localhost:4001"          # API server URL
 export TIMEOUT="10"                             # Request timeout (seconds)
 
-# Database Configuration (apps/api/.env)
+# Database Configuration (apps/api-legacy/.env)
 DATABASE_URL="postgresql://entrip:entrip@localhost:5432/entrip?schema=public"
 PORT=4000
 NODE_ENV=development
@@ -166,7 +166,7 @@ NODE_ENV=development
 3. **Line Endings**: Automatic conversion from CRLF to LF if needed
 4. **Network Access**: Docker containers accessible via localhost in WSL2
 
-## 🚀 Common Workflows
+## ?? Common Workflows
 
 ### Initial Environment Setup
 ```bash
@@ -201,38 +201,38 @@ scripts/troubleshoot-wsl.sh --fix
 scripts/setup-database.sh  # Retry setup
 ```
 
-## 📊 Test Results Interpretation
+## ?뱤 Test Results Interpretation
 
 ### Success Indicators
 ```
-✅ POST Create Booking: 201 (expected 201)
-✅ GET ETag Confirmation: 200 (expected 200)  
-✅ GET 304 Not Modified: 304 (expected 304)
-✅ PATCH 428 Precondition Required: 428 (expected 428)
-✅ PATCH 412 Precondition Failed: 412 (expected 412)
-✅ PATCH 200 + New ETag: 200 (expected 200)
+??POST Create Booking: 201 (expected 201)
+??GET ETag Confirmation: 200 (expected 200)  
+??GET 304 Not Modified: 304 (expected 304)
+??PATCH 428 Precondition Required: 428 (expected 428)
+??PATCH 412 Precondition Failed: 412 (expected 412)
+??PATCH 200 + New ETag: 200 (expected 200)
 
 Tests Passed: 6
 Tests Failed: 0
-🎉 All tests passed! Optimistic locking is working correctly.
+?럦 All tests passed! Optimistic locking is working correctly.
 ```
 
 ### Common Failure Patterns
 ```
-❌ POST Create Booking: 401 (expected 201)
-→ Issue: Authentication failed
-→ Solution: Use --test-only or provide valid credentials
+??POST Create Booking: 401 (expected 201)
+??Issue: Authentication failed
+??Solution: Use --test-only or provide valid credentials
 
-❌ PATCH 428 Precondition Required: 500 (expected 428)  
-→ Issue: ApiError not handled by error middleware
-→ Solution: Check errorHandler.ts for proper ApiError instance detection
+??PATCH 428 Precondition Required: 500 (expected 428)  
+??Issue: ApiError not handled by error middleware
+??Solution: Check errorHandler.ts for proper ApiError instance detection
 
-❌ GET 304 Not Modified: 200 (expected 304)
-→ Issue: ETag not implemented or cache headers missing
-→ Solution: Verify ETag generation in respond middleware
+??GET 304 Not Modified: 200 (expected 304)
+??Issue: ETag not implemented or cache headers missing
+??Solution: Verify ETag generation in respond middleware
 ```
 
-## 🔍 Advanced Debugging
+## ?뵇 Advanced Debugging
 
 ### Request/Response Analysis
 ```bash
@@ -248,7 +248,7 @@ curl -i -X POST http://localhost:4001/api/test-db/bookings \
 ### Database Connection Testing
 ```bash
 # Direct database test
-cd apps/api
+cd apps/api-legacy
 echo "SELECT 1 as test;" | npx prisma db execute --stdin
 
 # Check Prisma client
@@ -269,7 +269,7 @@ docker compose -f docker-compose.local.yml logs redis
 docker compose -f docker-compose.local.yml restart postgres redis
 ```
 
-## 🆘 Support and Troubleshooting
+## ?넊 Support and Troubleshooting
 
 ### Common Issues and Solutions
 
@@ -288,7 +288,7 @@ docker compose -f docker-compose.local.yml restart postgres redis
 3. Use verbose mode for detailed test output: `--verbose`
 4. Review Docker container logs for service-specific issues
 
-## 📝 Script Customization
+## ?뱷 Script Customization
 
 All scripts support environment variable configuration:
 

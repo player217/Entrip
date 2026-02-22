@@ -73,38 +73,46 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
       updatedAt: new Date().toISOString(),
     };
 
-    try {
+    const buildApiPayload = () => {
+      const startDate = formData.departureDate ? new Date(formData.departureDate) : (booking?.startDate ? new Date(booking.startDate) : undefined);
+      const endDate = formData.returnDate ? new Date(formData.returnDate) : (booking?.endDate ? new Date(booking.endDate) : undefined);
+      const diffMs = startDate && endDate ? endDate.getTime() - startDate.getTime() : undefined;
+      const diffDays = typeof diffMs === 'number' ? Math.max(0, Math.round(diffMs / (1000 * 60 * 60 * 24))) : undefined;
 
-      // Map form data to API format
-      const apiData = {
+      return {
         customerName: formData.customerName,
+        teamName: formData.customerName,
         destination: formData.destination,
-        startDate: formData.departureDate,
-        endDate: formData.returnDate,
+        origin: booking?.origin,
+        coordinator: booking?.coordinator,
+        startDate: startDate ? startDate.toISOString() : booking?.startDate,
+        endDate: endDate ? endDate.toISOString() : booking?.endDate,
         paxCount: formData.numberOfPeople,
-        status: formData.status.toUpperCase() === 'CONFIRMED' ? BookingStatus.CONFIRMED : 
-               formData.status.toUpperCase() === 'PENDING' ? BookingStatus.PENDING : 
+        totalPax: formData.numberOfPeople,
+        status: formData.status.toUpperCase() === 'CONFIRMED' ? BookingStatus.CONFIRMED :
+               formData.status.toUpperCase() === 'PENDING' ? BookingStatus.PENDING :
                BookingStatus.CANCELLED,
         notes: formData.notes,
-        // These fields are required by the API but not in the form
-        teamName: formData.customerName, // Using customer name as team name
         bookingType: BookingType.PACKAGE,
-        nights: Math.ceil((new Date(formData.returnDate).getTime() - new Date(formData.departureDate).getTime()) / (1000 * 60 * 60 * 24)),
-        days: Math.ceil((new Date(formData.returnDate).getTime() - new Date(formData.departureDate).getTime()) / (1000 * 60 * 60 * 24)) + 1,
-        totalPrice: 0, // Would need to be calculated or input
-        currency: 'KRW',
+        nights: diffDays !== undefined ? Math.max(0, diffDays) : booking?.nights,
+        days: diffDays !== undefined ? diffDays + 1 : booking?.days,
+        totalPrice: booking?.totalPrice ?? 0,
+        currency: booking?.currency ?? 'KRW',
       };
+    };
 
+    try {
+      const apiData = buildApiPayload();
+      await mutate();
       // Make the actual API call
       if (booking?.id) {
-        await updateBooking(booking.id, apiData);
+        await updateBooking(booking.id, apiData, { ifMatch: booking.version });
       } else {
         await createBooking(apiData);
       }
 
       // Revalidate to get the real data from server
-      await mutate();
-      
+
       onSave?.();
       onClose();
     } catch (err) {
@@ -171,10 +179,11 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               이메일
             </label>
             <input
+              id="email"
               type="email"
               {...register('email')}
               className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
@@ -185,14 +194,15 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              여행지 *
-            </label>
-            <input
-              type="text"
-              {...register('destination')}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-            />
+              <label htmlFor="destination" className="block text-sm font-medium text-gray-700 mb-1">
+                여행지 *
+              </label>
+              <input
+                id="destination"
+                type="text"
+                {...register('destination')}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+              />
             {errors.destination && (
               <p className="mt-1 text-sm text-red-600">{errors.destination.message}</p>
             )}
@@ -200,10 +210,11 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="departureDate" className="block text-sm font-medium text-gray-700 mb-1">
                 출발일 *
               </label>
               <input
+                id="departureDate"
                 type="date"
                 {...register('departureDate')}
                 className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
@@ -213,10 +224,11 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="returnDate" className="block text-sm font-medium text-gray-700 mb-1">
                 귀국일 *
               </label>
               <input
+                id="returnDate"
                 type="date"
                 {...register('returnDate')}
                 className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
@@ -229,10 +241,11 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="numberOfPeople" className="block text-sm font-medium text-gray-700 mb-1">
                 인원 *
               </label>
               <input
+                id="numberOfPeople"
                 type="number"
                 min="1"
                 {...register('numberOfPeople', { valueAsNumber: true })}
@@ -243,10 +256,11 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
                 상태
               </label>
               <select
+                id="status"
                 {...register('status')}
                 className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
               >
@@ -258,10 +272,11 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
               메모
             </label>
             <textarea
+              id="notes"
               {...register('notes')}
               rows={3}
               className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"

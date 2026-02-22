@@ -3,18 +3,20 @@ import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { LogViewer } from '../LogViewer';
 
-// Mock logger module
-const mockGetRecentLogs = jest.fn();
-const mockClearLogs = jest.fn();
-const mockDownloadLogs = jest.fn();
-
+// Mock logger module (avoid hoist issue by defining fns inside mock and grabbing refs after)
 jest.mock('@entrip/shared', () => ({
   logger: {
-    getRecentLogs: mockGetRecentLogs,
-    clearLogs: mockClearLogs,
-    downloadLogs: mockDownloadLogs,
+    getRecentLogs: jest.fn(),
+    clearLogs: jest.fn(),
+    downloadLogs: jest.fn(),
   },
 }));
+
+// Get mock references from mocked module
+const { logger } = require('@entrip/shared') as { logger: { getRecentLogs: jest.Mock, clearLogs: jest.Mock, downloadLogs: jest.Mock } };
+const mockGetRecentLogs = logger.getRecentLogs;
+const mockClearLogs = logger.clearLogs;
+const mockDownloadLogs = logger.downloadLogs;
 
 describe('LogViewer', () => {
   const mockLogs = [
@@ -44,6 +46,7 @@ describe('LogViewer', () => {
   let originalEnv: string | undefined;
 
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
     mockGetRecentLogs.mockReturnValue(mockLogs);
     mockClearLogs.mockImplementation(() => {});
@@ -56,6 +59,7 @@ describe('LogViewer', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     // Restore original NODE_ENV
     // @ts-expect-error - we need to modify this for testing
     process.env.NODE_ENV = originalEnv;
@@ -77,13 +81,14 @@ describe('LogViewer', () => {
     expect(button).not.toBeInTheDocument();
   });
 
-  it('opens log panel when clicking floating button', () => {
+  it('opens log panel when clicking floating button', async () => {
     render(<LogViewer />);
     
     const button = screen.getByTitle('로그 뷰어');
     fireEvent.click(button);
     
     expect(screen.getByText('로그 뷰어')).toBeInTheDocument();
+    jest.advanceTimersByTime(1100);
     expect(screen.getByText('Application started')).toBeInTheDocument();
   });
 
@@ -93,11 +98,10 @@ describe('LogViewer', () => {
     const button = screen.getByTitle('로그 뷰어');
     fireEvent.click(button);
     
-    await waitFor(() => {
-      expect(screen.getByText('Application started')).toBeInTheDocument();
-      expect(screen.getByText('Request failed')).toBeInTheDocument();
-      expect(screen.getByText('Session expiring soon')).toBeInTheDocument();
-    });
+    jest.advanceTimersByTime(1100);
+    expect(screen.getByText('Application started')).toBeInTheDocument();
+    expect(screen.getByText('Request failed')).toBeInTheDocument();
+    expect(screen.getByText('Session expiring soon')).toBeInTheDocument();
   });
 
   it('filters logs by level', async () => {
@@ -123,10 +127,9 @@ describe('LogViewer', () => {
     const button = screen.getByTitle('로그 뷰어');
     fireEvent.click(button);
     
-    await waitFor(() => {
-      const logWithData = screen.getByText('Session expiring soon').closest('div');
-      fireEvent.click(logWithData!);
-    });
+    jest.advanceTimersByTime(1100);
+    const logWithData = screen.getByText('Session expiring soon').closest('div');
+    fireEvent.click(logWithData!);
     
     // Check if details section appears
     const detailsButton = screen.getByText('데이터 보기');
@@ -159,12 +162,11 @@ describe('LogViewer', () => {
     expect(mockDownloadLogs).toHaveBeenCalled();
   });
 
-  it('closes panel when clicking close button', () => {
+  it('closes panel when clicking close button', async () => {
     render(<LogViewer />);
     
     const button = screen.getByTitle('로그 뷰어');
     fireEvent.click(button);
-    
     expect(screen.getByText('로그 뷰어')).toBeInTheDocument();
     
     const closeButton = screen.getAllByRole('button').find(btn => 
@@ -172,11 +174,11 @@ describe('LogViewer', () => {
     );
     fireEvent.click(closeButton!);
     
+    jest.advanceTimersByTime(200);
     expect(screen.queryByText('로그 뷰어')).not.toBeInTheDocument();
   });
 
   it('updates logs periodically when open', async () => {
-    jest.useFakeTimers();
     
     render(<LogViewer />);
     
@@ -184,11 +186,9 @@ describe('LogViewer', () => {
     fireEvent.click(button);
     
     expect(mockGetRecentLogs).toHaveBeenCalledTimes(1);
+    jest.advanceTimersByTime(2000);
+    expect(mockGetRecentLogs).toHaveBeenCalledTimes(3);
     
-    jest.advanceTimersByTime(1000);
-    
-    expect(mockGetRecentLogs).toHaveBeenCalledTimes(2);
-    
-    jest.useRealTimers();
+    // timers restored in afterEach
   });
 });

@@ -49,9 +49,13 @@ export interface ListQuery {
  * Create a new booking
  */
 export const createBooking = async (dto: BookingCreateDto): Promise<Booking> => {
+  // Generate booking number
+  const bookingNumber = `BK${Date.now()}`;
+
   return prisma.booking.create({
     data: {
       ...dto,
+      bookingNumber,
       revenue: dto.revenue ? String(dto.revenue) : null, // Convert to string for SQLite Decimal
     },
   });

@@ -1,0 +1,14 @@
+{
+  "customerName": "홍길동",
+  "teamName": "E2E-1759990407",
+  "bookingType": "FIT",
+  "destination": "Tokyo",
+  "startDate": "2025-10-10T00:00:00.000Z",
+  "endDate": "2025-10-12T00:00:00.000Z",
+  "paxCount": 2,
+  "nights": 2,
+  "days": 3,
+  "totalPrice": 1000000,
+  "currency": "KRW",
+  "notes": "CLI E2E smoke"
+}

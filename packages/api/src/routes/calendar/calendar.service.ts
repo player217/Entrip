@@ -96,7 +96,7 @@ export class CalendarService extends BaseService<CalendarEvent> {
       color: input.color || this.getRandomColor(),
       description: input.description,
       location: input.location,
-      status: CalendarEventStatus.confirmed,
+      status: CalendarEventStatus.CONFIRMED,
       companyCode,
       createdById: userId,
     };
@@ -269,9 +269,9 @@ export class CalendarService extends BaseService<CalendarEvent> {
           },
         },
       }),
-      this.count(companyCode, { status: CalendarEventStatus.confirmed }),
-      this.count(companyCode, { status: CalendarEventStatus.pending }),
-      this.count(companyCode, { status: CalendarEventStatus.cancelled }),
+      this.count(companyCode, { status: CalendarEventStatus.CONFIRMED }),
+      this.count(companyCode, { status: CalendarEventStatus.PENDING }),
+      this.count(companyCode, { status: CalendarEventStatus.CANCELLED }),
     ]);
 
     return {

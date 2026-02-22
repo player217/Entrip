@@ -11,6 +11,8 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        // Forward test run id to isolate rate limit keys in CI/E2E
+        'X-Test-Run-Id': request.headers.get('x-test-run-id') || '',
       },
       body: JSON.stringify(body),
     });

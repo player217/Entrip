@@ -1,0 +1,7 @@
+[
+  {
+    "name": "local",
+    "smokeBaseUrl": "http://localhost:4002",
+    "databaseUrl": "postgresql://entrip:entrip@localhost:5432/entrip"
+  }
+]

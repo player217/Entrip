@@ -85,6 +85,15 @@ export interface Settlement {
   outstandingBalance: number;
 }
 
+export interface TeamBookingAttachment {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  uploadDate: string;
+  category: 'contract' | 'invoice' | 'itinerary' | 'passport' | 'other';
+}
+
 // Customer types
 export interface CustomerContact {
   name: string;
@@ -184,14 +193,7 @@ export interface TeamBooking {
   status: 'draft' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
   cancellationReason?: string;
   memo?: string;
-  attachments?: {
-    id: string;
-    fileName: string;
-    fileType: string;
-    fileSize: number;
-    uploadDate: string;
-    category: 'contract' | 'invoice' | 'itinerary' | 'passport' | 'other';
-  }[];
+  attachments?: TeamBookingAttachment[];
   
   // System fields
   createdAt: string;
@@ -235,16 +237,18 @@ export interface TeamBookingListResponse {
   pageSize: number;
 }
 
+export interface TeamBookingHistoryEntry {
+  id: string;
+  action: 'created' | 'updated' | 'status_changed' | 'payment_added';
+  description: string;
+  changedBy: string;
+  changedAt: string;
+  changes?: Record<string, unknown>;
+}
+
 export interface TeamBookingDetailResponse {
   booking: TeamBooking;
-  history?: {
-    id: string;
-    action: 'created' | 'updated' | 'status_changed' | 'payment_added';
-    description: string;
-    changedBy: string;
-    changedAt: string;
-    changes?: Record<string, unknown>;
-  }[];
+  history?: TeamBookingHistoryEntry[];
 }
 
 // Filter types for queries

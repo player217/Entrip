@@ -19,7 +19,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
         
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
@@ -28,7 +27,10 @@ jobs:
         
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
-      
+
+    - name: Cutover gate ownership
+      run: echo "v2 cutover required checks are enforced in .github/workflows/v2-cutover-gates.yml"
+
     - name: Build design tokens
       run: pnpm run build:tokens
       
@@ -53,7 +55,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
         
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
@@ -62,6 +63,22 @@ jobs:
         
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
-      
+
+    - name: Cutover gate ownership
+      run: echo "v2 cutover required checks are enforced in .github/workflows/v2-cutover-gates.yml"
+
     - name: Run tests
       run: pnpm run test:coverage
+
+    - name: Upload cutover diagnostics
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cutover-diagnostics
+        path: |
+          scripts/verify-v2-cutover.mjs
+          scripts/verify-v2-schema.mjs
+          scripts/smoke-v2-endpoints.mjs
+          docker-compose.dev.yml
+          docker-compose.prod.yml
+
