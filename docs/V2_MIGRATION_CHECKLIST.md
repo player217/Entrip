@@ -111,3 +111,15 @@ curl "http://localhost:3000/api/exchange" | jq .
   - `pnpm --filter @entrip/api exec prisma migrate deploy`
   - `pnpm run verify:schema:v2:db`
 - Validation note (2026-02-22): verified on `entrip_v2_gate2` local DB.
+
+### Validation Snapshot (2026-02-22)
+- PASS `pnpm run verify:v2-cutover`
+- PASS `pnpm run verify:schema:v2`
+- PASS `pnpm --filter @entrip/web test -- app/api/v2 app/api/auth route.v2-mapping.test.ts`
+  - 14 suites, 26 tests passed
+- PASS `SMOKE_BASE_URL=http://localhost:4002 pnpm run smoke:v2`
+  - `/api/v2/health`: 200
+  - protected endpoints: 401 contract confirmed
+- Open items:
+  - run `pnpm run verify:schema:v2:db` against staging/prod DB URL
+  - run `SMOKE_BASE_URL=<staging-or-prod-url> pnpm run smoke:v2`

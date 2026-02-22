@@ -75,3 +75,19 @@
 - v2 cutover gates exist and pass locally.
 - Local runtime rebuild is automated (`pnpm run ops:rebuild:v2`).
 - Full v1 retirement is not complete yet.
+
+## Verification Snapshot (2026-02-22)
+- PASS `pnpm run verify:v2-cutover`
+- PASS `pnpm run verify:schema:v2`
+- PASS `pnpm --filter @entrip/web test -- app/api/v2 app/api/auth route.v2-mapping.test.ts`
+  - 14 suites, 26 tests passed
+- PASS `SMOKE_BASE_URL=http://localhost:4002 pnpm run smoke:v2`
+  - `/api/v2/health` 200
+  - protected contract (`200/401/403`) maintained in no-login mode
+
+## Remaining Mandatory Work
+1. Staging/production DB drift verification (`verify:schema:v2:db`).
+2. 7-day consecutive staging+production smoke evidence.
+3. Multi-company integration matrix evidence (`entrip`, `j1`, `startour`, `happytravel`).
+4. WebSocket/event consumer compatibility evidence.
+5. Rollback drill record (MTTR + runbook update).
