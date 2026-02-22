@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_URL = process.env.INTERNAL_API_URL || 'http://localhost:4001';
+const API_URL = process.env.INTERNAL_API_V2_URL || 'http://localhost:4002';
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const authToken = request.cookies.get('auth-token');
     
     // Forward the request to the actual API server with cookie
-    const response = await fetch(`${API_URL}/api/auth/logout`, {
+    const response = await fetch(`${API_URL}/api/v2/auth/logout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -30,6 +30,10 @@ services:
       PORT: 4000
       NODE_ENV: production
       REDIS_URL: redis://redis:6379
+      BOOKING_API_MODE: v2
+      TEAM_BOOKING_API_MODE: v2
+      MIGRATION_PHASE: 3
+      API_MIGRATION_PHASE: 3
     depends_on:
       postgres:
         condition: service_healthy
@@ -63,6 +67,10 @@ services:
       PORT: 4002
       NODE_ENV: production
       REDIS_URL: redis://redis:6379
+      BOOKING_API_MODE: v2
+      TEAM_BOOKING_API_MODE: v2
+      MIGRATION_PHASE: 3
+      API_MIGRATION_PHASE: 3
     depends_on:
       postgres:
         condition: service_healthy
@@ -118,6 +126,8 @@ services:
       INTERNAL_API_V2_URL: http://api-v2:4002
       NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
       NEXT_PUBLIC_EXCHANGE_RATE_API_KEY: ${NEXT_PUBLIC_EXCHANGE_RATE_API_KEY}
+      NEXT_PUBLIC_BOOKING_API_MODE: v2
+      NEXT_PUBLIC_TEAM_BOOKING_API_MODE: v2
       NODE_ENV: production
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]

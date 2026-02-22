@@ -195,6 +195,5 @@ app.get('/exim', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`[fx-free] listening on http://localhost:${PORT}`);
+  process.stdout.write(`[fx-free] listening on http://localhost:${PORT}\n`);
 });
-

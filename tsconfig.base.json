@@ -38,9 +38,13 @@
   "exclude": [
     "node_modules",
     "dist",
+    "**/dist/**",
     "build",
+    "**/build/**",
     ".next",
+    "**/.next/**",
     "out",
+    "**/out/**",
     "docs",
     "**/*.md",
     "**/*_backup_*/**",
