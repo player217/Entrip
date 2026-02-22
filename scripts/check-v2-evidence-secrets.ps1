@@ -20,13 +20,13 @@ $required = @(
     "PRODUCTION_DATABASE_URL"
 )
 
-$raw = gh secret list --repo $Repo
 $existing = @()
-if (-not [string]::IsNullOrWhiteSpace($raw)) {
+$jsonNames = gh secret list --repo $Repo --json name --jq ".[].name"
+if (-not [string]::IsNullOrWhiteSpace($jsonNames)) {
     $existing = @(
-        $raw -split "`r?`n" |
+        $jsonNames -split "`r?`n" |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-        ForEach-Object { ($_ -split "\s+")[0].Trim() }
+        ForEach-Object { $_.Trim() }
     )
 }
 
