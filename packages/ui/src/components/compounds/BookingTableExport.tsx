@@ -11,6 +11,40 @@ import {
   waitForStyles,
   type CalendarPrintOptions
 } from '../../utils/calendarPrint';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
+
+// 헬퍼: Blob 저장
+const saveBlob = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
+
+// 헬퍼: 캘린더 DOM을 이미지로 캡처(html2canvas 사용)
+const captureCalendarImage = async (selector = '.calendar-month'): Promise<{ dataUrl: string; width: number; height: number; } | null> => {
+  const el = document.querySelector(selector) as HTMLElement | null;
+  if (!el) return null;
+  const html2canvas = (await import('html2canvas')).default;
+  const scale = Math.min(2, window.devicePixelRatio || 1) * 2; // 품질 우선, 과도한 용량 방지
+  const canvas = await html2canvas(el, {
+    backgroundColor: '#ffffff',
+    scale,
+    useCORS: true,
+    allowTaint: true,
+    logging: false,
+    windowWidth: document.documentElement.clientWidth,
+  });
+  const dataUrl = canvas.toDataURL('image/png');
+  return { dataUrl, width: canvas.width, height: canvas.height };
+};
 
 interface BookingTableExportProps {
   bookings: BookingEntry[];
@@ -37,52 +71,49 @@ export const BookingTableExport: React.FC<BookingTableExportProps> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const handleExport = async (type: 'excel' | 'pdf' | 'print') => {
+    // 드롭다운 오버레이가 캡처에 포함되지 않도록 먼저 닫고 한 프레임 대기
+    if (isOpen) {
+      setIsOpen(false);
+      await new Promise((r) => requestAnimationFrame(() => r(null)));
+    }
     if (type === 'print') {
       if (viewType === 'calendar') {
-        // 새로운 캘린더 출력 로직
+        // 옵션 A: html2canvas로 이미지 캡처 → jsPDF로 생성 → 자동 인쇄
         try {
-          const calendarElement = document.querySelector('.calendar-month');
-          if (!calendarElement) {
+          const captured = await captureCalendarImage('.calendar-month');
+          if (!captured) {
             console.error('Calendar element not found');
-            window.print(); // 폴백으로 기본 출력
-            return;
+            return handleLegacyCalendarPrint();
           }
 
-          // 월간 합계 데이터 설정
-          if (monthlySummary) {
-            calendarElement.setAttribute('data-print-summary', JSON.stringify(monthlySummary));
+          const { dataUrl, width, height } = captured;
+          const doc = new jsPDF('l', 'mm', 'a4');
+          const pageWidth = (doc as any).internal.pageSize.getWidth();
+          const pageHeight = (doc as any).internal.pageSize.getHeight();
+          const margin = 8;
+          const usableW = pageWidth - margin * 2;
+          const usableH = pageHeight - margin * 2;
+          const imgRatio = width / height;
+          let renderW = usableW;
+          let renderH = renderW / imgRatio;
+          if (renderH > usableH) {
+            renderH = usableH;
+            renderW = renderH * imgRatio;
           }
-          calendarElement.setAttribute('data-print-title', title);
-
-          // 출력 옵션 설정
-          const printOptions: CalendarPrintOptions = {
-            preserveColors: true,
-            includesSummary: true,
-            pageOrientation: 'landscape',
-            paperSize: 'A4'
-          };
-
-          // 출력용 HTML 생성
-          const printContent = await createPrintableCalendar(calendarElement, printOptions);
-          
-          // 출력 창 열기
-          const printWindow = createPrintWindow(printContent, printOptions);
-          
-          // 스타일 로드 대기
-          await waitForStyles(printWindow);
-          
-          // 출력 실행
-          setTimeout(() => {
-            printWindow.print();
-            // 출력 후 창 닫기
-            setTimeout(() => {
-              printWindow.close();
-            }, 100);
-          }, 500);
-          
+          const x = (pageWidth - renderW) / 2;
+          const y = (pageHeight - renderH) / 2;
+          doc.addImage(dataUrl, 'PNG', x, y, renderW, renderH, undefined, 'FAST');
+          // 자동 인쇄
+          (doc as any).autoPrint?.();
+          const blob = doc.output('blob');
+          const url = URL.createObjectURL(blob);
+          const win = window.open(url, '_blank');
+          if (!win) {
+            // 새 창 차단 시 저장으로 폴백
+            saveBlob(blob, `Entrip_${title.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+          }
         } catch (error) {
-          console.error('Calendar print failed:', error);
-          // 폴백: 기존 출력 방식 사용
+          console.error('Calendar print (pdf) failed:', error);
           handleLegacyCalendarPrint();
         }
       } else {
@@ -95,9 +126,141 @@ export const BookingTableExport: React.FC<BookingTableExportProps> = ({
         printWindow.document.close();
         printWindow.print();
       }
-    } else {
-      // Excel, PDF 내보내기는 실제 구현 필요
-      alert(`${type.toUpperCase()} 내보내기 기능을 구현해야 합니다.`);
+    } else if (type === 'pdf') {
+      try {
+        if (viewType === 'calendar') {
+          // 현재 화면 레이아웃을 그대로 PDF로
+          const captured = await captureCalendarImage('.calendar-month');
+          if (!captured) throw new Error('Calendar element not found');
+          const { dataUrl, width, height } = captured;
+          const doc = new jsPDF('l', 'mm', 'a4');
+          const pageWidth = (doc as any).internal.pageSize.getWidth();
+          const pageHeight = (doc as any).internal.pageSize.getHeight();
+          const margin = 8;
+          const usableW = pageWidth - margin * 2;
+          const usableH = pageHeight - margin * 2;
+          const imgRatio = width / height;
+          let renderW = usableW;
+          let renderH = renderW / imgRatio;
+          if (renderH > usableH) {
+            renderH = usableH;
+            renderW = renderH * imgRatio;
+          }
+          const x = (pageWidth - renderW) / 2;
+          const y = (pageHeight - renderH) / 2;
+          doc.addImage(dataUrl, 'PNG', x, y, renderW, renderH, undefined, 'FAST');
+          const fileName = `Entrip_${title.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+          doc.save(fileName);
+        } else {
+          // 리스트 뷰: 기존 표 기반 PDF
+          const doc = new jsPDF('l', 'mm', 'a4');
+          const pageWidth = (doc as any).internal.pageSize.getWidth();
+          const pageHeight = (doc as any).internal.pageSize.getHeight();
+          doc.setFillColor(1, 107, 159);
+          doc.rect(0, 0, pageWidth, 16, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(12);
+          doc.text(title, pageWidth / 2, 10, { align: 'center' } as any);
+          const rows = bookings.map(b => {
+            const revenue = (b as any).revenue || 0;
+            const cost = (b as any).cost || 0;
+            const profit = revenue - cost;
+            return [
+              (b as any).code || (b as any).id || '',
+              (b as any).name || '',
+              new Date((b as any).date).toISOString().slice(0, 10),
+              (b as any).manager || '',
+              (b as any).paxCount ?? 0,
+              revenue.toLocaleString(),
+              cost.toLocaleString(),
+              profit.toLocaleString(),
+              ((revenue > 0 ? (profit / revenue) * 100 : 0).toFixed(1) + '%')
+            ];
+          });
+          (doc as any).autoTable({
+            head: [['코드','상품/팀명','날짜','담당자','인원','매출','원가','수익','수익률']],
+            body: rows,
+            startY: 22,
+            styles: { fontSize: 9, cellPadding: 2 },
+            headStyles: { fillColor: [1, 107, 159], textColor: 255 },
+            columnStyles: {
+              0: { cellWidth: 22 },
+              1: { cellWidth: 60 },
+              2: { cellWidth: 24 },
+              3: { cellWidth: 24 },
+              4: { cellWidth: 16, halign: 'right' },
+              5: { cellWidth: 24, halign: 'right' },
+              6: { cellWidth: 24, halign: 'right' },
+              7: { cellWidth: 24, halign: 'right' },
+              8: { cellWidth: 18, halign: 'right' }
+            }
+          });
+          doc.setTextColor(120, 120, 120);
+          doc.setFontSize(8);
+          doc.text('Entrip Travel Management System', pageWidth / 2, pageHeight - 6, { align: 'center' } as any);
+          const fileName = `Entrip_${title.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+          doc.save(fileName);
+        }
+      } catch (err) {
+        console.error('PDF export failed:', err);
+        alert('PDF 내보내기에 실패했습니다. 브라우저 인쇄를 사용해 주세요.');
+      }
+    } else if (type === 'excel') {
+      try {
+        if (viewType === 'calendar') {
+          // 현재 레이아웃을 이미지로 캡처하여 Excel 시트에 삽입
+          const captured = await captureCalendarImage('.calendar-month');
+          if (!captured) throw new Error('Calendar element not found');
+          const { dataUrl, width, height } = captured;
+          const workbook = new ExcelJS.Workbook();
+          const sheet = workbook.addWorksheet('Calendar');
+          // 페이지 설정: 가로 / 한 페이지에 맞춤
+          sheet.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 1, margins: { left: 0.2, right: 0.2, top: 0.2, bottom: 0.2, header: 0.0, footer: 0.0 } } as any;
+          // 이미지 추가
+          const imageId = workbook.addImage({ base64: dataUrl, extension: 'png' });
+          // 픽셀 단위 배치: (0,0)에서 시작, 원본 크기(스케일 0.5 적용하여 용지 폭에 맞춤)
+          const scale = 0.5; // 너무 큰 시트 방지, Excel 내부에서 맞춤
+          sheet.addImage(imageId, {
+            tl: { col: 0, row: 0 },
+            ext: { width: Math.round(width * scale), height: Math.round(height * scale) },
+            editAs: 'oneCell'
+          });
+          // 파일 저장
+          const buffer = await workbook.xlsx.writeBuffer();
+          saveBlob(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `Entrip_${title.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
+        } else {
+          // 리스트 뷰: 기존 표 기반 Excel(xlsx)
+          const wsData: (string | number)[][] = [];
+          wsData.push([title]);
+          wsData.push(['생성일', new Date().toISOString().slice(0, 10)]);
+          wsData.push([]);
+          wsData.push(['코드', '상품/팀명', '날짜', '담당자', '인원', '매출', '원가', '수익', '수익률']);
+          bookings.forEach(b => {
+            const revenue = (b as any).revenue || 0;
+            const cost = (b as any).cost || 0;
+            const profit = revenue - cost;
+            wsData.push([
+              (b as any).code || (b as any).id || '',
+              (b as any).name || '',
+              new Date((b as any).date).toISOString().slice(0, 10),
+              (b as any).manager || '',
+              (b as any).paxCount ?? 0,
+              revenue,
+              cost,
+              profit,
+              revenue > 0 ? +(((profit / revenue) * 100).toFixed(1)) : 0
+            ]);
+          });
+          const wb = XLSX.utils.book_new();
+          const ws = XLSX.utils.aoa_to_sheet(wsData);
+          XLSX.utils.book_append_sheet(wb, ws, 'Export');
+          const fileName = `Entrip_${title.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`;
+          XLSX.writeFile(wb, fileName);
+        }
+      } catch (err) {
+        console.error('Excel export failed:', err);
+        alert('Excel 내보내기에 실패했습니다.');
+      }
     }
     
     onExport?.(type);
