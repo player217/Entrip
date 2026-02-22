@@ -1,0 +1,17 @@
+[
+  {
+    "name": "local",
+    "smokeBaseUrl": "http://localhost:4002",
+    "databaseUrl": "postgresql://entrip:entrip@localhost:5432/entrip"
+  },
+  {
+    "name": "staging",
+    "smokeBaseUrl": "https://staging-api-v2.example.com",
+    "databaseUrl": "postgresql://USER:PASSWORD@HOST:5432/DB_NAME"
+  },
+  {
+    "name": "production",
+    "smokeBaseUrl": "https://api-v2.example.com",
+    "databaseUrl": "postgresql://USER:PASSWORD@HOST:5432/DB_NAME"
+  }
+]

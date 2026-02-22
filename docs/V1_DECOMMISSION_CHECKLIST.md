@@ -92,3 +92,8 @@
 3. Multi-company integration matrix evidence (`entrip`, `j1`, `startour`, `happytravel`).
 4. WebSocket/event consumer compatibility evidence.
 5. Rollback drill record (MTTR + runbook update).
+
+### Execution Helper
+- Use `scripts/verify-v2-targets.ps1` to run target-by-target schema/smoke gates and emit timestamped evidence:
+  - `powershell -ExecutionPolicy Bypass -File scripts/verify-v2-targets.ps1 -TargetsFile <private-targets.json>`
+  - report: `artifacts/v2-gates/v2-gates-<timestamp>.md`

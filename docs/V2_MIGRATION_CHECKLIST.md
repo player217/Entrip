@@ -92,6 +92,13 @@ curl "http://localhost:3000/api/exchange" | jq .
   - `SMOKE_RETRIES` (default: `2`)
 - Without login credentials, protected endpoints are validated with `200/401/403` contract.
 
+### Multi-target Evidence (staging + production)
+- Copy `scripts/config/v2-gate-targets.example.json` to a private file and fill real URLs/DB URLs.
+- Run:
+  - `powershell -ExecutionPolicy Bypass -File scripts/verify-v2-targets.ps1 -TargetsFile <private-targets.json>`
+- Output report:
+  - `artifacts/v2-gates/v2-gates-<timestamp>.md`
+
 ### Rollback policy
 - Do not re-enable v1 fallback flags.
 - Handle incidents by fixing v2 route/service/data issues first.
