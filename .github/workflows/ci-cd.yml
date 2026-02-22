@@ -49,17 +49,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Verify v2 cutover config
-        run: pnpm run verify:v2-cutover
-
-      - name: Verify v2 schema (schema-only)
-        run: pnpm run verify:schema:v2
-
-      - name: Run web v2 proxy contract tests
-        run: pnpm --filter @entrip/web test -- app/api/v2 app/api/auth
-
-      - name: Run web bookings proxy v2 mapping tests
-        run: pnpm --filter @entrip/web test -- route.v2-mapping.test.ts
+      - name: Cutover gate ownership
+        run: echo "v2 cutover required checks are enforced in .github/workflows/v2-cutover-gates.yml"
 
       - name: Run linting
         run: |
@@ -77,11 +68,6 @@ jobs:
           pnpm prisma migrate deploy
           pnpm prisma db seed
 
-      - name: Verify v2 schema (with DB)
-        env:
-          DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
-        run: pnpm run verify:schema:v2:db
-
       - name: Run tests
         env:
           DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
@@ -89,18 +75,6 @@ jobs:
         run: |
           pnpm test:coverage
           pnpm test:e2e
-
-      - name: Upload cutover diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cutover-diagnostics
-          path: |
-            scripts/verify-v2-cutover.mjs
-            scripts/verify-v2-schema.mjs
-            scripts/smoke-v2-endpoints.mjs
-            docker-compose.dev.yml
-            docker-compose.prod.yml
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
