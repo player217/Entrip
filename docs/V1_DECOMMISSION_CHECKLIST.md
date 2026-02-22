@@ -79,6 +79,7 @@
 ## Verification Snapshot (2026-02-22)
 - PASS `pnpm run verify:v2-cutover`
 - PASS `pnpm run verify:schema:v2`
+- PASS `DATABASE_URL=postgresql://entrip:entrip@localhost:5432/entrip pnpm run verify:schema:v2:db`
 - PASS `pnpm --filter @entrip/web test -- app/api/v2 app/api/auth route.v2-mapping.test.ts`
   - 14 suites, 26 tests passed
 - PASS `SMOKE_BASE_URL=http://localhost:4002 pnpm run smoke:v2`
