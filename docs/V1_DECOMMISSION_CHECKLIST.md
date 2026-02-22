@@ -100,3 +100,4 @@
 - Daily CI evidence collection:
   - workflow: `.github/workflows/v2-cutover-daily-evidence.yml`
   - required secrets per target: `<TARGET>_URL`, `<TARGET>_DATABASE_URL`
+  - setup guide: `docs/V2_EVIDENCE_SECRETS_SETUP.md`

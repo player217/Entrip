@@ -101,6 +101,7 @@ curl "http://localhost:3000/api/exchange" | jq .
 - Optional daily automation:
   - workflow: `.github/workflows/v2-cutover-daily-evidence.yml`
   - required secrets: `STAGING_URL`, `STAGING_DATABASE_URL`, `PRODUCTION_URL`, `PRODUCTION_DATABASE_URL`
+  - setup/validation guide: `docs/V2_EVIDENCE_SECRETS_SETUP.md`
 
 ### Rollback policy
 - Do not re-enable v1 fallback flags.
