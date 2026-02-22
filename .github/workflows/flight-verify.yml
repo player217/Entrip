@@ -32,22 +32,30 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+        cache: 'pnpm'
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 10.13.1
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
         
     - name: Install dependencies and build
       run: |
-        cd apps/api
-        npm ci
-        npm run build
+        cd apps/api-legacy
+        pnpm run build
         
     - name: Run database migrations
       run: |
-        cd apps/api
-        DATABASE_URL="postgresql://entrip:entrip@localhost:5432/entrip" npx prisma migrate dev --name ci-test
+        cd apps/api-legacy
+        DATABASE_URL="postgresql://entrip:entrip@localhost:5432/entrip" pnpm exec prisma db push --accept-data-loss
         
     - name: Start API server
       run: |
-        cd apps/api
-        DATABASE_URL="postgresql://entrip:entrip@localhost:5432/entrip" npm run start &
+        cd apps/api-legacy
+        DATABASE_URL="postgresql://entrip:entrip@localhost:5432/entrip" pnpm run start &
         sleep 15
         
     - name: Check Flight API Health

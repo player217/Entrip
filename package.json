@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "node node_modules/prisma/build/index.js generate --schema packages/api/prisma/schema.prisma || true",
+    "postinstall": "pnpm run prisma:generate:v2 || true",
     "dev": "cross-env NODE_OPTIONS=--no-warnings NEXT_TELEMETRY_DISABLED=1 pnpm run build:tokens && turbo run dev",
     "dev:all": "npm-run-all --parallel dev:web dev:api-v2",
     "dev:web": "pnpm --filter @entrip/web dev",
@@ -19,8 +19,10 @@
     "dev:docker": "docker-compose -f docker-compose.dev.yml up --build",
     "dev:docker:detached": "docker-compose -f docker-compose.dev.yml up --build -d",
     "db:reseed:v1": "bash scripts/db.reset.seed.sh",
+    "prisma:generate:v2": "node node_modules/prisma/build/index.js generate --schema packages/api/prisma/schema.prisma",
+    "prisma:generate:v1": "node node_modules/prisma/build/index.js generate --schema apps/api-legacy/prisma/schema.prisma",
     "status": "node scripts/check-status.js",
-    "fix:prisma": "rm -rf node_modules/.prisma && pnpm prisma:generate",
+    "fix:prisma": "rm -rf node_modules/.prisma && pnpm run prisma:generate:v2",
     "prisma:safe": "node scripts/prisma-manager.js generate",
     "prisma:migrate": "node scripts/prisma-manager.js migrate",
     "prisma:cleanup": "node scripts/prisma-manager.js force-cleanup",

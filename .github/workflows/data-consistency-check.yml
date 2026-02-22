@@ -1,142 +1,137 @@
-# D1-D3: DB/Mock 데이터 단일 소스화 - CI 품질 게이트
-# 
-# Purpose: 빌드 프로세스에서 seed.ts와 mock-users.json 간의 데이터 일관성을 검증하고
-# 불일치 발견 시 빌드를 실패시켜 품질 게이트 역할을 수행합니다.
-
 name: Data Consistency Check
 
 on:
   push:
     branches: [ main, develop, 'feature/*' ]
     paths:
-      - 'apps/api/prisma/seed.ts'
-      - 'apps/api/src/data/mock-users.json'
-      - 'apps/api/scripts/**'
+      - 'apps/api-legacy/prisma/seed.ts'
+      - 'apps/api-legacy/src/data/mock-users.json'
+      - 'apps/api-legacy/scripts/**'
       - '.github/workflows/data-consistency-check.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
-      - 'apps/api/prisma/seed.ts'
-      - 'apps/api/src/data/mock-users.json'
-      - 'apps/api/scripts/**'
+      - 'apps/api-legacy/prisma/seed.ts'
+      - 'apps/api-legacy/src/data/mock-users.json'
+      - 'apps/api-legacy/scripts/**'
       - '.github/workflows/data-consistency-check.yml'
 
 jobs:
   data-consistency-check:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [18.x, 20.x]
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        
+        cache: 'pnpm'
+
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
       with:
         version: latest
-        
+
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
-      
+
     - name: Generate Prisma Client
-      working-directory: ./apps/api
+      working-directory: ./apps/api-legacy
       run: pnpm exec prisma generate
-      
-    - name: 🔄 Sync Mock Data from Seed
-      working-directory: ./apps/api
+
+    - name: Sync mock data from seed
+      working-directory: ./apps/api-legacy
       run: |
-        echo "🔄 Starting data synchronization from seed.ts..."
-        npm run sync-data
-        echo "✅ Data synchronization completed"
-      
-    - name: 🔍 Validate Data Consistency
-      working-directory: ./apps/api
+        echo "Starting data synchronization from seed.ts"
+        pnpm run sync-data
+        echo "Data synchronization completed"
+
+    - name: Validate data consistency
+      working-directory: ./apps/api-legacy
       run: |
-        echo "🔍 Starting data consistency validation..."
-        npm run validate-data
-        echo "✅ Data consistency validation passed"
-      
-    - name: 📊 Check for Data Changes
+        echo "Starting data consistency validation"
+        pnpm run validate-data
+        echo "Data consistency validation passed"
+
+    - name: Check for data changes
       id: data-changes
       run: |
-        if git diff --exit-code apps/api/src/data/mock-users.json; then
+        if git diff --exit-code apps/api-legacy/src/data/mock-users.json; then
           echo "No changes detected in mock-users.json"
           echo "changes=false" >> $GITHUB_OUTPUT
         else
           echo "Changes detected in mock-users.json"
           echo "changes=true" >> $GITHUB_OUTPUT
         fi
-      
-    - name: 📈 Generate Data Report
-      working-directory: ./apps/api
+
+    - name: Generate data report
+      working-directory: ./apps/api-legacy
       run: |
         echo "# Data Consistency Report" > data-report.md
         echo "" >> data-report.md
         echo "## Summary" >> data-report.md
-        echo "- **Workflow**: ${{ github.workflow }}" >> data-report.md
-        echo "- **Commit**: ${{ github.sha }}" >> data-report.md
-        echo "- **Node Version**: ${{ matrix.node-version }}" >> data-report.md
-        echo "- **Timestamp**: $(date -u)" >> data-report.md
+        echo "- Workflow: ${{ github.workflow }}" >> data-report.md
+        echo "- Commit: ${{ github.sha }}" >> data-report.md
+        echo "- Node Version: ${{ matrix.node-version }}" >> data-report.md
+        echo "- Timestamp: $(date -u)" >> data-report.md
         echo "" >> data-report.md
-        
+
         if [ "${{ steps.data-changes.outputs.changes }}" == "true" ]; then
-          echo "## ⚠️ Data Changes Detected" >> data-report.md
+          echo "## Data Changes Detected" >> data-report.md
           echo "" >> data-report.md
           echo "Mock data file has been updated based on seed.ts changes:" >> data-report.md
           echo "" >> data-report.md
-          echo "\`\`\`diff" >> data-report.md
-          git diff apps/api/src/data/mock-users.json || true >> data-report.md
-          echo "\`\`\`" >> data-report.md
+          echo '```diff' >> data-report.md
+          git diff apps/api-legacy/src/data/mock-users.json || true >> data-report.md
+          echo '```' >> data-report.md
         else
-          echo "## ✅ No Data Changes" >> data-report.md
+          echo "## No Data Changes" >> data-report.md
           echo "" >> data-report.md
           echo "Mock data is consistent with seed definitions." >> data-report.md
         fi
-        
+
         echo "" >> data-report.md
         echo "## Validation Results" >> data-report.md
         echo "All data consistency checks passed successfully." >> data-report.md
-        
-    - name: Upload Data Report
+
+    - name: Upload data report
       uses: actions/upload-artifact@v3
       with:
         name: data-consistency-report-node-${{ matrix.node-version }}
-        path: apps/api/data-report.md
-        
-    - name: 🚫 Fail if Manual Sync Required
+        path: apps/api-legacy/data-report.md
+
+    - name: Fail if manual sync required
       if: steps.data-changes.outputs.changes == 'true' && github.event_name == 'pull_request'
       run: |
-        echo "❌ Mock data is out of sync with seed.ts!"
-        echo "Please run 'npm run sync-data' in apps/api and commit the changes."
+        echo "Mock data is out of sync with seed.ts"
+        echo "Please run 'pnpm run sync-data' in apps/api-legacy and commit the changes"
         echo ""
         echo "Commands to fix:"
-        echo "  cd apps/api"
-        echo "  npm run sync-data"
+        echo "  cd apps/api-legacy"
+        echo "  pnpm run sync-data"
         echo "  git add src/data/mock-users.json"
-        echo "  git commit -m 'sync: Update mock data from seed definitions'"
+        echo "  git commit -m 'sync: update mock data from seed definitions'"
         echo ""
         exit 1
-        
-    - name: ✅ Data Consistency Verified
+
+    - name: Data consistency verified
       run: |
-        echo "🎉 Data consistency check completed successfully!"
-        echo "✅ Mock data is synchronized with seed definitions"
-        echo "✅ All validation checks passed"
-        echo "✅ Build quality gate satisfied"
+        echo "Data consistency check completed successfully"
+        echo "Mock data is synchronized with seed definitions"
+        echo "All validation checks passed"
+        echo "Build quality gate satisfied"
 
   company-isolation-test:
     runs-on: ubuntu-latest
     needs: data-consistency-check
-    
+
     services:
       postgres:
         image: postgres:15
@@ -151,108 +146,107 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
-        cache: 'npm'
-        
+        cache: 'pnpm'
+
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
       with:
         version: latest
-        
+
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
-      
-    - name: Setup Test Database
-      working-directory: ./apps/api
+
+    - name: Setup test database
+      working-directory: ./apps/api-legacy
       env:
         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/entrip_test
       run: |
-        echo "🔄 Setting up test database..."
+        echo "Setting up test database"
         pnpm exec prisma db push
         pnpm exec prisma db seed
-        echo "✅ Test database ready"
-        
+        echo "Test database ready"
+
     - name: Install Playwright
-      working-directory: ./apps/api
-      run: |
-        pnpm exec playwright install --with-deps chromium
-        
-    - name: Start API Server
-      working-directory: ./apps/api
+      working-directory: ./apps/api-legacy
+      run: pnpm exec playwright install --with-deps chromium
+
+    - name: Start API server
+      working-directory: ./apps/api-legacy
       env:
         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/entrip_test
         NODE_ENV: test
         PORT: 4001
         JWT_SECRET: test-jwt-secret-key
       run: |
-        echo "🚀 Starting API server for testing..."
-        npm run dev &
+        echo "Starting API server for testing"
+        pnpm run dev &
         sleep 10
-        echo "✅ API server started"
-      
-    - name: 🛡️ Run Company Isolation Tests
-      working-directory: ./apps/api
+        echo "API server started"
+
+    - name: Run company isolation tests
+      working-directory: ./apps/api-legacy
       env:
         API_BASE_URL: http://localhost:4001
       run: |
-        echo "🛡️ Running company data isolation E2E tests..."
-        npm run e2e:isolation
-        echo "✅ Company isolation tests passed"
-        
-    - name: Upload Test Results
+        echo "Running company data isolation E2E tests"
+        pnpm run e2e:isolation
+        echo "Company isolation tests passed"
+
+    - name: Upload test results
       uses: actions/upload-artifact@v3
       if: always()
       with:
         name: company-isolation-test-results
         path: |
-          apps/api/test-results/
-          apps/api/playwright-report/
+          apps/api-legacy/test-results/
+          apps/api-legacy/playwright-report/
 
   quality-gate-summary:
     runs-on: ubuntu-latest
     needs: [data-consistency-check, company-isolation-test]
     if: always()
-    
+
     steps:
-    - name: 📊 Quality Gate Summary
+    - name: Quality gate summary
       run: |
         echo "# D1-D3 Quality Gate Summary" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "## Results" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        
+
         if [ "${{ needs.data-consistency-check.result }}" == "success" ]; then
-          echo "✅ **Data Consistency Check**: PASSED" >> $GITHUB_STEP_SUMMARY
+          echo "Data Consistency Check: PASSED" >> $GITHUB_STEP_SUMMARY
         else
-          echo "❌ **Data Consistency Check**: FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "Data Consistency Check: FAILED" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         if [ "${{ needs.company-isolation-test.result }}" == "success" ]; then
-          echo "✅ **Company Isolation Test**: PASSED" >> $GITHUB_STEP_SUMMARY
+          echo "Company Isolation Test: PASSED" >> $GITHUB_STEP_SUMMARY
         else
-          echo "❌ **Company Isolation Test**: FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "Company Isolation Test: FAILED" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "## Quality Gates" >> $GITHUB_STEP_SUMMARY
-        echo "- [x] DB/Mock 데이터 일관성 검증" >> $GITHUB_STEP_SUMMARY
-        echo "- [x] 회사별 데이터 격리 보안 테스트" >> $GITHUB_STEP_SUMMARY
-        echo "- [x] 자동 동기화 스크립트 실행" >> $GITHUB_STEP_SUMMARY
-        echo "- [x] 단일 소스 진실(SSOT) 보장" >> $GITHUB_STEP_SUMMARY
-        
+        echo "- [x] DB/mock consistency validation" >> $GITHUB_STEP_SUMMARY
+        echo "- [x] Company data isolation security test" >> $GITHUB_STEP_SUMMARY
+        echo "- [x] Automated sync script execution" >> $GITHUB_STEP_SUMMARY
+        echo "- [x] Single source of truth guarantee" >> $GITHUB_STEP_SUMMARY
+
         if [ "${{ needs.data-consistency-check.result }}" == "success" ] && [ "${{ needs.company-isolation-test.result }}" == "success" ]; then
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🎉 **All Quality Gates Passed!**" >> $GITHUB_STEP_SUMMARY
+          echo "All quality gates passed" >> $GITHUB_STEP_SUMMARY
         else
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🚫 **Quality Gate Failed - Build Blocked**" >> $GITHUB_STEP_SUMMARY
+          echo "Quality gate failed - build blocked" >> $GITHUB_STEP_SUMMARY
           exit 1
         fi

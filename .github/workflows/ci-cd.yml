@@ -39,7 +39,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -112,7 +112,7 @@ jobs:
         service: [api, api-v2, web, crawler]
         include:
           - service: api
-            dockerfile: apps/api/Dockerfile
+            dockerfile: apps/api-legacy/Dockerfile
             context: .
           - service: api-v2
             dockerfile: packages/api/Dockerfile
@@ -121,8 +121,8 @@ jobs:
             dockerfile: apps/web/Dockerfile
             context: .
           - service: crawler
-            dockerfile: apps/api/src/crawler/Dockerfile.simple
-            context: apps/api/src/crawler
+            dockerfile: apps/api-legacy/src/crawler/Dockerfile.simple
+            context: apps/api-legacy/src/crawler
 
     steps:
       - name: Checkout code
