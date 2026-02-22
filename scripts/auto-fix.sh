@@ -31,7 +31,7 @@ log_fix() { echo -e "${MAGENTA}[FIXING]${NC} $1"; ((TOTAL_FIXES++)); }
 fix_database_url() {
     log_fix "Checking DATABASE_URL configuration..."
     
-    local env_file="$PROJECT_ROOT/apps/api/.env"
+    local env_file="$PROJECT_ROOT/apps/api-legacy/.env"
     
     if [ ! -f "$env_file" ]; then
         log_error ".env file not found - creating from template..."
@@ -162,7 +162,7 @@ fix_docker_network() {
 fix_prisma_client() {
     log_fix "Checking Prisma client..."
     
-    cd "$PROJECT_ROOT/apps/api"
+    cd "$PROJECT_ROOT/apps/api-legacy"
     
     # Check if node_modules exists
     if [ ! -d "node_modules" ]; then
@@ -236,18 +236,18 @@ fix_permissions() {
     chmod +x "$SCRIPT_DIR"/*.sh 2>/dev/null || true
     
     # Fix .env permissions
-    if [ -f "$PROJECT_ROOT/apps/api/.env" ]; then
-        chmod 600 "$PROJECT_ROOT/apps/api/.env"
+    if [ -f "$PROJECT_ROOT/apps/api-legacy/.env" ]; then
+        chmod 600 "$PROJECT_ROOT/apps/api-legacy/.env"
         log_success "Fixed .env file permissions"
     fi
     
     # Fix node_modules permissions if needed
-    if [ -d "$PROJECT_ROOT/apps/api/node_modules" ]; then
-        local bad_perms=$(find "$PROJECT_ROOT/apps/api/node_modules" -type f ! -perm -u+r 2>/dev/null | head -n1)
+    if [ -d "$PROJECT_ROOT/apps/api-legacy/node_modules" ]; then
+        local bad_perms=$(find "$PROJECT_ROOT/apps/api-legacy/node_modules" -type f ! -perm -u+r 2>/dev/null | head -n1)
         
         if [ -n "$bad_perms" ]; then
             log_warning "Found permission issues in node_modules - fixing..."
-            chmod -R u+rw "$PROJECT_ROOT/apps/api/node_modules" 2>/dev/null || true
+            chmod -R u+rw "$PROJECT_ROOT/apps/api-legacy/node_modules" 2>/dev/null || true
             log_success "Fixed node_modules permissions"
         fi
     fi
@@ -279,9 +279,9 @@ fix_line_endings() {
     fi
     
     # Fix .env files
-    if [ -f "$PROJECT_ROOT/apps/api/.env" ]; then
-        if file "$PROJECT_ROOT/apps/api/.env" | grep -q "CRLF"; then
-            dos2unix "$PROJECT_ROOT/apps/api/.env" 2>/dev/null
+    if [ -f "$PROJECT_ROOT/apps/api-legacy/.env" ]; then
+        if file "$PROJECT_ROOT/apps/api-legacy/.env" | grep -q "CRLF"; then
+            dos2unix "$PROJECT_ROOT/apps/api-legacy/.env" 2>/dev/null
             log_success "Fixed line endings in .env file"
         fi
     fi
@@ -332,7 +332,7 @@ fix_directory_structure() {
     log_fix "Checking directory structure..."
     
     local required_dirs=(
-        "$PROJECT_ROOT/apps/api/prisma/migrations"
+        "$PROJECT_ROOT/apps/api-legacy/prisma/migrations"
         "$PROJECT_ROOT/scripts"
         "$PROJECT_ROOT/logs"
     )
@@ -381,7 +381,7 @@ quick_health_check() {
     fi
     
     # Check .env file
-    if [ -f "$PROJECT_ROOT/apps/api/.env" ]; then
+    if [ -f "$PROJECT_ROOT/apps/api-legacy/.env" ]; then
         echo -e "${GREEN}✓${NC} .env file exists"
         ((health_score++))
     else

@@ -101,11 +101,11 @@ check_project_structure() {
     
     local required_files=(
         "docker-compose.local.yml"
-        "apps/api/.env"
-        "apps/api/src/routes/booking-2a.route.ts"
-        "apps/api/src/routes/test-database.route.ts"
-        "apps/api/src/middleware/errorHandler.ts"
-        "apps/api/src/middleware/respond.ts"
+        "apps/api-legacy/.env"
+        "apps/api-legacy/src/routes/booking-2a.route.ts"
+        "apps/api-legacy/src/routes/test-database.route.ts"
+        "apps/api-legacy/src/middleware/errorHandler.ts"
+        "apps/api-legacy/src/middleware/respond.ts"
     )
     
     local missing_files=()
@@ -134,7 +134,7 @@ check_project_structure() {
 check_database_config() {
     log_info "Checking database configuration..."
     
-    cd "$PROJECT_ROOT/apps/api"
+    cd "$PROJECT_ROOT/apps/api-legacy"
     
     # Check .env file
     if [ ! -f ".env" ]; then
@@ -193,7 +193,7 @@ main() {
         log_info "Next steps:"
         echo "  1. Run: cd /mnt/c/Users/PC/Documents/project/Entrip"
         echo "  2. Run: docker compose -f docker-compose.local.yml up -d postgres redis"
-        echo "  3. Run: cd apps/api && pnpm prisma generate && npx prisma db push"
+        echo "  3. Run: cd apps/api-legacy && pnpm prisma generate && npx prisma db push"
         echo "  4. Run: scripts/test-optimistic-locking.sh"
     else
         log_error "Environment validation failed!"

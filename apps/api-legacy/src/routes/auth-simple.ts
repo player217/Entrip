@@ -3,7 +3,7 @@ import type { Router as ExpressRouter } from 'express';
 import * as jwt from 'jsonwebtoken';
 import type { SignOptions } from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
-import { LoginRequest, LoginResponse, JWTPayload, User, mapPrismaUserToShared, mapPrismaRoleToShared } from '@entrip/shared';
+import { LoginRequest, LoginResponse, JWTPayload, User, mapPrismaUserToShared } from '@entrip/shared';
 import { authRateLimiter } from '../middleware/security.middleware';
 import prisma from '../lib/prisma';
 
@@ -18,45 +18,34 @@ const verifyPassword = async (password: string, hashedPassword: string): Promise
   return bcrypt.compare(password, hashedPassword);
 };
 
-// Helper: accept common aliases and case-insensitive company codes
-function resolveCompanyCandidates(input: string): string[] {
-  if (!input) return [];
-  const cc = input.trim();
-  const lc = cc.toLowerCase();
-  const set = new Set<string>();
+// Helper: strict company code validation (security hardening)
+// Only allow exact lowercase company codes from the public spec, and map to canonical DB codes.
+function resolveCanonicalCompanyStrict(input: string): string | null {
+  if (!input) return null;
+  const raw = String(input).trim();
+  const lc = raw.toLowerCase();
 
-  // Always include raw forms
-  set.add(cc);
-  set.add(cc.toUpperCase());
-  set.add(lc);
+  // Enforce lowercase-only input to avoid ambiguous/forgiving matching
+  if (raw !== lc) return null;
 
-  // Canonical alias mapping (accept legacy UI labels)
-  switch (lc) {
-    case 'entrip':
-    case 'entrip_main':
-    case 'entrip-main':
-    case 'main':
-      set.add('ENTRIP_MAIN');
-      break;
-    case 'startour':
-      // Historical label maps to 'star' in DB
-      set.add('star');
-      set.add('STAR');
-      break;
-    case 'happytravel':
-      // Historical label maps to 'happy' in DB
-      set.add('happy');
-      set.add('HAPPY');
-      break;
-    case 'j1':
-      set.add('J1');
-      break;
-    default:
-      // no-op, raw values already included
-      break;
-  }
+  const map: Record<string, string> = {
+    entrip: 'ENTRIP_MAIN',
+    j1: 'j1',
+    startour: 'star',
+    happytravel: 'happy',
+  };
 
-  return Array.from(set);
+  return map[lc] || null;
+}
+
+// Local role mapper (defensive: shared helper may not be bundled in legacy image)
+function mapRole(role: string | null | undefined) {
+  if (!role) return 'user';
+  const normalized = String(role).toLowerCase();
+  if (['admin', 'administrator'].includes(normalized)) return 'admin';
+  if (['manager', 'mgr'].includes(normalized)) return 'manager';
+  if (['viewer', 'staff', 'user'].includes(normalized)) return 'user';
+  return 'user';
 }
 
 // Login endpoint with real database authentication
@@ -73,18 +62,22 @@ router.post('/login', authRateLimiter, async (req, res) => {
     }
 
     console.log('Auth attempt:', { companyCode, username });
-    
-    // Find user in database (using email as username)
-    console.log('DEBUG: About to query with:', { companyCode, email: username, isActive: true });
 
-    // Accept synonyms for company codes to avoid UI/seed mismatches
-    const candidates = resolveCompanyCandidates(companyCode);
+    // Strict company code enforcement (lowercase only + allow-list)
+    const canonical = resolveCanonicalCompanyStrict(companyCode);
+    if (!canonical) {
+      return res.status(400).json({
+        success: false,
+        message: '회사코드는 소문자로 정확히 입력해주세요 (entrip, j1, startour, happytravel).'
+      });
+    }
 
+    // Find user in database (using email as username) with strict company match
     const user = await prisma.user.findFirst({
       where: {
         email: username,
         isActive: true,
-        companyCode: { in: candidates },
+        companyCode: canonical,
       },
     });
     
@@ -111,7 +104,7 @@ router.post('/login', authRateLimiter, async (req, res) => {
       userId: user.id,
       companyCode: user.companyCode,
       username: user.email, // use email as username
-      role: mapPrismaRoleToShared(user.role)
+      role: mapRole(user.role)
     };
 
     const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN as any };
@@ -126,7 +119,7 @@ router.post('/login', authRateLimiter, async (req, res) => {
       username: user.email, // use email as username
       email: user.email,
       name: user.name,
-      role: mapPrismaRoleToShared(user.role),
+      role: mapRole(user.role),
       department: user.department || undefined,
       isActive: user.isActive,
       createdAt: user.createdAt.toISOString(),

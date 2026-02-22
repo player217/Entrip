@@ -62,7 +62,15 @@ export class FxService {
           return { rates: secondaryResult.rates, cache: 'MISS', source: 'fx_secondary' };
         } catch (secondaryError) {
           console.warn('Secondary FX provider also failed:', secondaryError.message);
-          
+          // Option C: Try fx-free microservice as tertiary live source if configured
+          try {
+            const freeResult = await this.fetchFromFxFree(base);
+            await this.cacheRates(base, freeResult.rates, 'fx_free');
+            return { rates: freeResult.rates, cache: 'MISS', source: 'fx_free' };
+          } catch (fxFreeErr) {
+            console.warn('fx-free fallback failed:', (fxFreeErr as any)?.message);
+          }
+
           // 3) Last resort: try stale cache
           const staleCache = await this.getStaleCache(base);
           if (staleCache.length > 0) {
@@ -248,6 +256,23 @@ export class FxService {
       'fx_secondary': 'https://api.fixer.io/latest'
     };
     return defaults[providerName] || 'https://api.exchangerate-api.com/v4/latest';
+  }
+
+  /**
+   * Fallback to local fx-free microservice if available
+   */
+  private async fetchFromFxFree(base: string): Promise<FxRatesResponse> {
+    const baseUrl = process.env.FX_FREE_URL || 'http://fx-free:4010';
+    const client = createHttpClient(baseUrl, 4000);
+    const symbols = process.env.FX_REQUIRED_SYMBOLS || 'USD,EUR,JPY,CNY';
+    const res = await client.get(`/rates/${encodeURIComponent(base)}`, {
+      params: { symbols }
+    });
+    if (res.status !== 200 || !res.data?.success) {
+      throw new Error('FX_FREE_UNAVAILABLE');
+    }
+    const rates = res.data?.data?.rates || {};
+    return { rates, base, success: true } as FxRatesResponse;
   }
 
   /**

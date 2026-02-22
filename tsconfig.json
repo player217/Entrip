@@ -1,4 +1,4 @@
-{
+﻿{
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
@@ -11,7 +11,8 @@
     { "path": "./packages/shared" },
     { "path": "./packages/ui" },
     { "path": "./packages/api" },
-    { "path": "./apps/api" },
+    { "path": "./apps/api-legacy" },
     { "path": "./apps/web" }
   ]
 }
+

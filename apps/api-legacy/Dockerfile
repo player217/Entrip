@@ -13,12 +13,12 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/design-tokens/package.json ./packages/design-tokens/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/ui/package.json ./packages/ui/
-COPY apps/api/package.json ./apps/api/
+COPY apps/api-legacy/package.json ./apps/api-legacy/
 
 # Dependencies stage
 FROM base AS deps
 # Copy prisma schema file for generation
-COPY apps/api/prisma ./apps/api/prisma
+COPY apps/api-legacy/prisma ./apps/api-legacy/prisma
 # Install all dependencies (including dev dependencies for build)
 RUN pnpm install --no-frozen-lockfile
 
@@ -34,10 +34,10 @@ RUN pnpm --filter @entrip/design-tokens run build
 RUN pnpm --filter @entrip/shared run build
 
 # Copy API source
-COPY apps/api ./apps/api
+COPY apps/api-legacy ./apps/api-legacy
 
 # Generate Prisma client and build API with strict type checking
-WORKDIR /app/apps/api
+WORKDIR /app/apps/api-legacy
 RUN npx prisma generate
 # Strict type check - will fail if any type errors exist
 RUN pnpm run type-check
@@ -56,33 +56,33 @@ WORKDIR /app
 # Copy node_modules and built files
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=prod-deps /app/packages ./packages
-COPY --from=prod-deps /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=prod-deps /app/apps/api-legacy/node_modules ./apps/api-legacy/node_modules
 
 # Copy built distributions
 COPY --from=build /app/packages/design-tokens/dist ./packages/design-tokens/dist
 COPY --from=build /app/packages/shared/dist ./packages/shared/dist
-COPY --from=build /app/apps/api/dist ./apps/api/dist
-COPY --from=build /app/apps/api/node_modules/.prisma ./apps/api/node_modules/.prisma
+COPY --from=build /app/apps/api-legacy/dist ./apps/api-legacy/dist
+COPY --from=build /app/apps/api-legacy/node_modules/.prisma ./apps/api-legacy/node_modules/.prisma
 
 # Copy package files
 COPY --from=build /app/package.json ./
 COPY --from=build /app/pnpm-workspace.yaml ./
-COPY --from=build /app/apps/api/package.json ./apps/api/
+COPY --from=build /app/apps/api-legacy/package.json ./apps/api-legacy/
 COPY --from=build /app/packages/shared/package.json ./packages/shared/
 COPY --from=build /app/packages/design-tokens/package.json ./packages/design-tokens/
 
 # Create symlinks for workspace dependencies
-RUN cd /app/apps/api/node_modules && \
+RUN cd /app/apps/api-legacy/node_modules && \
     mkdir -p @entrip && \
     ln -sf /app/packages/shared @entrip/shared && \
     ln -sf /app/packages/design-tokens @entrip/design-tokens
 
 # Copy Prisma schema for migrations
-COPY --from=build /app/apps/api/prisma ./prisma
+COPY --from=build /app/apps/api-legacy/prisma ./prisma
 
 # Set environment
 ENV NODE_ENV=production
-WORKDIR /app/apps/api
+WORKDIR /app/apps/api-legacy
 
 EXPOSE 4000
 
@@ -99,7 +99,7 @@ RUN npm install -g nodemon ts-node
 # Copy all source files (will be overridden by volume mount)
 COPY . .
 
-WORKDIR /app/apps/api
+WORKDIR /app/apps/api-legacy
 
 # Set development environment
 ENV NODE_ENV=development

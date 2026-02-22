@@ -104,11 +104,11 @@ start_docker_services() {
 test_database_connection() {
     log_info "Testing database connectivity..."
     
-    cd "$PROJECT_ROOT/apps/api"
+    cd "$PROJECT_ROOT/apps/api-legacy"
     
     # Check if .env exists and has DATABASE_URL
     if [ ! -f ".env" ]; then
-        log_error ".env file not found in apps/api/"
+        log_error ".env file not found in apps/api-legacy/"
         return 1
     fi
     
@@ -148,7 +148,7 @@ test_database_connection() {
 setup_prisma() {
     log_info "Setting up Prisma..."
     
-    cd "$PROJECT_ROOT/apps/api"
+    cd "$PROJECT_ROOT/apps/api-legacy"
     
     # Generate Prisma client
     log_info "Generating Prisma client..."
@@ -203,7 +203,7 @@ verify_api_server() {
     
     log_error "API server not responsive after ${max_attempts} attempts"
     log_info "Please ensure the API server is running:"
-    log_info "  cd apps/api && PORT=4001 npm run dev"
+    log_info "  cd apps/api-legacy && PORT=4001 npm run dev"
     
     return 1
 }
@@ -226,9 +226,9 @@ show_diagnostics() {
     echo
     
     # Database URL
-    if [ -f "apps/api/.env" ]; then
+    if [ -f "apps/api-legacy/.env" ]; then
         echo "Database configuration:"
-        grep "DATABASE_URL\|PORT\|NODE_ENV" apps/api/.env || echo "No relevant config found"
+        grep "DATABASE_URL\|PORT\|NODE_ENV" apps/api-legacy/.env || echo "No relevant config found"
     fi
     
     echo

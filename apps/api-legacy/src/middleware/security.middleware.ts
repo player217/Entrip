@@ -90,7 +90,12 @@ export const rateLimiter = rateLimit({
  */
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit auth attempts to 10 per 15 minutes
+  // In development/testing, allow more attempts to avoid E2E flakiness
+  max: (() => {
+    const fromEnv = process.env.AUTH_RATE_LIMIT_MAX && parseInt(process.env.AUTH_RATE_LIMIT_MAX, 10);
+    if (fromEnv && !Number.isNaN(fromEnv)) return fromEnv;
+    return process.env.NODE_ENV === 'production' ? 10 : 100;
+  })(),
   skipSuccessfulRequests: true, // Don't count successful requests
   message: {
     success: false,

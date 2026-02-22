@@ -83,6 +83,21 @@ async function main() {
     users.push(manager2);
     usersByCompany[company.code].push(manager2);
     
+    // Manager alias account (for tests expecting manager@company.com)
+    const managerAlias = await prisma.user.create({
+      data: {
+        email: `manager@${company.code === 'ENTRIP_MAIN' ? 'entrip' : company.code}.com`,
+        name: `${company.name} 매니저`,
+        password: hashedPassword,
+        role: UserRole.MANAGER,
+        department: '영업기획팀',
+        companyCode: company.code,
+        isActive: true
+      }
+    });
+    users.push(managerAlias);
+    usersByCompany[company.code].push(managerAlias);
+    
     // Regular users for each company
     for (let i = 1; i <= 3; i++) {
       const userNames = ['박준혁', '최서연', '정태호'];
@@ -102,6 +117,21 @@ async function main() {
       users.push(user);
       usersByCompany[company.code].push(user);
     }
+
+    // User alias account (for tests expecting user@company.com)
+    const userAlias = await prisma.user.create({
+      data: {
+        email: `user@${company.code === 'ENTRIP_MAIN' ? 'entrip' : company.code}.com`,
+        name: `${company.name} 직원`,
+        password: hashedPassword,
+        role: UserRole.USER,
+        department: '영업지원팀',
+        companyCode: company.code,
+        isActive: true
+      }
+    });
+    users.push(userAlias);
+    usersByCompany[company.code].push(userAlias);
   }
 
   console.log(`✅ Created ${users.length} users across ${COMPANIES.length} companies`);

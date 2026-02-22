@@ -134,7 +134,7 @@ show_docker_info() {
     echo
     
     echo "Container Health Checks:"
-    local containers=(entrip-postgres-local entrip-redis-local entrip-api-local)
+    local containers=(entrip-postgres-local entrip-redis-local entrip-api-legacy-local entrip-api-v2-local)
     for container in "${containers[@]}"; do
         if docker ps --filter "name=$container" --format '{{.Names}}' | grep -q "$container"; then
             local health=$(docker inspect "$container" --format '{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
@@ -150,8 +150,8 @@ show_docker_info() {
 show_database_info() {
     log_section "Database Diagnostics"
     
-    cd "$PROJECT_ROOT/apps/api" 2>/dev/null || {
-        log_error "Cannot access apps/api directory"
+    cd "$PROJECT_ROOT/apps/api-legacy" 2>/dev/null || {
+        log_error "Cannot access apps/api-legacy directory"
         return 1
     }
     
@@ -284,12 +284,12 @@ show_filesystem_info() {
     
     echo "Project Structure:"
     local required_paths=(
-        "apps/api/src/routes/booking-2a.route.ts"
-        "apps/api/src/routes/test-database.route.ts"
-        "apps/api/src/middleware/errorHandler.ts"
-        "apps/api/src/middleware/respond.ts"
-        "apps/api/prisma/schema.prisma"
-        "apps/api/.env"
+        "apps/api-legacy/src/routes/booking-2a.route.ts"
+        "apps/api-legacy/src/routes/test-database.route.ts"
+        "apps/api-legacy/src/middleware/errorHandler.ts"
+        "apps/api-legacy/src/middleware/respond.ts"
+        "apps/api-legacy/prisma/schema.prisma"
+        "apps/api-legacy/.env"
         "docker-compose.local.yml"
     )
     
@@ -303,19 +303,19 @@ show_filesystem_info() {
     done
     echo
     
-    echo "File Permissions (apps/api/.env):"
-    if [ -f "apps/api/.env" ]; then
-        ls -la "apps/api/.env" | awk '{print "  " $1 " " $3 ":" $4 " " $9}'
+    echo "File Permissions (apps/api-legacy/.env):"
+    if [ -f "apps/api-legacy/.env" ]; then
+        ls -la "apps/api-legacy/.env" | awk '{print "  " $1 " " $3 ":" $4 " " $9}'
     else
         echo "  .env file not found"
     fi
     echo
     
     echo "Line Ending Check (.env):"
-    if [ -f "apps/api/.env" ]; then
-        if file "apps/api/.env" 2>/dev/null | grep -q "CRLF"; then
+    if [ -f "apps/api-legacy/.env" ]; then
+        if file "apps/api-legacy/.env" 2>/dev/null | grep -q "CRLF"; then
             log_warning "CRLF line endings detected (Windows style)"
-            log_info "Consider converting to LF: dos2unix apps/api/.env"
+            log_info "Consider converting to LF: dos2unix apps/api-legacy/.env"
         else
             echo "  Line endings: Unix (LF) ✅"
         fi
@@ -398,9 +398,9 @@ apply_quick_fixes() {
     cd "$PROJECT_ROOT" 2>/dev/null || return 1
     
     echo "1. Converting .env line endings (if needed):"
-    if [ -f "apps/api/.env" ] && file "apps/api/.env" 2>/dev/null | grep -q "CRLF"; then
+    if [ -f "apps/api-legacy/.env" ] && file "apps/api-legacy/.env" 2>/dev/null | grep -q "CRLF"; then
         if command -v dos2unix >/dev/null 2>&1; then
-            dos2unix "apps/api/.env"
+            dos2unix "apps/api-legacy/.env"
             log_success "Converted .env to Unix line endings"
         else
             log_warning "dos2unix not available - line endings not converted"

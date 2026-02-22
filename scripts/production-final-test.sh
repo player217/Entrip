@@ -33,7 +33,7 @@ fi
 
 # Step 2: Generate JWT Token
 echo -e "\n${YELLOW}Step 2: Generating JWT token...${NC}"
-cd apps/api 2>/dev/null || cd /c/Users/PC/Documents/project/Entrip/apps/api
+cd apps/api-legacy 2>/dev/null || cd /c/Users/PC/Documents/project/Entrip/apps/api-legacy
 
 JWT_TOKEN=$(node -e "const jwt=require('jsonwebtoken'); const secret='$JWT_SECRET'; const token=jwt.sign({ userId:'dev-admin', companyCode:'ENTRIP_MAIN', role:'ADMIN' }, secret, { algorithm:'HS256', expiresIn:'15m'}); console.log(token)")
 AUTH_BEARER="Bearer $JWT_TOKEN"

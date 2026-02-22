@@ -52,3 +52,23 @@ Both commands use `docker-compose.dev.yml` with an ephemeral test database `entr
   2) Navigate to `/list-monthly` and verify the new booking appears.
   3) Logout and login as `manager1@entrip.com` (same company).
   4) Verify the same booking is visible.
+
+### Notes (2025-10-12)
+
+- Multi-company E2E stability and fix:
+  - Root cause: the v2 register endpoint schema did not include `companyCode`, and the body validator `validateBody()` replaced `req.body` with a parsed object that stripped unknown keys. Users were being created with default `ENTRIP_MAIN` company, causing cross-company visibility checks to fail.
+  - Fix: Added optional `companyCode` to `RegisterDto` (see `packages/api/src/routes/auth/dtos/Register.dto.ts`). After restart, browser E2E for `j1`, `startour`, and `happytravel` passes when run serially (`--workers=1`).
+  - Tip: For E2E, keep specs serial when switching sessions to avoid cookie races, and set `X-Test-Run-Id` headers to isolate rate-limits.
+
+### Dev Toggles and WSL Notes
+
+- Dev toggles used during local/E2E runs:
+  - Web: set `NEXT_AUTH_V2=true` so web proxy uses v2 auth endpoints and preserves multiple `Set-Cookie` headers.
+  - API v2: set `FX_ENABLE=true` (and optionally `FX_TTL_SEC`, `FX_REQUIRED_SYMBOLS`) to expose the free FX endpoints.
+- WSL bind mounts: seeing paths like `/mnt/wsl/docker-desktop-bind-mounts/...` is expected when Docker Desktop shares files into Linux; it is not an error. Prefer running container-first tests to avoid host path quirks.
+
+Quick commands
+
+- Start stack: `docker compose -f docker-compose.dev.yml up -d postgres redis api-v2 crawler web`
+- API tests (container-first): `pnpm -s test:api:container`
+- Full tests (container-first): `pnpm -s test:full:container`

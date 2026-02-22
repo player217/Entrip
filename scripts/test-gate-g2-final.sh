@@ -3,7 +3,7 @@
 echo "🚀 Gate G2 Final Production Test"
 echo "================================"
 
-cd ../apps/api
+cd ../apps/api-legacy
 
 # Generate JWT token
 echo "Generating JWT token..."

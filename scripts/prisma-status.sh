@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "== Prisma Status (v1: apps/api) =="
-pushd apps/api >/dev/null
+echo "== Prisma Status (v1: apps/api-legacy) =="
+pushd apps/api-legacy >/dev/null
   npx prisma --version || true
   npx prisma validate || true
   npx prisma migrate status || true
@@ -23,4 +23,3 @@ pushd packages/api >/dev/null
 popd >/dev/null
 
 echo "Done."
-
