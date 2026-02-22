@@ -26,6 +26,17 @@ gh secret set PRODUCTION_URL --repo <owner/repo> --body "https://api-v2.example.
 gh secret set PRODUCTION_DATABASE_URL --repo <owner/repo> --body "postgresql://USER:PASSWORD@HOST:5432/DB_NAME"
 ```
 
+## Bulk Apply (Recommended)
+1. Copy template:
+```powershell
+Copy-Item scripts/config/v2-evidence-secrets.local.example.json scripts/config/v2-evidence-secrets.local.json
+```
+2. Fill real values in `scripts/config/v2-evidence-secrets.local.json`.
+3. Apply:
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/set-v2-evidence-secrets.ps1 -ValuesFile scripts/config/v2-evidence-secrets.local.json
+```
+
 ## Validation Run
 1. Trigger workflow manually:
    - Actions -> `V2 Cutover Daily Evidence` -> `Run workflow`
