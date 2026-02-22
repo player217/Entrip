@@ -15,6 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare CI env file
+        run: |
+          if [ ! -f .env.local ]; then
+            cp .env.example .env.local
+          fi
+
       - name: Show Docker versions
         run: |
           docker --version
@@ -147,4 +153,4 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: docker compose -f docker-compose.dev.yml down -v
+        run: docker compose -f docker-compose.dev.yml down -v || true

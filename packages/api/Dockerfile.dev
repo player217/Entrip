@@ -24,7 +24,7 @@ COPY packages/ui/package.json ./packages/ui/
 COPY packages/design-tokens/package.json ./packages/design-tokens/
 
 # Copy Prisma schemas to prevent postinstall failure
-COPY apps/api/prisma ./apps/api/prisma
+COPY apps/api-legacy/prisma ./apps/api/prisma
 COPY packages/api/prisma ./packages/api/prisma
 
 # Install ALL dependencies including devDependencies (needed for build)

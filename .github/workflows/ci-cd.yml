@@ -39,7 +39,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -232,3 +231,4 @@ jobs:
         env:
           SMOKE_BASE_URL: ${{ secrets.PRODUCTION_URL }}
         run: node scripts/smoke-v2-endpoints.mjs --base-url "$SMOKE_BASE_URL"
+
