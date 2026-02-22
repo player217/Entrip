@@ -103,3 +103,11 @@ curl "http://localhost:3000/api/exchange" | jq .
   - 대응: `SMOKE_BASE_URL=http://localhost:4002 pnpm run smoke:v2`
 - Auth/session contract mismatch for integrators (cookie + status contract):
   - 대응: `pnpm --filter @entrip/web test -- app/api/v2 app/api/auth route.v2-mapping.test.ts`
+
+### DB Baseline Recovery (non-empty DB)
+- Symptom: `P3005` (schema is not empty) or failed `20251011160327_baseline_v2_schema`.
+- Recovery sequence (apply to target DB URL):
+  - `pnpm --filter @entrip/api exec prisma migrate resolve --applied 20251011160327_baseline_v2_schema`
+  - `pnpm --filter @entrip/api exec prisma migrate deploy`
+  - `pnpm run verify:schema:v2:db`
+- Validation note (2026-02-22): verified on `entrip_v2_gate2` local DB.
