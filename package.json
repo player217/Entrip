@@ -7,12 +7,13 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "pnpm --filter @entrip/api exec prisma generate || true",
+    "postinstall": "node node_modules/prisma/build/index.js generate --schema packages/api/prisma/schema.prisma || true",
     "dev": "cross-env NODE_OPTIONS=--no-warnings NEXT_TELEMETRY_DISABLED=1 pnpm run build:tokens && turbo run dev",
-    "dev:all": "npm-run-all --parallel dev:web dev:api-v1 dev:api-v2",
+    "dev:all": "npm-run-all --parallel dev:web dev:api-v2",
     "dev:web": "pnpm --filter @entrip/web dev",
     "dev:api": "pnpm --filter @entrip/api dev",
-    "dev:api-v1": "cd apps/api && pnpm dev",
+    "dev:api-v1": "cd apps/api-legacy && pnpm dev",
+    "dev:legacy": "pnpm run dev:api-v1",
     "dev:api-v2": "cd packages/api && pnpm dev",
     "dev:api:direct": "cd packages/api && pnpm dev",
     "dev:docker": "docker-compose -f docker-compose.dev.yml up --build",
@@ -60,14 +61,15 @@
     "precommit": "pnpm run api:types && pnpm -w run build:ts && pnpm run lint && pnpm run test",
     "ci": "pnpm run build && pnpm run lint && pnpm run test",
     "ci:full": "turbo run build lint test --parallel",
+    "print:check": "node scripts/visual-print-check.mjs",
     "test:ib": "jest --config jest.config.js --runInBand",
     "test:ci": "jest --config jest.config.js --maxWorkers=50% --detectOpenHandles --logHeapUsage",
     "test:all:docker": "echo 'Running @entrip/api in container and shared on host' && pnpm -C packages/shared test && docker exec entrip-api-v2-local sh -lc 'cd /app/packages/api && pnpm test'",
     "test:api:container": "docker-compose -f docker-compose.dev.yml run --rm --entrypoint '' -e RATE_LIMIT_PREFIX=ci-$(date +%s) -e CACHE_DISABLE_IN_TEST=true -e TEST_DATABASE_URL=postgresql://entrip:entrip@postgres:5432/entrip_test -e DATABASE_URL=postgresql://entrip:entrip@postgres:5432/entrip_test api-v2 sh -lc 'cd /app/packages/api && pnpm test --runInBand'",
     "test:full:container": "docker-compose -f docker-compose.dev.yml run --rm --entrypoint '' -e RATE_LIMIT_PREFIX=ci-$(date +%s) -e TEST_DATABASE_URL=postgresql://entrip:entrip@postgres:5432/entrip_test -e DATABASE_URL=postgresql://entrip:entrip@postgres:5432/entrip_test api-v2 sh -lc 'set -e; cd /app; echo :: @entrip/shared ::; mkdir -p /app/packages/shared/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/packages/shared/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --config packages/shared/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage; echo :: @entrip/ui ::; mkdir -p /app/packages/ui/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/packages/ui/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --config packages/ui/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage; echo :: @entrip/web ::; mkdir -p /app/apps/web/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/apps/web/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --config apps/web/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage; echo :: @entrip/api ::; cd /app/packages/api; mkdir -p /app/packages/api/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/packages/api/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --runInBand --verbose --reporters=default --reporters=jest-junit --coverage'",
     "test:full:container:nocache": "docker-compose -f docker-compose.dev.yml run --rm --entrypoint '' -e CACHE_DISABLE_IN_TEST=true -e RATE_LIMIT_PREFIX=ci-$(date +%s) -e TEST_DATABASE_URL=postgresql://entrip:entrip@postgres:5432/entrip_test -e DATABASE_URL=postgresql://entrip:entrip@postgres:5432/entrip_test api-v2 sh -lc 'set -e; cd /app; echo :: @entrip/shared ::; mkdir -p /app/packages/shared/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/packages/shared/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --config packages/shared/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage; echo :: @entrip/ui ::; mkdir -p /app/packages/ui/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/packages/ui/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --config packages/ui/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage; echo :: @entrip/web ::; mkdir -p /app/apps/web/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/apps/web/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --config apps/web/jest.config.js --runInBand --verbose --reporters=default --reporters=jest-junit --coverage; echo :: @entrip/api ::; cd /app/packages/api; mkdir -p /app/packages/api/reports/junit; JEST_JUNIT_OUTPUT_DIR=/app/packages/api/reports/junit JEST_JUNIT_OUTPUT_NAME=junit.xml pnpm exec jest --runInBand --verbose --reporters=default --reporters=jest-junit --coverage'",
-    "db:reset:v1": "docker exec entrip-api-local sh -lc 'cd /app/apps/api && yes | pnpm exec prisma db push --accept-data-loss --force-reset'",
-    "db:seed:v1": "docker exec entrip-api-local sh -lc 'cd /app/apps/api && pnpm exec prisma db seed'"
+    "db:reset:v1": "docker exec entrip-api-legacy-local sh -lc 'cd /app/apps/api-legacy && yes | pnpm exec prisma db push --accept-data-loss --force-reset'",
+    "db:seed:v1": "docker exec entrip-api-legacy-local sh -lc 'cd /app/apps/api-legacy && pnpm exec prisma db seed'"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.1",
@@ -138,6 +140,7 @@
     "@tanstack/table-core": "8.21.3",
     "express-rate-limit": "^8.0.0",
     "lucide-react": "^0.263.0",
+    "exceljs": "^4.4.0",
     "react-hook-form": "^7.57.0",
     "tailwind-merge": "^2.2.0",
     "zod": "^3.25.64",
