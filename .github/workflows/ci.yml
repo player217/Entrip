@@ -19,7 +19,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
+        cache: 'pnpm'
         
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
@@ -28,6 +28,18 @@ jobs:
         
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
+
+    - name: Verify v2 cutover config
+      run: pnpm run verify:v2-cutover
+
+    - name: Verify v2 schema (schema-only)
+      run: pnpm run verify:schema:v2
+
+    - name: Run web v2 proxy contract tests
+      run: pnpm --filter @entrip/web test -- app/api/v2 app/api/auth
+
+    - name: Run web bookings proxy v2 mapping tests
+      run: pnpm --filter @entrip/web test -- route.v2-mapping.test.ts
       
     - name: Build design tokens
       run: pnpm run build:tokens
@@ -53,7 +65,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
+        cache: 'pnpm'
         
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
@@ -62,6 +74,30 @@ jobs:
         
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
-      
+
+    - name: Verify v2 cutover config
+      run: pnpm run verify:v2-cutover
+
+    - name: Verify v2 schema (schema-only)
+      run: pnpm run verify:schema:v2
+
+    - name: Run web v2 proxy contract tests
+      run: pnpm --filter @entrip/web test -- app/api/v2 app/api/auth
+
+    - name: Run web bookings proxy v2 mapping tests
+      run: pnpm --filter @entrip/web test -- route.v2-mapping.test.ts
+
     - name: Run tests
       run: pnpm run test:coverage
+
+    - name: Upload cutover diagnostics
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cutover-diagnostics
+        path: |
+          scripts/verify-v2-cutover.mjs
+          scripts/verify-v2-schema.mjs
+          scripts/smoke-v2-endpoints.mjs
+          docker-compose.dev.yml
+          docker-compose.prod.yml
