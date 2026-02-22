@@ -97,3 +97,13 @@ archive/_windows_artifacts/
 # Broken Windows-path artifact patterns
 C*Users*db_tables_list.txt
 apps/web/C*Users*/
+
+# Windows reserved-name artifact
+nul
+
+# Local scratch workspaces
+work/
+workspace/
+
+# One-off local SQL scratch file
+tmp_update.sql
