@@ -32,7 +32,6 @@
   "references": [
     { "path": "../../packages/shared" },
     { "path": "../../packages/design-tokens" },
-    { "path": "../../packages/ui" },
-    { "path": "../../packages/api" }
+    { "path": "../../packages/ui" }
   ]
 }

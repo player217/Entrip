@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { authMiddleware } from '../../middlewares/auth.middleware';
 import { extractCompanyCode, validateCompanyAccess } from '../../middlewares/multitenancy.middleware';
 import { cacheMiddleware } from '../../middlewares/cache.middleware';
 import { teamBookingsController } from './teamBookings.controller';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 // 인증 + 회사 스코프 적용
 router.use(authMiddleware);
@@ -21,4 +21,3 @@ router.get('/:id', cacheMiddleware({ ttl: 600 }), teamBookingsController.getById
 router.get('/:id/history', cacheMiddleware({ ttl: 120 }), teamBookingsController.getHistory);
 
 export default router;
-

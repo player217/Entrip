@@ -29,6 +29,7 @@
       "@entrip/ui/*": ["packages/ui/src/*"]
     }
   },
+  "files": [],
   "references": [
     { "path": "packages/design-tokens" },
     { "path": "packages/shared" },

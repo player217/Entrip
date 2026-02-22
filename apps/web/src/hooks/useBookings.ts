@@ -150,6 +150,7 @@ const normaliseDetailResponse = (payload: any) => {
 };
 
 const buildV2CreatePayload = (payload: Partial<Booking>) => {
+  const extended = payload as Partial<Booking> & { totalCount?: number; memo?: string };
   const start = toDateOnly(payload.startDate ?? payload.departureDate) ?? new Date().toISOString().slice(0, 10);
   const end = toDateOnly(payload.endDate ?? payload.returnDate) ?? start;
 
@@ -160,21 +161,22 @@ const buildV2CreatePayload = (payload: Partial<Booking>) => {
     destination: payload.destination ?? '미정',
     startDate: start,
     endDate: end,
-    totalPax: toNumber(payload.totalPax ?? payload.paxCount ?? payload.numberOfPeople ?? payload.totalCount, 1) ?? 1,
+    totalPax: toNumber(payload.totalPax ?? payload.paxCount ?? payload.numberOfPeople ?? extended.totalCount, 1) ?? 1,
     coordinator: payload.coordinator ?? payload.managerName ?? 'system',
     revenue: toNumber(payload.totalPrice ?? payload.price, 0) ?? 0,
-    notes: payload.notes ?? payload.memo ?? undefined,
+    notes: payload.notes ?? extended.memo ?? undefined,
   };
 };
 
 const buildV2UpdatePayload = (payload: Partial<Booking>) => {
+  const extended = payload as Partial<Booking> & { memo?: string };
   const body: Record<string, unknown> = {};
   if (payload.teamName !== undefined) body.teamName = payload.teamName;
   if (payload.bookingType !== undefined) body.type = payload.bookingType.toString().toLowerCase();
   if (payload.origin !== undefined) body.origin = payload.origin;
   if (payload.destination !== undefined) body.destination = payload.destination;
   if (payload.startDate || payload.departureDate) body.startDate = toDateOnly(payload.startDate ?? payload.departureDate);
-  if (payload.endDate || payload.returnDate) body.endDate = toDateOnly(payload.endDate ?? payload.returnDate, body.startDate as string | undefined);
+  if (payload.endDate || payload.returnDate) body.endDate = toDateOnly(payload.endDate ?? payload.returnDate);
   if (payload.totalPax !== undefined || payload.paxCount !== undefined || payload.numberOfPeople !== undefined) {
     body.totalPax = toNumber(payload.totalPax ?? payload.paxCount ?? payload.numberOfPeople, 1) ?? 1;
   }
@@ -184,8 +186,8 @@ const buildV2UpdatePayload = (payload: Partial<Booking>) => {
   if (payload.totalPrice !== undefined || payload.price !== undefined) {
     body.revenue = toNumber(payload.totalPrice ?? payload.price, 0) ?? 0;
   }
-  if (payload.notes !== undefined || payload.memo !== undefined) {
-    body.notes = payload.notes ?? payload.memo;
+  if (payload.notes !== undefined || extended.memo !== undefined) {
+    body.notes = payload.notes ?? extended.memo;
   }
   if (payload.status !== undefined) {
     body.status = payload.status.toLowerCase();

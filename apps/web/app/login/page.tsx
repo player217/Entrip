@@ -84,8 +84,9 @@ export default function LoginPage() {
           dynamic.sort((a, b) => (a.companyCode + order[a.role]) > (b.companyCode + order[b.role]) ? 1 : -1);
           setDemoAccounts(dynamic);
           // 폼 기본값도 첫 계정으로 동기화
-          if (dynamic.length > 0) {
-            setFormData({ companyCode: dynamic[0].companyCode, username: dynamic[0].username, password: dynamic[0].password });
+          const first = dynamic[0];
+          if (first) {
+            setFormData({ companyCode: first.companyCode, username: first.username, password: first.password });
           }
         }
       } catch (e) {
