@@ -246,7 +246,7 @@ export function createRateLimit(config: Partial<RateLimitConfig> = {}): (req: Re
     // Base key
     const baseKey = rateLimiter.generateKey(req, finalConfig.keyGenerator);
     // Test isolation: allow per-run prefix via header/env in test mode
-    const maybeHeaderPrefix = req.get('X-Test-Run-Id') || '';
+    const maybeHeaderPrefix = process.env.NODE_ENV === 'test' ? (req.get('X-Test-Run-Id') || '') : '';
     const maybeEnvPrefix = process.env.NODE_ENV === 'test' ? (process.env.RATE_LIMIT_PREFIX || '') : '';
     const key = [maybeHeaderPrefix || maybeEnvPrefix, baseKey].filter(Boolean).join(':');
     const result = rateLimiter.check(key, finalConfig);
@@ -342,7 +342,7 @@ export const authRateLimit = (req: Request, res: Response, next: NextFunction) =
   return _authRateLimitInner(req, res, next);
 };
 
-export const apiRateLimit = createRateLimit({
+const anonymousApiRateLimit = createRateLimit({
   windowMs: 60 * 1000, // 1 minute
   maxRequests: appConfig.server.isProduction ? 30 : 60, // Stricter in production
   message: 'API rate limit exceeded. Please slow down your requests.',
@@ -362,3 +362,16 @@ export const criticalRateLimit = createRateLimit({
   burstLimit: 1, // No burst allowed
   maxViolations: 1, // Immediate extended ban
 });
+
+// Only verified middleware claims select a personal budget; headers never do.
+const authenticatedApiRateLimit = createRateLimit({
+  windowMs: 60_000,
+  maxRequests: Number(process.env.AUTHENTICATED_RATE_LIMIT || 300),
+  burstLimit: Number(process.env.AUTHENTICATED_BURST_LIMIT || 60),
+  enableProgressivePenalty: false,
+  maxViolations: 0,
+  message: 'API rate limit exceeded. Please retry shortly.',
+  keyGenerator: (req: Request) => `user:${(req as any).user.companyCode}:${(req as any).user.id}`,
+});
+export const apiRateLimit = (req: Request, res: Response, next: NextFunction) =>
+  (req as any).user?.id ? authenticatedApiRateLimit(req, res, next) : anonymousApiRateLimit(req, res, next);

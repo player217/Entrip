@@ -4,7 +4,6 @@
   "description": "Entrip Backend API Service",
   "main": "dist/index.js",
   "scripts": {
-    "postinstall": "prisma generate",
     "dev": "pnpm exec ts-node-dev --respawn --transpile-only src/index.ts",
     "prebuild": "npm run sync-data && npm run validate-data",
     "build": "tsc -p tsconfig.json",

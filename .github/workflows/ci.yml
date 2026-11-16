@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, b ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, b ]
 
 jobs:
   type-check:
@@ -18,12 +18,12 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '22'
         
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
       with:
-        version: latest
+        version: 10.13.1
         
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
@@ -54,12 +54,12 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '22'
         
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
       with:
-        version: latest
+        version: 10.13.1
         
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
