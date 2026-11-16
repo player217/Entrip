@@ -100,3 +100,5 @@ grafana
 !.env.example
 **/*.tsbuildinfo
 **/dist
+
+!scripts/verify-build-artifacts.mjs

@@ -197,6 +197,7 @@ export default function ApprovalPageContent() {
             <label className="text-sm">
               결재 유형
               <select
+                aria-label="결재 유형"
                 className={inputClass}
                 value={draft.targetType}
                 onChange={(e) => {
@@ -213,6 +214,7 @@ export default function ApprovalPageContent() {
             <label className="block text-sm">
               결재할 거래
               <select
+                aria-label="결재할 거래"
                 className={inputClass}
                 required
                 value={draft.targetId}
@@ -253,6 +255,7 @@ export default function ApprovalPageContent() {
                   <label className="flex-1 min-w-0 text-sm">
                     {index + 1}차 결재자
                     <select
+                      aria-label={`${index + 1}차 결재자`}
                       className={inputClass}
                       required
                       value={id}

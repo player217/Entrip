@@ -1,0 +1,288 @@
+{
+  "client": {
+    "numPassedTestSuites": 35,
+    "numFailedTestSuites": 0,
+    "numPassedTests": 328,
+    "numFailedTests": 0,
+    "numPendingTests": 0,
+    "success": true,
+    "suites": [
+      {
+        "name": "apps/web/__tests__/booking-editor-accessibility.test.tsx",
+        "status": "passed",
+        "tests": 1
+      },
+      {
+        "name": "apps/web/__tests__/BookingModal.test.tsx",
+        "status": "passed",
+        "tests": 4
+      },
+      {
+        "name": "apps/web/__tests__/Calendar.test.tsx",
+        "status": "passed",
+        "tests": 1
+      },
+      {
+        "name": "packages/ui/__tests__/DataGrid.test.tsx",
+        "status": "passed",
+        "tests": 5
+      },
+      {
+        "name": "apps/web/app/api/v2/team-bookings/[id]/__tests__/route.proxy-contract.test.ts",
+        "status": "passed",
+        "tests": 4
+      },
+      {
+        "name": "apps/web/__tests__/flight-schedule.test.tsx",
+        "status": "passed",
+        "tests": 3
+      },
+      {
+        "name": "apps/web/__tests__/ToastProvider.test.tsx",
+        "status": "passed",
+        "tests": 2
+      },
+      {
+        "name": "packages/shared/src/hooks/__tests__/useDebounce.test.ts",
+        "status": "passed",
+        "tests": 16
+      },
+      {
+        "name": "apps/web/__tests__/workspace-tabs.test.tsx",
+        "status": "passed",
+        "tests": 3
+      },
+      {
+        "name": "packages/ui/__tests__/Button.test.tsx",
+        "status": "passed",
+        "tests": 7
+      },
+      {
+        "name": "apps/web/app/(main)/__tests__/layout.test.tsx",
+        "status": "passed",
+        "tests": 4
+      },
+      {
+        "name": "packages/shared/src/lib/__tests__/api-client.test.ts",
+        "status": "passed",
+        "tests": 8
+      },
+      {
+        "name": "packages/shared/src/stores/__tests__/sessionStore.test.ts",
+        "status": "passed",
+        "tests": 10
+      },
+      {
+        "name": "packages/shared/src/utils/__tests__/dateUtils.test.ts",
+        "status": "passed",
+        "tests": 54
+      },
+      {
+        "name": "packages/ui/__tests__/Input.test.tsx",
+        "status": "passed",
+        "tests": 6
+      },
+      {
+        "name": "packages/shared/src/hooks/__tests__/useThrottle.test.ts",
+        "status": "passed",
+        "tests": 14
+      },
+      {
+        "name": "apps/web/app/api/v2/team-bookings/__tests__/route.proxy-contract.test.ts",
+        "status": "passed",
+        "tests": 2
+      },
+      {
+        "name": "apps/web/__tests__/exchange-display.test.tsx",
+        "status": "passed",
+        "tests": 2
+      },
+      {
+        "name": "packages/shared/src/hooks/__tests__/useTeamBooking.test.ts",
+        "status": "passed",
+        "tests": 18
+      },
+      {
+        "name": "apps/web/app/api/v2/[...path]/__tests__/notifications-metrics.v2-routing.test.ts",
+        "status": "passed",
+        "tests": 3
+      },
+      {
+        "name": "apps/web/app/api/exchange/__tests__/route.v2-priority.test.ts",
+        "status": "passed",
+        "tests": 3
+      },
+      {
+        "name": "packages/shared/src/services/__tests__/teamBookingService.test.ts",
+        "status": "passed",
+        "tests": 23
+      },
+      {
+        "name": "apps/web/__tests__/auth-session.test.ts",
+        "status": "passed",
+        "tests": 7
+      },
+      {
+        "name": "apps/web/app/api/v2/[...path]/__tests__/flights.v2-routing.test.ts",
+        "status": "passed",
+        "tests": 1
+      },
+      {
+        "name": "packages/ui/__tests__/utils.test.ts",
+        "status": "passed",
+        "tests": 10
+      },
+      {
+        "name": "apps/web/__tests__/Login.test.tsx",
+        "status": "passed",
+        "tests": 2
+      },
+      {
+        "name": "apps/web/app/api/messages/[...path]/__tests__/route.proxy-contract.test.ts",
+        "status": "passed",
+        "tests": 6
+      },
+      {
+        "name": "apps/web/__tests__/booking-analytics.test.ts",
+        "status": "passed",
+        "tests": 6
+      },
+      {
+        "name": "packages/shared/src/lib/__tests__/logger.test.ts",
+        "status": "passed",
+        "tests": 19
+      },
+      {
+        "name": "packages/shared/src/utils/__tests__/priceFormatter.test.ts",
+        "status": "passed",
+        "tests": 47
+      },
+      {
+        "name": "packages/shared/src/services/__tests__/bookingService.test.ts",
+        "status": "passed",
+        "tests": 13
+      },
+      {
+        "name": "apps/web/__tests__/booking-editor-model.test.ts",
+        "status": "passed",
+        "tests": 4
+      },
+      {
+        "name": "packages/shared/src/stores/__tests__/workspaceIsolation.test.ts",
+        "status": "passed",
+        "tests": 5
+      },
+      {
+        "name": "packages/shared/src/__tests__/booking-helpers.test.ts",
+        "status": "passed",
+        "tests": 12
+      },
+      {
+        "name": "packages/shared/src/__tests__/unified-api-client.test.ts",
+        "status": "passed",
+        "tests": 3
+      }
+    ]
+  },
+  "api": {
+    "numPassedTestSuites": 17,
+    "numFailedTestSuites": 0,
+    "numPassedTests": 85,
+    "numFailedTests": 0,
+    "numPendingTests": 0,
+    "success": true,
+    "suites": [
+      {
+        "name": "packages/api/src/__tests__/bookings.locking.test.ts",
+        "status": "passed",
+        "tests": 3
+      },
+      {
+        "name": "packages/api/src/__tests__/cache.scoping.test.ts",
+        "status": "passed",
+        "tests": 2
+      },
+      {
+        "name": "packages/api/src/__tests__/e2e/middleware.e2e.test.ts",
+        "status": "passed",
+        "tests": 19
+      },
+      {
+        "name": "packages/api/src/__tests__/e2e/server.e2e.test.ts",
+        "status": "passed",
+        "tests": 18
+      },
+      {
+        "name": "packages/api/src/__tests__/finance.approvals.integration.test.ts",
+        "status": "passed",
+        "tests": 9
+      },
+      {
+        "name": "packages/api/src/__tests__/messaging.contract.test.ts",
+        "status": "passed",
+        "tests": 7
+      },
+      {
+        "name": "packages/api/src/__tests__/auth.precedence.test.ts",
+        "status": "passed",
+        "tests": 1
+      },
+      {
+        "name": "packages/api/src/__tests__/auth.login.test.ts",
+        "status": "passed",
+        "tests": 3
+      },
+      {
+        "name": "packages/api/src/__tests__/notifications.security.test.ts",
+        "status": "passed",
+        "tests": 2
+      },
+      {
+        "name": "packages/api/src/__tests__/auth.session-security.test.ts",
+        "status": "passed",
+        "tests": 6
+      },
+      {
+        "name": "packages/api/src/__tests__/bookings-completion.route.test.ts",
+        "status": "passed",
+        "tests": 3
+      },
+      {
+        "name": "packages/api/src/__tests__/teamBookings.route.test.ts",
+        "status": "passed",
+        "tests": 3
+      },
+      {
+        "name": "packages/api/src/__tests__/ws.integration.test.ts",
+        "status": "passed",
+        "tests": 1
+      },
+      {
+        "name": "packages/api/src/__tests__/middleware.ratelimit.isolation.test.ts",
+        "status": "passed",
+        "tests": 1
+      },
+      {
+        "name": "packages/api/src/__tests__/booking-dto.test.ts",
+        "status": "passed",
+        "tests": 5
+      },
+      {
+        "name": "packages/api/src/__tests__/middleware.ratelimit.test.ts",
+        "status": "passed",
+        "tests": 1
+      },
+      {
+        "name": "packages/api/src/__tests__/middleware.headers.test.ts",
+        "status": "passed",
+        "tests": 1
+      }
+    ]
+  },
+  "totals": {
+    "suites": 52,
+    "tests": 413,
+    "failed": 0,
+    "skipped": 0
+  }
+}

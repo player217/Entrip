@@ -1,4 +1,15 @@
 const path = require('path');
+const websocketOrigins = [];
+if (process.env.NEXT_PUBLIC_WS_URL) {
+  const url = new URL(process.env.NEXT_PUBLIC_WS_URL);
+  if (!['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol)) throw new Error('Invalid NEXT_PUBLIC_WS_URL protocol');
+  websocketOrigins.push(url.origin);
+  url.protocol = url.protocol === 'https:' || url.protocol === 'wss:' ? 'wss:' : 'ws:';
+  websocketOrigins.push(url.origin);
+} else if (process.env.NODE_ENV !== 'production') {
+  websocketOrigins.push('http://localhost:4002', 'ws://localhost:4002', 'http://127.0.0.1:4002', 'ws://127.0.0.1:4002');
+}
+
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -86,7 +97,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'", // Allow inline styles for components
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' http://localhost:4002 ws://localhost:4002 https://api.iconify.design https://api.simplesvg.com https://api.unisvg.com https://cdn.jsdelivr.net", // Allow Iconify API services for dynamic icon loading
+              `connect-src 'self' ${websocketOrigins.join(' ')}`,
               "frame-ancestors 'none'", // Prevent clickjacking
               "base-uri 'self'",
               "form-action 'self'",

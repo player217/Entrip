@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-11-16T23:20:29.132Z",
+  "baseURL": "http://127.0.0.1:3000",
+  "status": "PASS",
+  "checks": [
+    {
+      "check": "Real pending ledger creation does not change balance; self approval hidden and API denied",
+      "status": "PASS"
+    },
+    {
+      "check": "Pending ledger draft survives reload and updates the original transaction with PUT",
+      "status": "PASS"
+    },
+    {
+      "check": "A different administrator approves through UI and persisted balance increases once",
+      "status": "PASS"
+    },
+    {
+      "check": "Second manager cannot approve before their assigned step, in UI and API",
+      "status": "PASS"
+    },
+    {
+      "check": "First approval advances one step, keeps balance unchanged, and blocks late cancellation",
+      "status": "PASS"
+    },
+    {
+      "check": "Final manager approval persists approved expense and exact balance after full reload",
+      "status": "PASS"
+    },
+    {
+      "check": "Real finance ledger fits 390px viewport",
+      "status": "PASS"
+    }
+  ],
+  "pageErrors": [],
+  "accountId": "cmwjvzkpx000jqn2nxze0gzdw",
+  "approvalId": "cmwjvzndf000qqn2nrbqf3moc",
+  "cleanup": "Synthetic test administrator deactivated"
+}

@@ -317,6 +317,7 @@ export default function AccountsPageContent() {
             <label className="text-sm">
               계좌
               <select
+                aria-label="계좌"
                 className={inputClass}
                 required
                 value={entryDraft.accountId}
@@ -336,6 +337,7 @@ export default function AccountsPageContent() {
             <label className="text-sm">
               입출금 구분
               <select
+                aria-label="입출금 구분"
                 className={inputClass}
                 value={entryDraft.type}
                 onChange={(e) => {
@@ -396,6 +398,7 @@ export default function AccountsPageContent() {
           <label className="text-sm">
             계좌 필터
             <select
+              aria-label="계좌 필터"
               className="ml-2 border rounded px-2 py-1 max-w-full"
               value={filter}
               onChange={(e) => {

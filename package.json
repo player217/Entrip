@@ -34,7 +34,7 @@
     "prisma:migrate": "node scripts/prisma-manager.js migrate",
     "prisma:cleanup": "node scripts/prisma-manager.js force-cleanup",
     "setup:wsl2": "powershell -ExecutionPolicy Bypass -File scripts/setup-wsl2.ps1",
-    "build": "pnpm run build:tokens && pnpm run build:ts && turbo run bundle",
+    "build": "pnpm run build:tokens && pnpm run build:ts && turbo run bundle && node scripts/verify-build-artifacts.mjs",
     "build:tokens": "pnpm --filter @entrip/design-tokens build",
     "build:ts": "tsc -b tsconfig.base.json --pretty && tsc -b packages/api --pretty && tsc -p packages/api/tsconfig.seed.json --pretty",
     "build:clean": "tsc -b --clean",

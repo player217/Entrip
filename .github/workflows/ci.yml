@@ -46,7 +46,28 @@ jobs:
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
-    
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://entrip:entrip_ci_test@localhost:5432/entrip_test
+      TEST_DATABASE_URL: postgresql://entrip:entrip_ci_test@localhost:5432/entrip_test
+      JWT_SECRET: ci-only-access-secret-at-least-32-characters
+      JWT_REFRESH_SECRET: ci-only-refresh-secret-at-least-32-characters
+      CACHE_DISABLE_IN_TEST: 'true'
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: entrip
+          POSTGRES_PASSWORD: entrip_ci_test
+          POSTGRES_DB: entrip_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U entrip -d entrip_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -67,8 +88,19 @@ jobs:
     - name: Cutover gate ownership
       run: echo "v2 cutover required checks are enforced in .github/workflows/v2-cutover-gates.yml"
 
-    - name: Run tests
-      run: pnpm run test:coverage
+    - name: Apply reviewed migrations to the dedicated test database
+      run: pnpm exec prisma migrate deploy --schema packages/api/prisma/schema.prisma
+
+    - name: Verify all v2 models on the migrated test database
+      run: node scripts/verification/verify-v2-schema.mjs
+
+    - name: Build design tokens
+      run: pnpm run build:tokens
+
+    - name: Run all projects with coverage, sequentially
+      # API suites clean only *_test databases; serialize suites sharing this database.
+      # Keep existing coverage thresholds and reporters; do not combine --runInBand with --maxWorkers.
+      run: pnpm exec jest --config jest.config.js --coverage --coverageReporters=text-summary --coverageReporters=json-summary --runInBand --detectOpenHandles
 
     - name: Upload cutover diagnostics
       if: failure()
@@ -78,6 +110,8 @@ jobs:
         path: |
           scripts/verify-v2-cutover.mjs
           scripts/verify-v2-schema.mjs
+          scripts/verification/verify-v2-schema.mjs
+          docs/verification/2026-11-17/migration-verification.json
           scripts/smoke-v2-endpoints.mjs
           docker-compose.dev.yml
           docker-compose.prod.yml

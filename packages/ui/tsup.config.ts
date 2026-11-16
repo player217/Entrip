@@ -7,7 +7,8 @@ export default defineConfig({
   clean: true, sourcemap: true, target: 'esnext', splitting: false, platform: 'browser',
   esbuildOptions(options) { options.jsx = 'automatic'; options.mainFields = ['browser', 'module', 'main']; options.conditions = ['browser', 'import']; },
   onSuccess: async () => {
-    if (existsSync('./src/global.css')) copyFileSync('./src/global.css', './dist/global.css');
+    const css = existsSync('./src/global.css') ? './src/global.css' : './global.css';
+    copyFileSync(css, './dist/global.css');
     rmSync('./dist/.tsbuildinfo', { force: true });
     execFileSync(process.execPath, ['../../node_modules/typescript/bin/tsc', '--emitDeclarationOnly', '--outDir', 'dist/src', '--declaration', 'true'], { stdio: 'inherit' });
   },

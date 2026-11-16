@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "checks": [
+    "date-cell create; customer contacts, repeated hotels/flights, status, deposit persisted in real API",
+    "print popup and persisted create history",
+    "draft and repeated detail rows survive full reload in their workspace tab",
+    "versioned edit and actual history persisted",
+    "390px editor fits viewport; repeated detail price edits persist",
+    "month/week list and weekly calendar render shared persisted editor"
+  ],
+  "screenshots": [
+    "booking-print.png",
+    "booking-desktop.png",
+    "booking-mobile.png"
+  ],
+  "baseURL": "http://127.0.0.1:3000",
+  "startedAt": "2026-11-16T23:16:08.555Z",
+  "pageErrors": [],
+  "createdBookingId": "cmwjvu0d60001qn2mmqh8f19r",
+  "finishedAt": "2026-11-16T23:16:13.574Z"
+}

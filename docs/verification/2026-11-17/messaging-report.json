@@ -1,0 +1,16 @@
+{
+  "name": "messaging",
+  "runAt": "2026-11-16T23:20:19.451Z",
+  "checks": [
+    "Two independent demo users logged in through UI with cookie sessions",
+    "Organization directory creates a persisted direct conversation",
+    "Both directions deliver real persisted messages over realtime transport",
+    "Third employee is invited into the same room and sees its persisted history",
+    "Cookie-only reload restores conversation without localStorage tokens",
+    "J1 directory and conversation access are isolated from Entrip",
+    "Mobile viewport remains within 390px"
+  ],
+  "pageErrors": [],
+  "status": "PASS",
+  "receiveMilliseconds": 123
+}
