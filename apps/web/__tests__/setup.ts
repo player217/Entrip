@@ -14,5 +14,7 @@ global.localStorage = localStorageMock as any;
 ;(global as any).React = React;
 
 // Mock window.location
-delete (window as any).location;
-window.location = { href: '', pathname: '/', search: '', hash: '' } as any;
+if (typeof window !== 'undefined') {
+  delete (window as any).location;
+  window.location = { href: '', pathname: '/', search: '', hash: '', assign: jest.fn() } as any;
+}

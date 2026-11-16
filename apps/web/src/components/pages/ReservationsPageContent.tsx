@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { clsx } from 'clsx'
 import MonthlyCalendarView from '@/features/calendar/MonthlyCalendarView'
-import WeekView from '@/features/calendar/WeekView'
+import { BookingWorkspace } from '@/features/bookings/BookingWorkspace'
 import MonthlyListPage from '@/features/calendar/MonthlyListPage'
 import WeeklyListPage from '@/features/calendar/WeeklyListPage'
 
@@ -74,7 +74,7 @@ export default function ReservationsPageContent() {
         {activeTab === 'calendar-month' && <MonthlyCalendarView />}
         {activeTab === 'calendar-week' && (
           <div className="h-[600px]">
-            <WeekView currentDate={new Date()} />
+            <BookingWorkspace view="week" />
           </div>
         )}
         {activeTab === 'monthly-list' && <MonthlyListPage />}

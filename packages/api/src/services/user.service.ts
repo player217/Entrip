@@ -60,7 +60,7 @@ export class UserService {
     // Create user
     return await this.model.create({
       data: {
-        ...data,
+        name: data.name, email: data.email, role: data.role, department: data.department,
         password: hashedPassword,
         companyCode,
         isActive: true,
@@ -462,7 +462,7 @@ export class UserService {
         // Create user
         const user = await this.model.create({
           data: {
-            ...userData,
+            name: userData.name, email: userData.email, role: userData.role, department: userData.department,
             password: hashedPassword,
             companyCode,
             isActive: true,

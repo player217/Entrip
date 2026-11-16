@@ -72,7 +72,7 @@ const mapType = (value: any): BookingType | undefined => {
 };
 
 const coerceBooking = (raw: any): Booking => {
-  const start = toIsoString(raw?.startDate ?? raw?.departureDate) ?? new Date().toISOString();
+  const start = toIsoString(raw?.startDate ?? raw?.departureDate) ?? '';
   const end = toIsoString(raw?.endDate ?? raw?.returnDate) ?? start;
   const totalPrice = toNumber(raw?.totalPrice ?? raw?.revenue ?? raw?.price, 0) ?? 0;
 
@@ -122,7 +122,7 @@ const coerceBooking = (raw: any): Booking => {
 const normaliseListResponse = (payload: any) => {
   const dataBlock = payload?.data ?? payload?.bookings ?? payload;
   const bookingsSource = Array.isArray(dataBlock?.bookings) ? dataBlock.bookings : Array.isArray(dataBlock) ? dataBlock : [];
-  const bookings = bookingsSource.map(coerceBooking);
+  const bookings: Booking[] = bookingsSource.map(coerceBooking);
 
   const pagination = payload?.pagination ?? payload?.meta ?? dataBlock?.pagination;
   const page = pagination?.page ?? payload?.page ?? 1;
@@ -220,7 +220,7 @@ export function useBookings(month?: string) {
     }
     return `${BOOKINGS_BASE_PATH}?${params}`;
   }, [month]);
-  const key = user ? [query, user.companyCode, user.id] : null;
+  const key = user ? [query, user.companyCode, user.id] as const : null;
   const { data, error, isLoading, mutate } = useSWR(key, async ([url]) => {
     const first = normaliseListResponse(await fetcher(url));
     const bookings = [...first.bookings];

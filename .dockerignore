@@ -91,3 +91,12 @@ storybook-static
 prometheus
 infra
 grafana
+
+# Do not copy credentials or stale emitted source into image builds.
+.env
+**/.env
+.env.*
+**/.env.*
+!.env.example
+**/*.tsbuildinfo
+**/dist

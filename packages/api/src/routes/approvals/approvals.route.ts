@@ -2,7 +2,10 @@ import { Router } from 'express';
 import { UserRole } from '@prisma/client';
 import { approvalsController } from './approvals.controller';
 import { authMiddleware, requireRole } from '../../middlewares/auth.middleware';
-import { extractCompanyCode, validateCompanyAccess } from '../../middlewares/multitenancy.middleware';
+import {
+  extractCompanyCode,
+  validateCompanyAccess,
+} from '../../middlewares/multitenancy.middleware';
 import { validateBody, validateQuery } from '../../middlewares/validate.middleware';
 import { ApprovalCreateDto } from './dtos/ApprovalCreate.dto';
 import { ApprovalUpdateDto } from './dtos/ApprovalUpdate.dto';
@@ -17,23 +20,13 @@ router.use(extractCompanyCode);
 router.use(validateCompanyAccess);
 
 // GET /approvals - List approvals with filters
-router.get(
-  '/',
-  validateQuery(ApprovalQueryDto),
-  approvalsController.list
-);
+router.get('/', validateQuery(ApprovalQueryDto), approvalsController.list);
 
 // GET /approvals/stats - Get approval statistics
-router.get(
-  '/stats',
-  approvalsController.getStats
-);
+router.get('/stats', approvalsController.getStats);
 
 // GET /approvals/:id - Get single approval
-router.get(
-  '/:id',
-  approvalsController.findById
-);
+router.get('/:id', approvalsController.findById);
 
 // POST /approvals - Create new approval request (staff and above)
 router.post(
@@ -60,10 +53,6 @@ router.post(
 );
 
 // DELETE /approvals/:id - Delete approval (admin only)
-router.delete(
-  '/:id',
-  requireRole([UserRole.ADMIN]),
-  approvalsController.delete
-);
+router.delete('/:id', requireRole([UserRole.ADMIN]), approvalsController.delete);
 
 export default router;

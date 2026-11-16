@@ -25,7 +25,7 @@ export class BookingsService extends BaseService<Booking> {
       const booking = await tx.booking.create({ data: {
         ...input, type, bookingNumber: `BK-${randomUUID()}`,
         status: input.status ?? BookingStatus.PENDING,
-        revenue: input.revenue ?? input.totalPrice ?? 0, totalPrice: input.totalPrice ?? input.revenue ?? 0,
+        revenue: input.revenue ?? input.totalPrice ?? 0, totalPrice: input.revenue ?? input.totalPrice ?? 0,
         companyCode, userId, createdBy: userId, updatedBy: userId,
         startDate: new Date(input.startDate), endDate: new Date(input.endDate),
       } });
@@ -64,14 +64,14 @@ export class BookingsService extends BaseService<Booking> {
     return prisma.$transaction(async tx => {
       const previous = await tx.booking.findFirst({ where: { id, companyCode, deletedAt: null } });
       if (!previous) throw new ApiError(404, 'Booking not found');
+      if (previous.version !== expectedVersion) throw new ApiError(412, 'Precondition Failed: version mismatch');
       const start = input.startDate ? new Date(input.startDate) : previous.startDate;
       const end = input.endDate ? new Date(input.endDate) : previous.endDate;
       if (end < start) throw new ApiError(400, 'End date must be on or after start date');
       const data: Prisma.BookingUpdateManyMutationInput = {
         ...input, type: input.type ? this.normalizeType(input.type) : undefined,
         startDate: start, endDate: end, version: { increment: 1 }, updatedBy: userId,
-        ...(input.revenue !== undefined ? { totalPrice: input.revenue } : {}),
-        ...(input.totalPrice !== undefined ? { revenue: input.totalPrice } : {}),
+        ...((input.revenue ?? input.totalPrice) !== undefined ? { totalPrice: input.revenue ?? input.totalPrice, revenue: input.revenue ?? input.totalPrice } : {}),
       };
       const result = await tx.booking.updateMany({ where: { id, companyCode, deletedAt: null, version: expectedVersion }, data });
       if (result.count !== 1) throw new ApiError(412, '다른 사용자가 변경했습니다. 다시 불러온 후 수정하세요.');
@@ -95,20 +95,21 @@ export class BookingsService extends BaseService<Booking> {
   /**
    * Soft delete with optimistic lock (require If-Match version)
    */
-  async deleteWithLock(id: string, companyCode: string, ifMatch?: string): Promise<void> {
+  async deleteWithLock(id: string, companyCode: string, ifMatch?: string, userId?: string): Promise<void> {
     const { parseIfMatchVersion } = await import('../../lib/etag');
     const expectedVersion = parseIfMatchVersion(ifMatch);
-    if (expectedVersion === undefined) {
-      throw new ApiError(428, 'Precondition Required: If-Match header (version) is required');
-    }
-
-    const result = await this.model.updateMany({
-      where: { id, companyCode, deletedAt: null, version: expectedVersion },
-      data: { deletedAt: new Date(), updatedAt: new Date() },
+    if (expectedVersion === undefined) throw new ApiError(428, 'If-Match version is required');
+    await prisma.$transaction(async tx => {
+      const previous = await tx.booking.findFirst({ where: { id, companyCode } });
+      if (!previous) throw new ApiError(404, 'Booking not found');
+      if (previous.deletedAt || previous.version !== expectedVersion) throw new ApiError(412, 'Precondition Failed: version mismatch');
+      const result = await tx.booking.updateMany({ where: { id, companyCode, deletedAt: null, version: expectedVersion },
+        data: { deletedAt: new Date(), updatedBy: userId, version: { increment: 1 } } });
+      if (result.count !== 1) throw new ApiError(412, 'Precondition Failed: version mismatch');
+      const changedBy = userId ?? previous.userId;
+      if (changedBy) await tx.bookingHistory.create({ data: { bookingId: id, companyCode, changedBy, action: 'delete',
+        changedFields: ['deletedAt'], previousValues: JSON.parse(JSON.stringify(previous)) } });
     });
-    if (result.count === 0) {
-      throw new ApiError(412, 'Precondition Failed: version mismatch');
-    }
   }
 
   /**

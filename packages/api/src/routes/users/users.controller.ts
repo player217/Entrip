@@ -3,6 +3,7 @@ import { userService } from '../../services/user.service';
 import { AuthRequest } from '../../middlewares/auth.middleware';
 import { ApiError } from '../../middlewares/error.middleware';
 import { createUserSchema, updateUserSchema } from './users.dto';
+import { io } from '../../ws';
 
 export class UsersController {
   /**
@@ -118,6 +119,7 @@ export class UsersController {
         throw new ApiError(400, 'You cannot deactivate or change the role of your own account');
       }
       const user = await userService.update(id, changes, req.companyCode!);
+      if (changes.isActive === false || changes.role !== undefined) io?.in(`user:${id}`).disconnectSockets(true);
 
       // Remove password from response
       const { password, ...userWithoutPassword } = user;
@@ -185,6 +187,7 @@ export class UsersController {
       }
 
       await userService.deactivate(id, req.companyCode!);
+      io?.in(`user:${id}`).disconnectSockets(true);
 
       res.status(204).send();
     } catch (error) {

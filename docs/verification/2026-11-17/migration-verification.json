@@ -1,0 +1,134 @@
+{
+  "executedAt": "2026-11-16T23:10:30.778Z",
+  "freshDatabase": "entrip_fresh_1794870630778_test",
+  "legacyDatabase": "entrip_legacy_1794870630778_test",
+  "fixtureTables": 14,
+  "fixtureRows": 24,
+  "freshModels": [
+    "User",
+    "Booking",
+    "CalendarEvent",
+    "BankAccount",
+    "FinanceRecord",
+    "Approval",
+    "ApprovalStep",
+    "Account",
+    "Conversation",
+    "ConversationParticipant",
+    "Message",
+    "BookingHistory",
+    "UserPresence",
+    "MessageRead",
+    "MessageReaction",
+    "Flight",
+    "Vehicle",
+    "Hotel",
+    "Settlement",
+    "SystemMessage",
+    "ConversationSettings",
+    "Transaction",
+    "Document",
+    "IdempotencyKey",
+    "Outbox",
+    "AuditLog",
+    "IntegrationProvider",
+    "ExternalCallLog",
+    "FxRateCache",
+    "ExchangeRate",
+    "FlightStatusCache",
+    "IntegrationInbox",
+    "MessageAttachment",
+    "Notification",
+    "NotificationPreference"
+  ],
+  "snapshotExact": true,
+  "legacyModels": [
+    "User",
+    "Booking",
+    "CalendarEvent",
+    "BankAccount",
+    "FinanceRecord",
+    "Approval",
+    "ApprovalStep",
+    "Account",
+    "Conversation",
+    "ConversationParticipant",
+    "Message",
+    "BookingHistory",
+    "UserPresence",
+    "MessageRead",
+    "MessageReaction",
+    "Flight",
+    "Vehicle",
+    "Hotel",
+    "Settlement",
+    "SystemMessage",
+    "ConversationSettings",
+    "Transaction",
+    "Document",
+    "IdempotencyKey",
+    "Outbox",
+    "AuditLog",
+    "IntegrationProvider",
+    "ExternalCallLog",
+    "FxRateCache",
+    "ExchangeRate",
+    "FlightStatusCache",
+    "IntegrationInbox",
+    "MessageAttachment",
+    "Notification",
+    "NotificationPreference"
+  ],
+  "booking": {
+    "bookingNumber": "LEGACY-legacy-b1",
+    "type": "PACKAGE",
+    "status": "COMPLETED",
+    "legacyType": "golf",
+    "companyCode": "entrip"
+  },
+  "userMappings": [
+    {
+      "id": "legacy-u1",
+      "role": "ADMIN",
+      "companyCode": "entrip"
+    },
+    {
+      "id": "legacy-u2",
+      "role": "USER",
+      "companyCode": "startour"
+    },
+    {
+      "id": "legacy-u3",
+      "role": "USER",
+      "companyCode": "happytravel"
+    },
+    {
+      "id": "legacy-u4",
+      "role": "USER",
+      "companyCode": "entrip"
+    }
+  ],
+  "rooms": [
+    {
+      "id": "legacy-mixed",
+      "companyCode": "__quarantine__:legacy-mixed",
+      "deletedAt": "2026-11-16T23:10:35.165Z"
+    },
+    {
+      "id": "legacy-same",
+      "companyCode": "entrip",
+      "deletedAt": null
+    },
+    {
+      "id": "legacy-unknown",
+      "companyCode": "__quarantine__:legacy-unknown",
+      "deletedAt": "2026-11-16T23:10:35.165Z"
+    }
+  ],
+  "unvalidatedForeignKeys": 0,
+  "newWrites": true,
+  "remainingDiffOnlyLegacyExtras": true,
+  "remainingDiffBytes": 8704,
+  "result": "PASS",
+  "readonlyVerifier": "PASS"
+}

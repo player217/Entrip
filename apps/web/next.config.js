@@ -7,8 +7,8 @@ const nextConfig = {
   
   // Environment-conditional type checking
   eslint: {
-    // Temporarily ignore ESLint during builds - need to fix unused vars
-    ignoreDuringBuilds: true,
+    // Keep production builds honest about lint errors.
+    ignoreDuringBuilds: false,
   },
   
   // Environment-conditional TypeScript error handling

@@ -3,7 +3,8 @@
 
 import React from 'react';
 import { Icon as Iconify } from '@iconify/react';
-import type { IconProps } from '@iconify/react';
+import type { IconProps, IconifyIcon } from '@iconify/react';
+import localIcons from './local-icons.json';
 
 /**
  * 프로젝트의 모든 아이콘을 관리하는 중앙 컴포넌트입니다.
@@ -11,5 +12,6 @@ import type { IconProps } from '@iconify/react';
  * @example <Icon icon="ph:heart-bold" className="text-red-500" />
  */
 export const Icon = (props: IconProps) => {
-  return <Iconify {...props} />;
+  const icon = typeof props.icon === 'string' ? (localIcons as Record<string, IconifyIcon>)[props.icon] || props.icon : props.icon;
+  return <Iconify {...props} icon={icon} />;
 };

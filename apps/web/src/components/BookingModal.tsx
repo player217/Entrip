@@ -46,8 +46,8 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
     if (isOpen) {
       const defaultValues = {
         customerName: booking?.customerName || '',
-        phoneNumber: '', // Not available in current Booking type
-        email: '', // Not available in current Booking type
+        phoneNumber: booking?.contact || '',
+        email: booking?.email || '',
         destination: booking?.destination || '',
         departureDate: booking?.startDate ? new Date(booking.startDate).toISOString().split('T')[0] : '',
         returnDate: booking?.endDate ? new Date(booking.endDate).toISOString().split('T')[0] : '',
@@ -65,14 +65,6 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
     setLoading(true);
     setError('');
 
-    // Optimistic update
-    const optimisticBooking = {
-      id: booking?.id || `temp-${Date.now()}`,
-      ...formData,
-      createdAt: booking?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
     const buildApiPayload = () => {
       const startDate = formData.departureDate ? new Date(formData.departureDate) : (booking?.startDate ? new Date(booking.startDate) : undefined);
       const endDate = formData.returnDate ? new Date(formData.returnDate) : (booking?.endDate ? new Date(booking.endDate) : undefined);
@@ -81,6 +73,7 @@ export default function BookingModal({ isOpen, onClose, booking, onSave }: Booki
 
       return {
         customerName: formData.customerName,
+        contact: formData.phoneNumber, email: formData.email,
         teamName: formData.customerName,
         destination: formData.destination,
         origin: booking?.origin,

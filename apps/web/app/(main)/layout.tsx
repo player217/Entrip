@@ -26,7 +26,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const unauthorized = error?.status === 401 || error?.status === 403;
   useEffect(() => {
     if (unauthorized) {
-      void useAuthStore.getState().checkAuth();
+      useAuthStore.getState().invalidateSession();
       router.replace('/login');
     } else if (user) {
       useAuthStore.setState({ user, isAuthenticated: true, token: null, isLoading: false });

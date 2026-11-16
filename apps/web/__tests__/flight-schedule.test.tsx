@@ -27,7 +27,7 @@ it('renders both departures in the same airline and weekday cell and identifies 
   await screen.findByRole('option', { name: 'NRT - 나리타' });
   fireEvent.change(screen.getByLabelText('도착 공항'), { target: { value: 'NRT' } });
   const row = screen.getByRole('row', { name: /에어부산/ });
-  const monday = within(row).getAllByRole('cell')[0];
+  const monday = within(row).getAllByRole('cell')[0]!;
   expect(within(monday).getByText('BX164')).toBeInTheDocument();
   expect(within(monday).getByText('BX112')).toBeInTheDocument();
   expect(screen.getByText(/오래된 자료입니다/)).toBeInTheDocument();

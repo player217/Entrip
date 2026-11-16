@@ -5,9 +5,9 @@ import { bookingPrintHtml, bookingTypes, detailSections, statuses, type BookingD
 
 const inputClass = 'block w-full min-w-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
 const currencies: Currency[] = ['KRW', 'USD', 'EUR', 'JPY', 'CNY'];
-export function BookingEditor({ session, onChange, onClose, onSave, onReload, busy, error }: {
+export function BookingEditor({ session, onChange, onClose, onSave, onReload, onDelete, busy, error }: {
   session: EditorSession; onChange: (draft: BookingDraft) => void; onClose: () => void;
-  onSave: () => void; onReload: () => void; busy: boolean; error: string;
+  onSave: () => void; onReload: () => void; onDelete: () => void; busy: boolean; error: string;
 }) {
   const [showHistory, setShowHistory] = useState(false);
   const draft = session.draft;
@@ -33,8 +33,8 @@ export function BookingEditor({ session, onChange, onClose, onSave, onReload, bu
           <div className="min-w-0 space-y-5">
             <section><h3 className="mb-3 border-b pb-2 font-semibold text-blue-800">기본 정보</h3><div className="grid grid-cols-2 gap-3">
               <label className="col-span-2 text-sm">팀명 *<input className={inputClass} value={draft.teamName} onChange={e => field('teamName', e.target.value)} required maxLength={200} /></label>
-              <label className="text-sm">예약 유형<select className={inputClass} value={draft.type} onChange={e => field('type', e.target.value)}>{Object.entries(bookingTypes).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-              <label className="text-sm">예약 상태<select className={inputClass} value={draft.status} onChange={e => field('status', e.target.value)}>{Object.entries(statuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+              <label className="text-sm">예약 유형<select aria-label="예약 유형" className={inputClass} value={draft.type} onChange={e => field('type', e.target.value)}>{Object.entries(bookingTypes).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+              <label className="text-sm">예약 상태<select aria-label="예약 상태" className={inputClass} value={draft.status} onChange={e => field('status', e.target.value)}>{Object.entries(statuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
               <label className="text-sm">출발지 *<input className={inputClass} value={draft.origin} onChange={e => field('origin', e.target.value)} required /></label>
               <label className="text-sm">목적지 *<input className={inputClass} value={draft.destination} onChange={e => field('destination', e.target.value)} required /></label>
               <label className="text-sm">출발일 *<input className={inputClass} type="date" value={draft.startDate} onChange={e => field('startDate', e.target.value)} required /></label>
@@ -50,7 +50,7 @@ export function BookingEditor({ session, onChange, onClose, onSave, onReload, bu
             </div></section>
             <section><h3 className="mb-3 border-b pb-2 font-semibold text-blue-800">금액</h3><div className="grid grid-cols-2 gap-3">
               <label className="text-sm">판매금액<input className={inputClass} type="number" min={0} step="0.01" value={draft.revenue} onChange={e => field('revenue', Number(e.target.value))} required /></label>
-              <label className="text-sm">통화<select className={inputClass} value={draft.currency} onChange={e => field('currency', e.target.value as Currency)}>{currencies.map(c => <option key={c}>{c}</option>)}</select></label>
+              <label className="text-sm">통화<select aria-label="통화" className={inputClass} value={draft.currency} onChange={e => field('currency', e.target.value as Currency)}>{currencies.map(c => <option key={c}>{c}</option>)}</select></label>
               <label className="text-sm">입금액<input className={inputClass} type="number" min={0} step="0.01" value={draft.depositAmount} onChange={e => field('depositAmount', Number(e.target.value))} required /></label>
               <div className="text-sm">잔액<p className="py-2 font-semibold">{draft.currency} {(draft.revenue - draft.depositAmount).toLocaleString()}</p></div>
             </div></section>
@@ -66,7 +66,7 @@ export function BookingEditor({ session, onChange, onClose, onSave, onReload, bu
                 <label className="col-span-2 text-xs">{label} 이용일<input className={inputClass} type="date" value={item.date ?? ''} onChange={e => editItem(key, item.id, { date: e.target.value })} /></label>
                 <label className="text-xs">{label} 수량<input className={inputClass} type="number" min={1} value={item.quantity} onChange={e => editItem(key, item.id, { quantity: Number(e.target.value) })} required /></label>
                 <label className="text-xs">{label} 단가<input className={inputClass} type="number" min={0} step="0.01" value={item.unitPrice} onChange={e => editItem(key, item.id, { unitPrice: Number(e.target.value) })} required /></label>
-                <label className="text-xs">{label} 통화<select className={inputClass} value={item.currency} onChange={e => editItem(key, item.id, { currency: e.target.value as Currency })}>{currencies.map(c => <option key={c}>{c}</option>)}</select></label>
+                <label className="text-xs">{label} 통화<select aria-label={`${label} 통화`} className={inputClass} value={item.currency} onChange={e => editItem(key, item.id, { currency: e.target.value as Currency })}>{currencies.map(c => <option key={c}>{c}</option>)}</select></label>
                 <div className="flex items-end justify-end"><button type="button" aria-label={`${label} ${index + 1} 삭제`} onClick={() => field(key, draft[key].filter(row => row.id !== item.id))} className="rounded px-2 py-2 text-sm text-red-600">삭제</button></div>
               </div><p className="mt-2 text-right text-sm font-medium">{item.currency} {(item.unitPrice * item.quantity).toLocaleString()}</p>
             </fieldset>)}</div>
@@ -74,7 +74,7 @@ export function BookingEditor({ session, onChange, onClose, onSave, onReload, bu
           </section>)}</div>
         </div>
       </div>
-      <footer className="flex items-center justify-end gap-2 border-t bg-slate-50 px-4 py-3"><span className="mr-auto text-xs text-slate-500">{JSON.stringify(draft) !== session.baseline ? '저장하지 않은 변경 사항' : '변경 사항 없음'}</span><button type="button" onClick={onClose} disabled={busy} className="rounded border bg-white px-4 py-2 text-sm">닫기</button><button type="submit" disabled={busy} className="rounded bg-blue-600 px-5 py-2 text-sm font-semibold text-white disabled:opacity-50">{busy ? '저장 중...' : '예약 저장'}</button></footer>
+      <footer className="flex items-center justify-end gap-2 border-t bg-slate-50 px-4 py-3">{session.record && <button type="button" onClick={onDelete} disabled={busy} className="rounded px-3 py-2 text-sm text-red-600">예약 삭제</button>}<span className="mr-auto text-xs text-slate-500">{JSON.stringify(draft) !== session.baseline ? '저장하지 않은 변경 사항' : '변경 사항 없음'}</span><button type="button" onClick={onClose} disabled={busy} className="rounded border bg-white px-4 py-2 text-sm">닫기</button><button type="submit" disabled={busy} className="rounded bg-blue-600 px-5 py-2 text-sm font-semibold text-white disabled:opacity-50">{busy ? '저장 중...' : '예약 저장'}</button></footer>
     </form>
   </section>;
 }

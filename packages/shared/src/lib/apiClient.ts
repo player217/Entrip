@@ -28,6 +28,7 @@ apiClient.interceptors.request.use(
   (config) => {
     // Callers may pass either /bookings or the complete /api/v2/bookings path.
     if (config.url?.startsWith('/api/')) config.url = config.url.replace(/^\/api(?:\/v2)?/, '');
+    if (isServer && config.url?.startsWith('/v2/')) config.url = config.url.slice(3);
     // config.headers는 이미 AxiosHeaders 인스턴스이므로 초기화 불필요
 
     if (shouldUseBearer && typeof window !== 'undefined') {

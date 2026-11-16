@@ -1,6 +1,5 @@
 'use client';
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth-store';
 
 const companies = [
@@ -12,7 +11,6 @@ const companies = [
 const roles = [{ key: 'admin', label: '관리자' }, { key: 'manager', label: '매니저' }, { key: 'user', label: '직원' }];
 
 export default function LoginPage() {
-  const router = useRouter();
   const login = useAuthStore(state => state.login);
   const [companyCode, setCompanyCode] = useState('j1');
   const [role, setRole] = useState('admin');
@@ -28,7 +26,7 @@ export default function LoginPage() {
   async function submit(event: React.FormEvent) {
     event.preventDefault(); setBusy(true); setError(null);
     try {
-      if (await login({ companyCode, username, password })) router.replace('/');
+      if (await login({ companyCode, username, password })) window.location.assign('/');
       else setError(useAuthStore.getState().error || '로그인에 실패했습니다.');
     } finally { setBusy(false); }
   }

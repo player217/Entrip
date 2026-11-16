@@ -25,7 +25,7 @@ describe('actual booking analytics', () => {
 
   it('does not add USD to KRW totals or infer travel type from a destination', () => {
     const result = buildDashboardStats([booking(), booking({ id: 'usd', currency: 'USD', totalPrice: 500 })], new Date(2026, 2, 31));
-    expect(result.monthlyRevenue[3].value).toBe(100000);
+    expect(result.monthlyRevenue[3]!.value).toBe(100000);
     expect(result.excludedCurrencyCount).toBe(1);
     expect(result.typeStats).toEqual([{ name: '미분류', value: 2 }]);
   });
@@ -39,7 +39,7 @@ describe('actual booking analytics', () => {
   it('groups cross-year quarters separately and honours a genuine zero cost', () => {
     const result = aggregateOperations([booking({ startDate: '2025-01-01', costPrice: 0 }), booking({ id: 'next', startDate: '2026-03-31' })], 'quarter');
     expect(result.periods.map(p => p.label)).toEqual(['2025 1분기', '2026 1분기']);
-    expect(result.periods[0].profit).toBe(100000);
-    expect(result.periods[0].knownCostCount).toBe(1);
+    expect(result.periods[0]!.profit).toBe(100000);
+    expect(result.periods[0]!.knownCostCount).toBe(1);
   });
 });

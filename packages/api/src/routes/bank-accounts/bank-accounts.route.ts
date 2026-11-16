@@ -2,59 +2,117 @@ import { Router } from 'express';
 import { Prisma, UserRole } from '@prisma/client';
 import { z } from 'zod';
 import prisma from '../../lib/prisma';
-import { authMiddleware, requireRole } from '../../middlewares/auth.middleware';
+import { authMiddleware, requireRole, AuthRequest } from '../../middlewares/auth.middleware';
 import { validateBody } from '../../middlewares/validate.middleware';
 import { ApiError } from '../../middlewares/error.middleware';
 
-const router = Router();
+const router: Router = Router();
 const accountBody = z.object({
   accountName: z.string().trim().min(1).max(100),
   bankName: z.string().trim().min(1).max(100),
   accountNumber: z.string().trim().min(1).max(100),
   holderName: z.string().trim().min(1).max(100),
-  currency: z.string().regex(/^[A-Z]{3}$/).default('KRW'),
+  currency: z
+    .string()
+    .regex(/^[A-Z]{3}$/)
+    .default('KRW'),
   openingBalance: z.number().finite().default(0),
 });
 router.use(authMiddleware);
-router.get('/', async (req, res, next) => {
+router.get('/', async (req: AuthRequest, res, next) => {
   try {
     const companyCode = req.user!.companyCode;
-    const accounts = await prisma.bankAccount.findMany({ where: { companyCode, deletedAt: null }, orderBy: { accountName: 'asc' } });
+    const accounts = await prisma.bankAccount.findMany({
+      where: { companyCode, deletedAt: null },
+      orderBy: { accountName: 'asc' },
+    });
     const totals = await prisma.financeRecord.groupBy({
-      by: ['accountId', 'type'], where: { companyCode, deletedAt: null, status: 'APPROVED', accountId: { in: accounts.map(a => a.id) } }, _sum: { amount: true },
+      by: ['accountId', 'type'],
+      where: {
+        companyCode,
+        deletedAt: null,
+        status: 'APPROVED',
+        accountId: { in: accounts.map((a) => a.id) },
+      },
+      _sum: { amount: true },
     });
-    res.json({ success: true, data: accounts.map(account => ({ ...account, balance: totals.filter(t => t.accountId === account.id).reduce((sum, t) => t.type === 'INCOME' ? sum.plus(t._sum.amount ?? 0) : sum.minus(t._sum.amount ?? 0), new Prisma.Decimal(account.openingBalance)).toString() })) });
-  } catch (error) { next(error); }
-});
-router.post('/', requireRole([UserRole.ADMIN, UserRole.MANAGER]), validateBody(accountBody), async (req, res, next) => {
-  try {
-    const data = await prisma.bankAccount.create({ data: { ...req.body, companyCode: req.user!.companyCode, createdBy: req.user!.id } });
-    res.status(201).json({ success: true, data });
-  } catch (error) { next(error); }
-});
-router.put('/:id', requireRole([UserRole.ADMIN, UserRole.MANAGER]), validateBody(accountBody), async (req, res, next) => {
-  try {
-    const data = await prisma.$transaction(async tx => {
-      await tx.$queryRaw`SELECT id FROM "BankAccount" WHERE id = ${req.params.id} FOR UPDATE`;
-      const account = await tx.bankAccount.findFirst({ where: { id: req.params.id, companyCode: req.user!.companyCode, deletedAt: null } });
-      if (!account) throw new ApiError(404, '계좌를 찾을 수 없습니다.');
-      const hasEntries = await tx.financeRecord.count({ where: { accountId: account.id, deletedAt: null } });
-      if (hasEntries && (account.currency !== req.body.currency || !account.openingBalance.equals(req.body.openingBalance))) throw new ApiError(409, '거래가 등록된 계좌의 통화와 기초잔액은 변경할 수 없습니다.');
-      return tx.bankAccount.update({ where: { id: account.id }, data: req.body });
+    res.json({
+      success: true,
+      data: accounts.map((account) => ({
+        ...account,
+        balance: totals
+          .filter((t) => t.accountId === account.id)
+          .reduce(
+            (sum, t) =>
+              t.type === 'INCOME' ? sum.plus(t._sum.amount ?? 0) : sum.minus(t._sum.amount ?? 0),
+            new Prisma.Decimal(account.openingBalance)
+          )
+          .toString(),
+      })),
     });
-    res.json({ success: true, data });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 });
-router.delete('/:id', requireRole([UserRole.ADMIN]), async (req, res, next) => {
+router.post(
+  '/',
+  requireRole([UserRole.ADMIN, UserRole.MANAGER]),
+  validateBody(accountBody),
+  async (req: AuthRequest, res, next) => {
+    try {
+      const data = await prisma.bankAccount.create({
+        data: { ...req.body, companyCode: req.user!.companyCode, createdBy: req.user!.id },
+      });
+      res.status(201).json({ success: true, data });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+router.put(
+  '/:id',
+  requireRole([UserRole.ADMIN, UserRole.MANAGER]),
+  validateBody(accountBody),
+  async (req: AuthRequest, res, next) => {
+    try {
+      const data = await prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT id FROM "BankAccount" WHERE id = ${req.params.id} FOR UPDATE`;
+        const account = await tx.bankAccount.findFirst({
+          where: { id: req.params.id, companyCode: req.user!.companyCode, deletedAt: null },
+        });
+        if (!account) throw new ApiError(404, '계좌를 찾을 수 없습니다.');
+        const hasEntries = await tx.financeRecord.count({
+          where: { accountId: account.id },
+        });
+        if (
+          hasEntries &&
+          (account.currency !== req.body.currency ||
+            !account.openingBalance.equals(req.body.openingBalance))
+        )
+          throw new ApiError(409, '거래가 등록된 계좌의 통화와 기초잔액은 변경할 수 없습니다.');
+        return tx.bankAccount.update({ where: { id: account.id }, data: req.body });
+      });
+      res.json({ success: true, data });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+router.delete('/:id', requireRole([UserRole.ADMIN]), async (req: AuthRequest, res, next) => {
   try {
-    await prisma.$transaction(async tx => {
+    await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "BankAccount" WHERE id = ${req.params.id} FOR UPDATE`;
-      const account = await tx.bankAccount.findFirst({ where: { id: req.params.id, companyCode: req.user!.companyCode, deletedAt: null } });
+      const account = await tx.bankAccount.findFirst({
+        where: { id: req.params.id, companyCode: req.user!.companyCode, deletedAt: null },
+      });
       if (!account) throw new ApiError(404, '계좌를 찾을 수 없습니다.');
-      if (await tx.financeRecord.count({ where: { accountId: account.id } })) throw new ApiError(409, '거래 이력이 있는 계좌는 삭제할 수 없습니다.');
+      if (await tx.financeRecord.count({ where: { accountId: account.id } }))
+        throw new ApiError(409, '거래 이력이 있는 계좌는 삭제할 수 없습니다.');
       await tx.bankAccount.update({ where: { id: account.id }, data: { deletedAt: new Date() } });
     });
     res.status(204).send();
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 });
 export default router;

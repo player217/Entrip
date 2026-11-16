@@ -4,7 +4,6 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth-store';
 import { AuthContextValue } from '@entrip/shared';
-import { api, apiClient } from '@/lib/api-client';
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -16,7 +15,6 @@ interface AuthProviderProps {
 const PUBLIC_ROUTES = ['/login'];
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const [isInitializing, setIsInitializing] = useState(true);
   const {
@@ -57,6 +55,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsInitializing(false);
     }
   }, [pathname]);
+
+  useEffect(() => {
+    const syncSession = (event: StorageEvent) => {
+      if (event.key === 'entrip-session-revision') window.location.reload();
+    };
+    window.addEventListener('storage', syncSession);
+    return () => window.removeEventListener('storage', syncSession);
+  }, []);
 
   const contextValue: AuthContextValue = {
     isAuthenticated,
@@ -108,7 +114,6 @@ export function RouteGuard({
 }: RouteGuardProps) {
   const { isAuthenticated, user, isLoading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     if (isLoading) return;

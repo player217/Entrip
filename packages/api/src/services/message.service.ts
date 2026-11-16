@@ -49,7 +49,7 @@ export class MessageService {
       if (type === 'DIRECT') {
         // Serialize creation of the same pair without locking unrelated conversations.
         const key = `${actor.companyCode}:${[...ids].sort().join(':')}`;
-        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${key}))`;
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${key}))`;
         const existing = await tx.conversation.findFirst({ where: {
           companyCode: actor.companyCode, type: 'DIRECT', deletedAt: null,
           AND: ids.map(id => ({ participants: { some: { userId: id, isActive: true } } })),

@@ -28,7 +28,8 @@ export class BookingsController {
       // Extract filters from query params
       const filters: any = {};
       if (req.query.status) {
-        filters.status = req.query.status;
+        if (!['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].includes(String(req.query.status))) return res.status(400).json({ message: 'Invalid booking status' });
+        filters.status = String(req.query.status);
       }
       if (req.query.teamName) {
         filters.teamName = {
@@ -43,7 +44,10 @@ export class BookingsController {
         };
       }
 
-      if (req.query.type) filters.type = req.query.type;
+      if (req.query.type) {
+        if (!['PACKAGE', 'FIT', 'GROUP', 'BUSINESS', 'INCENTIVE'].includes(String(req.query.type))) return res.status(400).json({ message: 'Invalid booking type' });
+        filters.type = String(req.query.type);
+      }
       if (req.query.startDate || req.query.endDate) {
         const from = req.query.startDate ? new Date(String(req.query.startDate)) : undefined;
         const to = req.query.endDate ? new Date(String(req.query.endDate)) : undefined;
@@ -191,7 +195,7 @@ export class BookingsController {
       }
 
       const ifMatch = req.headers['if-match'] as string | undefined;
-      await bookingsService.deleteWithLock(req.params.id!, companyCode, ifMatch);
+      await bookingsService.deleteWithLock(req.params.id!, companyCode, ifMatch, req.userId);
 
       try {
         const { broadcastBookingUpdateForCompany } = await import('../../ws');

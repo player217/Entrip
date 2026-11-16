@@ -157,11 +157,7 @@ export class FinanceController {
 
       // Get both general stats and monthly stats
       if (month) {
-        const monthlyStats = await financeService.getStatsByMonth(
-          companyCode,
-          yearNum,
-          month
-        );
+        const monthlyStats = await financeService.getStatsByMonth(companyCode, yearNum, month);
 
         res.json({
           success: true,
@@ -198,12 +194,7 @@ export class FinanceController {
       const { id } = req.params;
       const input = req.body as FinanceApproveInput;
 
-      const updated = await financeService.approveFinanceRecord(
-        id,
-        companyCode,
-        userId,
-        input
-      );
+      const updated = await financeService.approveFinanceRecord(id, companyCode, userId, input);
 
       res.json({
         success: true,

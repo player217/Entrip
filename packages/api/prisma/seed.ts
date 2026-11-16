@@ -215,7 +215,7 @@ async function main() {
         ratePerNight: 200_000,
         totalAmount: 600_000,
         currency: 'KRW',
-        breakfast: 'true',
+        breakfast: true,
         companyCode: anchor.companyCode,
       },
     });

@@ -42,7 +42,7 @@ export default function WeekView({ currentDate }: WeekViewProps) {
   const bookingsByDate = weekDays.reduce((acc, date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     acc[dateStr] = bookings.filter((booking: Booking) => 
-      booking.startDate === dateStr
+      booking.startDate.slice(0, 10) === dateStr
     );
     return acc;
   }, {} as Record<string, typeof bookings>);
@@ -59,20 +59,20 @@ export default function WeekView({ currentDate }: WeekViewProps) {
     if (!booking) return;
     
     // 날짜가 변경된 경우에만 업데이트
-    if (booking.startDate !== newDate) {
+    if (booking.startDate.slice(0, 10) !== newDate) {
       try {
         // Optimistic update
         await mutate(
-          async (currentData: typeof bookings | undefined) => {
-            return currentData?.map((b: Booking) =>
-              b.id === bookingId ? { ...b, startDate: newDate } : b
-            );
-          },
+          async currentData => currentData ? { ...currentData, bookings: currentData.bookings.map(b =>
+            b.id === bookingId ? { ...b, startDate: newDate } : b
+          ) } : currentData,
           { revalidate: false }
         );
         
         // API 호출
-        await updateBooking(bookingId, { startDate: newDate });
+        const duration = new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime();
+        const endDate = new Date(new Date(newDate).getTime() + duration).toISOString().slice(0, 10);
+        await updateBooking(bookingId, { startDate: newDate, endDate }, { ifMatch: booking.version });
         
         // 서버 데이터로 갱신
         await mutate();

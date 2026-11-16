@@ -2,6 +2,7 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { LogViewer } from '../LogViewer';
+import { logger } from '@entrip/shared';
 
 // Mock logger module (avoid hoist issue by defining fns inside mock and grabbing refs after)
 jest.mock('@entrip/shared', () => ({
@@ -13,10 +14,9 @@ jest.mock('@entrip/shared', () => ({
 }));
 
 // Get mock references from mocked module
-const { logger } = require('@entrip/shared') as { logger: { getRecentLogs: jest.Mock, clearLogs: jest.Mock, downloadLogs: jest.Mock } };
-const mockGetRecentLogs = logger.getRecentLogs;
-const mockClearLogs = logger.clearLogs;
-const mockDownloadLogs = logger.downloadLogs;
+const mockGetRecentLogs = jest.mocked(logger.getRecentLogs);
+const mockClearLogs = jest.mocked(logger.clearLogs);
+const mockDownloadLogs = jest.mocked(logger.downloadLogs);
 
 describe('LogViewer', () => {
   const mockLogs = [

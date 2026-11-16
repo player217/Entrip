@@ -20,6 +20,12 @@ router.get('/schedule/:airport', async (req, res) => {
     if (!response.ok) throw new Error('Upstream unavailable');
     const payload = await response.json() as { airport?: string; crawledAt?: string; flights?: unknown[]; source?: string; stale?: boolean };
     if (!Array.isArray(payload.flights) || !payload.crawledAt || !Number.isFinite(Date.parse(payload.crawledAt))) throw new Error('Invalid schedule response');
+    if (payload.flights.some((value) => {
+      if (!value || typeof value !== 'object') return true;
+      const flight = value as Record<string, unknown>;
+      return ['airline', 'flightNo', 'destination', 'departureTime'].some(key => typeof flight[key] !== 'string')
+        || !/^([01]\d|2[0-3]):[0-5]\d$/.test(String(flight.departureTime));
+    })) throw new Error('Invalid flight row');
     const age = Date.now() - Date.parse(payload.crawledAt);
     res.set('Cache-Control', 'no-store').json({ ...payload, airport, source: payload.source || 'crawler', stale: Boolean(payload.stale) || age > 86400000 });
   } catch {

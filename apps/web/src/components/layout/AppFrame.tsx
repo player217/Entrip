@@ -19,7 +19,7 @@ export default function AppFrame({ children, user }: AppFrameProps) {
   const bindOwner = useWorkspaceStore(state => state.bindOwner);
   const expectedOwner = user ? `${user.companyCode}:${user.id}` : null;
   useEffect(() => { bindOwner(expectedOwner); }, [bindOwner, expectedOwner]);
-  const ready = ownerId === expectedOwner;
+  const ready = expectedOwner !== null && ownerId === expectedOwner;
   return <div className="grid h-[100dvh] min-w-0 grid-rows-[70px_1fr] overflow-hidden bg-[#016B9F]">
     <Header className="z-50" useTabSystem onMenuToggle={() => setMobileMenuOpen(value => !value)} menuOpen={mobileMenuOpen} />
     <div className="relative flex min-h-0 min-w-0">

@@ -1,4 +1,5 @@
 import { useWorkspaceStore } from '../workspaceStore';
+jest.unmock('zustand/middleware');
 
 const store = () => useWorkspaceStore.getState();
 beforeEach(() => {

@@ -6,13 +6,20 @@
     "declarationMap": true,
     "outDir": "./dist",
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
-    "types": ["jest", "node"],
+    "types": [
+      "jest",
+      "node"
+    ],
     "exactOptionalPropertyTypes": false,
     "skipLibCheck": true,
     "moduleResolution": "node",
     "jsx": "react-jsx"
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.json"
+  ],
   "exclude": [
     "node_modules",
     "dist",
@@ -24,7 +31,11 @@
     "**/*.stories.tsx"
   ],
   "references": [
-    { "path": "../shared" },
-    { "path": "../design-tokens" }
+    {
+      "path": "../shared"
+    },
+    {
+      "path": "../design-tokens"
+    }
   ]
 }

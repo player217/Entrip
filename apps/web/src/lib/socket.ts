@@ -14,25 +14,11 @@ export const initializeSocket = (): Socket | undefined => {
     return socket;
   }
   
-  // Use same URL as API client for consistency
-  const WS_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-  
-  // Get authentication token from localStorage as fallback
-  const authToken = localStorage.getItem('authToken');
-  
-  // Connect with both cookie and token authentication
+  const WS_URL = process.env.NEXT_PUBLIC_WS_URL || window.location.origin;
   socket = io(WS_URL, {
-    withCredentials: true, // Send cookies with WebSocket handshake
-    path: '/socket.io/',
-    transports: ['websocket', 'polling'],
-    auth: {
-      token: authToken, // Send token as backup authentication
-    },
-    extraHeaders: authToken ? {
-      'Authorization': `Bearer ${authToken}`
-    } : {},
+    withCredentials: true, path: '/socket.io/', transports: ['websocket', 'polling'],
   });
-  
+
   socket.on('connect', () => {
     logger.info('[Socket]', 'Connected to server with cookie authentication');
   });

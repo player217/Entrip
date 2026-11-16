@@ -36,7 +36,7 @@
     "setup:wsl2": "powershell -ExecutionPolicy Bypass -File scripts/setup-wsl2.ps1",
     "build": "pnpm run build:tokens && pnpm run build:ts && turbo run bundle",
     "build:tokens": "pnpm --filter @entrip/design-tokens build",
-    "build:ts": "tsc -b tsconfig.base.json --pretty && tsc -b packages/api --pretty",
+    "build:ts": "tsc -b tsconfig.base.json --pretty && tsc -b packages/api --pretty && tsc -p packages/api/tsconfig.seed.json --pretty",
     "build:clean": "tsc -b --clean",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -135,7 +135,7 @@
     "ts-node-dev": "^2.0.0"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=22.0.0",
     "pnpm": ">=8.0.0"
   },
   "msw": {

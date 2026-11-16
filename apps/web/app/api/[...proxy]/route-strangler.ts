@@ -148,9 +148,7 @@ async function proxyHandler(req: NextRequest) {
     const response = await fetch(targetUrl, {
       method: req.method,
       headers,
-      body,
-      // @ts-ignore - Next.js specific
-      duplex: 'half'
+      body
     });
 
     // 응답 처리
@@ -172,7 +170,7 @@ async function proxyHandler(req: NextRequest) {
     const setCookies = response.headers.getSetCookie();
     if (setCookies.length > 0) {
       setCookies.forEach(cookie => {
-        const [nameValue, ...attributes] = cookie.split(';');
+        const [nameValue] = cookie.split(';');
         const [name, value] = nameValue?.split('=') || ['', ''];
 
         if (name && value) {

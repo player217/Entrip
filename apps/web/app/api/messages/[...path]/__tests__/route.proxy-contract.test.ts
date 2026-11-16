@@ -33,6 +33,23 @@ describe('authenticated v2 proxy contract', () => {
     const response = await DELETE(new NextRequest('http://localhost/api/messages/42', { method: 'DELETE' }), { params: { path: ['42'] } });
     expect(response.status).toBe(204); expect(await response.text()).toBe('');
   });
+  it('preserves both HttpOnly cookies and their original attributes', async () => {
+    const headers = new Headers();
+    headers.append('set-cookie', 'auth-token=access; Path=/; HttpOnly; SameSite=Lax');
+    headers.append('set-cookie', 'refresh-token=refresh; Path=/; HttpOnly; Max-Age=604800');
+    (global.fetch as jest.Mock).mockResolvedValue(new Response('{}', { headers }));
+    const response = await GET(new NextRequest('http://localhost/api/messages/42'), { params: { path: ['42'] } });
+    const cookies = response.headers.get('set-cookie') || '';
+    expect(cookies).toContain('auth-token=access');
+    expect(cookies).toContain('refresh-token=refresh');
+    expect(cookies).toContain('HttpOnly');
+    expect(cookies).toContain('Max-Age=604800');
+  });
+  it('reads runtime backend changes without rebuilding the route', async () => {
+    process.env.INTERNAL_API_V2_URL = 'http://new-runtime:5000';
+    await GET(new NextRequest('http://localhost/api/messages/42'), { params: { path: ['42'] } });
+    expect((global.fetch as jest.Mock).mock.calls[0]![0]).toBe('http://new-runtime:5000/api/v2/messages/42');
+  });
   it('reports API outage as 502, never unauthorized', async () => {
     (global.fetch as jest.Mock).mockRejectedValue(new Error('ECONNREFUSED'));
     const response = await GET(new NextRequest('http://localhost/api/messages/42'), { params: { path: ['42'] } });

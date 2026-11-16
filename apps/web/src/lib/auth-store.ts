@@ -8,6 +8,7 @@ import { useWorkspaceStore } from '@entrip/shared/stores/workspaceStore';
 interface AuthStore extends AuthState {
   login: (credentials: LoginRequest) => Promise<boolean>;
   logout: () => Promise<void>;
+  invalidateSession: () => void;
   clearError: () => void;
   checkAuth: () => Promise<boolean>;
   setLoading: (loading: boolean) => void;
@@ -18,9 +19,15 @@ function clearSessionData() {
   queryClient.clear();
   useWorkspaceStore.getState().bindOwner(null);
   if (typeof window !== 'undefined') {
-    for (const key of ['auth-token', 'token', 'accessToken', 'user', 'userId', 'auth-state']) localStorage.removeItem(key);
+    try {
+      for (const key of ['auth-token', 'token', 'accessToken', 'user', 'userId', 'auth-state']) localStorage.removeItem(key);
+    } catch { /* Storage may be disabled; cookies remain the authentication source. */ }
     window.dispatchEvent(new Event('entrip:session-changed'));
   }
+}
+
+function notifyOtherTabs() {
+  try { localStorage.setItem('entrip-session-revision', `${Date.now()}-${Math.random()}`); } catch { /* Optional cross-tab synchronization. */ }
 }
 
 const emptySession = { isAuthenticated: false, user: null, token: null, isLoading: false, error: null };
@@ -43,6 +50,7 @@ export const useAuthStore = create<AuthStore>()(
         if (response.ok && data.success && user) {
           clearSessionData();
           set({ isAuthenticated: true, user, token: null, isLoading: false, error: null });
+          notifyOtherTabs();
           return true;
         }
         set({ isLoading: false, error: data.message || '로그인에 실패했습니다.' });
@@ -52,13 +60,21 @@ export const useAuthStore = create<AuthStore>()(
         return false;
       }
     },
+    invalidateSession: () => {
+      ++sessionGeneration;
+      clearSessionData();
+      set(emptySession);
+    },
     logout: async () => {
       ++sessionGeneration;
       clearSessionData();
       set(emptySession);
       try { await fetch('/api/v2/auth/logout', { method: 'POST', credentials: 'include' }); }
       catch { /* Local state is cleared even when the server is unavailable. */ }
-      finally { if (typeof window !== 'undefined') window.location.assign('/login'); }
+      finally {
+        notifyOtherTabs();
+        if (typeof window !== 'undefined') window.location.assign('/login');
+      }
     },
     checkAuth: async () => {
       const generation = sessionGeneration;
@@ -67,8 +83,7 @@ export const useAuthStore = create<AuthStore>()(
         const response = await fetch('/api/v2/auth/me', { credentials: 'include', cache: 'no-store' });
         if (generation !== sessionGeneration) return get().isAuthenticated;
         if (response.status === 401 || response.status === 403) {
-          clearSessionData();
-          set(emptySession);
+          get().invalidateSession();
           return false;
         }
         if (!response.ok) throw new Error('인증 서버에 일시적으로 연결할 수 없습니다.');

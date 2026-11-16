@@ -43,7 +43,7 @@ export class AuthService {
    */
   async login(credentials: LoginRequest): Promise<{ success: boolean; user?: User; error?: string }> {
     try {
-      const response = await this.apiClient.post('/api/auth/login', credentials, {
+      const response = await this.apiClient.post('/api/auth/login', { ...credentials, email: credentials.username }, {
         withCredentials: true, // Essential for cookie handling
       });
 

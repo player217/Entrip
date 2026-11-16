@@ -57,7 +57,7 @@ export class AuthService {
       const raw = (code || 'entrip').trim();
       const lc = raw.toLowerCase();
       // Map common aliases to canonical DB company codes
-      // ENTRIP uses canonical code 'ENTRIP_MAIN' in the database
+      // Canonical company codes match the v2 seed and migration.
       if (lc === 'entrip' || lc === 'entrip_main' || lc === 'entrip-main') return 'entrip';
       if (lc === 'startour' || lc === 'star') return 'startour';
       if (lc === 'happytravel' || lc === 'happy') return 'happytravel';

@@ -12,7 +12,7 @@ export class AccountsController {
   list = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const query = req.query as unknown as AccountQueryInput;
-      const result = await accountsService.list(query);
+      const result = await accountsService.list(query, req.user!.companyCode);
 
       res.json({
         success: true,
@@ -29,7 +29,7 @@ export class AccountsController {
   findById = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const account = await accountsService.findById(id);
+      const account = await accountsService.findById(id, req.user!.companyCode);
 
       res.json({
         success: true,
@@ -46,7 +46,7 @@ export class AccountsController {
   create = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const input = req.body as AccountCreateInput;
-      const account = await accountsService.create(input);
+      const account = await accountsService.create(input, req.user!.companyCode, req.user!.id);
 
       res.status(201).json({
         success: true,
@@ -64,7 +64,7 @@ export class AccountsController {
     try {
       const { id } = req.params;
       const input = req.body as AccountUpdateInput;
-      const account = await accountsService.update(id, input);
+      const account = await accountsService.update(id, input, req.user!.companyCode);
 
       res.json({
         success: true,
@@ -81,7 +81,7 @@ export class AccountsController {
   delete = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      await accountsService.delete(id);
+      await accountsService.delete(id, req.user!.companyCode);
 
       res.status(204).send();
     } catch (error) {

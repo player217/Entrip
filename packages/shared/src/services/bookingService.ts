@@ -345,21 +345,21 @@ const mapLegacyCreateToV2 = (payload: PartialBookingPayload): Record<string, any
   const startDate = toDateOnly(payload.departureDate ?? payload.startDate);
   const endDate = toDateOnly(payload.returnDate ?? payload.endDate ?? startDate, startDate);
   const totalPax = toNumber(
-    payload.totalCount
+    payload.totalPax ?? payload.paxCount ?? payload.numberOfPeople ?? payload.totalCount
       ?? ((payload.adultCount ?? 0) + (payload.childCount ?? 0) + (payload.infantCount ?? 0)),
     1,
   ) ?? 1;
 
   const legacy: Record<string, any> = {
     teamName,
-    type: mapLegacyProductTypeToV2(payload.productType ?? payload.bookingType),
-    origin: payload.customerCompany || DEFAULT_ORIGIN,
+    type: mapLegacyProductTypeToV2(payload.type ?? payload.productType ?? payload.bookingType),
+    origin: payload.origin || payload.customerCompany || DEFAULT_ORIGIN,
     destination,
     startDate,
     endDate,
     totalPax,
-    coordinator: payload.managerName || DEFAULT_COORDINATOR,
-    revenue: toNumber(payload.totalPrice, 0) ?? 0,
+    coordinator: payload.coordinator || payload.managerName || DEFAULT_COORDINATOR,
+    revenue: toNumber(payload.revenue ?? payload.totalPrice, 0) ?? 0,
     notes: payload.notes ?? payload.memo ?? undefined,
     customerName: payload.customerName, contact: payload.contact ?? payload.customerPhone, email: payload.email ?? payload.customerEmail,
     depositAmount: payload.depositAmount ?? payload.deposit, currency: payload.currency ?? 'KRW', status: payload.status,
@@ -375,6 +375,7 @@ const mapLegacyUpdateToV2 = (payload: PartialBookingPayload): Record<string, any
   }
 
   const mapped: Record<string, any> = {};
+  for (const field of ['type','origin','totalPax','coordinator','revenue','notes']) { if (payload[field] !== undefined) mapped[field] = payload[field]; }
 
   if (Object.prototype.hasOwnProperty.call(payload, 'teamName')) {
     mapped.teamName = payload.teamName;
@@ -520,7 +521,7 @@ const modernImplementation = {
   async getMonthlyBookings(year: number, month: number): Promise<Booking[]> {
     const list = await this.getBookings({
       page: 1,
-      pageSize: Math.min(100, MONTHLY_FETCH_LIMIT),
+      pageSize: Math.min(100, Math.max(1, MONTHLY_FETCH_LIMIT)),
       sortBy: 'startDate',
       sortOrder: 'asc',
       month: `${year}-${String(month).padStart(2, '0')}`,
@@ -528,7 +529,7 @@ const modernImplementation = {
 
     const all = [...list.bookings];
     for (let page = 2; all.length < list.total; page += 1) {
-      const next = await this.getBookings({ page, pageSize: 100, sortBy: 'startDate', sortOrder: 'asc', month: `${year}-${String(month).padStart(2, '0')}` });
+      const next = await this.getBookings({ page, pageSize: Math.min(100, Math.max(1, MONTHLY_FETCH_LIMIT)), sortBy: 'startDate', sortOrder: 'asc', month: `${year}-${String(month).padStart(2, '0')}` });
       const seen = new Set(all.map(item => item.id));
       const fresh = next.bookings.filter(item => !seen.has(item.id));
       if (!fresh.length) throw new Error('Incomplete monthly booking response');

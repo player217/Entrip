@@ -7,7 +7,7 @@ const mockCheck = jest.fn().mockResolvedValue(false);
 const mockSetState = jest.fn();
 jest.mock('swr', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('next/navigation', () => ({ useRouter: () => ({ replace: mockReplace }) }));
-jest.mock('@/lib/auth-store', () => ({ useAuthStore: { getState: () => ({ checkAuth: mockCheck }), setState: (...args: any[]) => mockSetState(...args) } }));
+jest.mock('@/lib/auth-store', () => ({ useAuthStore: { getState: () => ({ invalidateSession: mockCheck }), setState: (...args: any[]) => mockSetState(...args) } }));
 jest.mock('@/components/layout/AppFrame', () => ({ __esModule: true, default: ({ children, user }: any) => <div data-testid="app-frame">{user.email}{children}</div> }));
 jest.mock('@/components/debug/LogViewer', () => ({ LogViewer: () => null }));
 jest.mock('@/providers/ToastProvider', () => ({ ToastProvider: ({ children }: any) => <>{children}</> }));
@@ -36,7 +36,7 @@ describe('authenticated application layout', () => {
   });
   it('keeps an already verified screen during transient revalidation errors', () => {
     (useSWR as jest.Mock).mockReturnValue({ data: user, error: { status: 429 }, isLoading: false });
-    render(<MainLayout>예약 화면</MainLayout>);
+    render(<MainLayout><p>예약 화면</p></MainLayout>);
     expect(screen.getByText('예약 화면')).toBeInTheDocument();
     expect(mockReplace).not.toHaveBeenCalled();
   });

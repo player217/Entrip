@@ -8,7 +8,7 @@
     "bundle": "tsup",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
-    "dev": "echo '🏖 dev는 Next가 트랜스파일합니다'"
+    "dev": "echo '\ud83c\udfd6 dev\ub294 Next\uac00 \ud2b8\ub79c\uc2a4\ud30c\uc77c\ud569\ub2c8\ub2e4'"
   },
   "dependencies": {
     "@entrip/design-tokens": "workspace:*",
@@ -19,13 +19,14 @@
     "@tanstack/react-table": "^8.21.3",
     "clsx": "^2.0.0",
     "html2canvas": "^1.4.1",
-    "jspdf": "^2.5.2",
+    "jspdf": "3.0.1",
     "lucide-react": "^0.263.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "recharts": "^2.12.0",
     "tailwind-merge": "^2.2.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "jspdf-autotable": "5.0.2"
   },
   "devDependencies": {
     "@hookform/resolvers": "^5.1.1",

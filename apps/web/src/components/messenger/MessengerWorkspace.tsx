@@ -11,6 +11,7 @@ export function MessengerWorkspace() {
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState('');
   const end = useRef<HTMLDivElement>(null);
+  useEffect(() => { setDrafts({}); setMode('conversations'); setSearch(''); setActionError(''); }, [currentUser?.id, currentUser?.companyCode]);
   const conversation = conversations.find(c => c.id === activeConversationId);
   const thread = messages[activeConversationId || ''] || [];
   const title = (c: ChatConversation) => c.name || c.participants.filter(p => p.userId !== currentUser?.id).map(p => p.user.name).join(', ') || '대화';

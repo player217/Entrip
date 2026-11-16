@@ -117,7 +117,7 @@ export class ApprovalsController {
   getStats = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { year, month } = req.query;
-      
+
       const yearNum = year ? parseInt(year as string) : new Date().getFullYear();
       const monthNum = month ? parseInt(month as string) : undefined;
 

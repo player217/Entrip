@@ -7,7 +7,7 @@ import { useMessengerStore } from '@/lib/messenger-store';
 export function MessengerContainer() {
   const user = useAuthStore(state => state.user);
   useEffect(() => {
-    if (user) useMessengerStore.getState().initialize(user);
+    if (user) useMessengerStore.getState().initialize({ ...user, email: user.email || '' });
     else useMessengerStore.getState().disconnect();
     return () => useMessengerStore.getState().disconnect();
   }, [user?.id, user?.companyCode]);

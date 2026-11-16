@@ -124,11 +124,11 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       // 마지막 탭을 닫으려 할 때 새 탭 생성
       if (newTabs.length === 0) {
         const newTab: WorkspaceTab = {
-          key: `tab-${Date.now()}`,
-          label: 'New Tab',
+          key: `tab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          label: '새 작업',
           icon: 'ph:globe-bold',
-          route: '/',
-          history: ['/'],
+          route: '/workspace',
+          history: ['/workspace'],
           contentType: 'empty',
           closable: true
         };
@@ -138,10 +138,11 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         };
       }
       
-      // 닫은 탭이 활성 탭이었다면 마지막 탭을 활성화
+      // Keep focus beside the closed pane.
       let newActiveKey = state.activeTabKey;
       if (state.activeTabKey === key) {
-        newActiveKey = newTabs[newTabs.length - 1]?.key ?? null;
+        const closedIndex = state.tabs.findIndex(tab => tab.key === key);
+        newActiveKey = newTabs[Math.min(closedIndex, newTabs.length - 1)]?.key ?? null;
       }
       return {
         tabs: newTabs,

@@ -218,7 +218,7 @@ model User {
   password        String
   role            UserRole        @default(USER)
   department      String?
-  companyCode     String          @default("ENTRIP_MAIN")
+  companyCode     String          @default("entrip")
   isActive        Boolean         @default(true)
   lastLoginAt     DateTime?       // Last login timestamp
   createdAt       DateTime        @default(now())
@@ -320,7 +320,7 @@ model Booking {
   status          BookingStatus @default(PENDING)
 
   // Multi-tenancy and User Relations
-  companyCode     String        @default("ENTRIP_MAIN")
+  companyCode     String        @default("entrip")
   userId          String?       // Creator of the booking
   createdBy       String?       // Alternative creator field
   updatedBy       String?       // Last updater
@@ -375,7 +375,7 @@ model CalendarEvent {
   status      CalendarEventStatus @default(CONFIRMED)
 
   // Multi-tenancy and User Relations
-  companyCode String              @default("ENTRIP_MAIN")
+  companyCode String              @default("entrip")
   createdBy   String?             // User ID who created this event
   updatedBy   String?             // User ID who last updated this event
 
@@ -434,7 +434,7 @@ model FinanceRecord {
   remarks       String?       // Additional remarks for approval process
 
   // Multi-tenancy and User Relations
-  companyCode   String        @default("ENTRIP_MAIN")
+  companyCode   String        @default("entrip")
   createdBy     String?       // User ID who created this record
   updatedBy     String?       // User ID who last updated this record
 
@@ -483,7 +483,7 @@ model Approval {
   requesterId String              // User who requested approval
 
   // Multi-tenancy
-  companyCode String              @default("ENTRIP_MAIN")
+  companyCode String              @default("entrip")
 
   // Relations
   steps       ApprovalStep[]
@@ -544,7 +544,7 @@ model Account {
   status    AccountStatus @default(ACTIVE)
 
   // Multi-tenancy and User Relations
-  companyCode String      @default("ENTRIP_MAIN")
+  companyCode String      @default("entrip")
   createdBy   String?     // User who created this account
 
   // Optional Authentication Fields (for future use)
@@ -582,7 +582,7 @@ model Conversation {
   allowInvites Boolean          @default(true)
 
   // Multi-tenancy
-  companyCode String            @default("ENTRIP_MAIN")
+  companyCode String            @default("entrip")
 
   // Relations
   participants ConversationParticipant[]
@@ -773,7 +773,7 @@ model Flight {
   paxCount        Int             @default(1)
   confirmationNo  String?         // Airline confirmation number
   notes           String?
-  companyCode     String          @default("ENTRIP_MAIN")
+  companyCode     String          @default("entrip")
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   deletedAt       DateTime?       // For soft delete
@@ -804,7 +804,7 @@ model Vehicle {
   cost            Decimal?        // Cost in local currency
   currency        String          @default("KRW")
   notes           String?
-  companyCode     String          @default("ENTRIP_MAIN")
+  companyCode     String          @default("entrip")
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   deletedAt       DateTime?       // For soft delete
@@ -838,7 +838,7 @@ model Hotel {
   currency        String          @default("KRW")
   breakfast       Boolean         @default(false)
   notes           String?
-  companyCode     String          @default("ENTRIP_MAIN")
+  companyCode     String          @default("entrip")
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   deletedAt       DateTime?       // For soft delete
@@ -888,7 +888,7 @@ model SystemMessage {
   isActive        Boolean             @default(true)
   targetAudience  String[]            // Target user roles or groups
   expiresAt       DateTime?           // When message expires
-  companyCode     String              @default("ENTRIP_MAIN")
+  companyCode     String              @default("entrip")
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
   createdBy       String?             // Admin who created the message
