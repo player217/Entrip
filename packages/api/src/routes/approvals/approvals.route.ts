@@ -46,7 +46,7 @@ router.post(
 // PUT /approvals/:id - Update approval (admin only)
 router.put(
   '/:id',
-  requireRole([UserRole.ADMIN]),
+  requireRole([UserRole.ADMIN, UserRole.MANAGER]),
   validateBody(ApprovalUpdateDto),
   approvalsController.update
 );

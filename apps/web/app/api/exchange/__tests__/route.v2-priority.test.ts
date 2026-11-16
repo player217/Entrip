@@ -43,6 +43,7 @@ describe('/api/exchange v2 priority contract', () => {
       expect.objectContaining({ method: 'GET' }),
     );
     expect(body[0].cur_unit).toBe('CNH');
+    expect(body[0].yy_efee_r).toBeNull();
   });
 
   it('falls back to fx-free when v2 source fails', async () => {
@@ -72,7 +73,7 @@ describe('/api/exchange v2 priority contract', () => {
     expect(body[0].cur_unit).toBe('USD');
   });
 
-  it('returns static fallback when all sources fail', async () => {
+  it('returns unavailable without fabricated rates when all sources fail', async () => {
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce(new Response('upstream error', { status: 500 }))
@@ -81,9 +82,8 @@ describe('/api/exchange v2 priority contract', () => {
     const res = await GET();
     const body = await res.json();
 
-    expect(res.status).toBe(200);
-    expect(Array.isArray(body)).toBe(true);
-    expect(body.length).toBeGreaterThan(0);
-    expect(body.some((row: any) => row.cur_unit === 'CNH')).toBe(true);
+    expect(res.status).toBe(503);
+    expect(body.success).toBe(false);
+    expect(Array.isArray(body)).toBe(false);
   });
 });

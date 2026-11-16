@@ -64,7 +64,8 @@ export class FinanceController {
    */
   create = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const { companyCode, userId } = req;
+      const { companyCode } = req;
+      const userId = req.user?.id;
       if (!companyCode || !userId) {
         return res.status(403).json({
           success: false,
@@ -101,7 +102,7 @@ export class FinanceController {
 
       const { id } = req.params;
       const input = req.body as FinanceUpdateInput;
-      const record = await financeService.updateFinanceRecord(id, companyCode, input);
+      const record = await financeService.updateFinanceRecord(id, companyCode, input, req.user?.id);
 
       res.json({
         success: true,
@@ -184,7 +185,8 @@ export class FinanceController {
    */
   approve = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const { companyCode, userId } = req;
+      const { companyCode } = req;
+      const userId = req.user?.id;
       if (!companyCode || !userId) {
         return res.status(403).json({
           success: false,

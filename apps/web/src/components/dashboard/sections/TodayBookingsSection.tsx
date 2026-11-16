@@ -5,6 +5,7 @@ import { format, isToday } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { useBookings } from '../../../hooks/useBookings'
 import type { Booking } from '@entrip/shared'
+import { dateKey, bookingCurrency, money } from '../../../lib/bookingAnalytics'
 
 interface DepartureTeam {
   id: string
@@ -22,11 +23,12 @@ interface NewBookingToday {
   destination: string
   customerName: string
   totalPrice: number
+  currency: string
   createdTime: string
 }
 
 export function TodayBookingsSection() {
-  const { bookings: apiBookings, isLoading } = useBookings()
+  const { bookings: apiBookings, isLoading, isError } = useBookings()
 
   const todayData = useMemo(() => {
     if (!apiBookings || apiBookings.length === 0) {
@@ -42,14 +44,14 @@ export function TodayBookingsSection() {
 
     // 오늘 출발하는 팀들
     const departures: DepartureTeam[] = apiBookings
-      .filter((booking: Booking) => booking.startDate === todayStr)
+      .filter((booking: Booking) => dateKey(booking.startDate) === todayStr && booking.status !== 'CANCELLED')
       .map((booking: Booking) => ({
         id: booking.id,
         teamName: booking.teamName,
         destination: booking.destination,
         paxCount: booking.paxCount,
-        departureTime: '09:00', // 임시값 - 실제로는 booking에서 가져와야 함
-        manager: booking.user?.name || '미정',
+        departureTime: '출발 시각 미제공',
+        manager: booking.managerName || booking.coordinator || booking.user?.name || '미정',
         status: booking.status === 'CONFIRMED' ? 'confirmed' : 'checking'
       }))
 
@@ -65,6 +67,7 @@ export function TodayBookingsSection() {
         destination: booking.destination,
         customerName: booking.customerName,
         totalPrice: booking.totalPrice,
+        currency: bookingCurrency(booking),
         createdTime: format(new Date(booking.createdAt), 'HH:mm')
       }))
 
@@ -79,6 +82,8 @@ export function TodayBookingsSection() {
       pendingCount
     }
   }, [apiBookings])
+
+  if (isError) return <p role="alert" className="p-6 text-red-700">오늘의 예약을 불러오지 못했습니다.</p>
 
   if (isLoading) {
     return (
@@ -155,7 +160,7 @@ export function TodayBookingsSection() {
                     <p className="text-xs text-gray-600">{booking.customerName} · {booking.destination}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-gray-700">{booking.totalPrice.toLocaleString()}원</p>
+                    <p className="text-sm text-gray-700">{money(booking.totalPrice, booking.currency)}</p>
                     <p className="text-xs text-gray-500">{booking.createdTime}</p>
                   </div>
                 </div>

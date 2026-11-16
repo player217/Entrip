@@ -1,233 +1,100 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { LoginRequest, LoginResponse, AuthState } from '@entrip/shared';
+import { mutate } from 'swr';
+import type { LoginRequest, AuthState } from '@entrip/shared';
+import { queryClient } from './queryClient';
+import { useWorkspaceStore } from '@entrip/shared/stores/workspaceStore';
 
 interface AuthStore extends AuthState {
   login: (credentials: LoginRequest) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   clearError: () => void;
   checkAuth: () => Promise<boolean>;
   setLoading: (loading: boolean) => void;
 }
 
-// Use proxy routes to avoid CORS and port issues
-// The Next.js API routes will forward requests to the actual API server
+function clearSessionData() {
+  void mutate(() => true, undefined, { revalidate: false });
+  queryClient.clear();
+  useWorkspaceStore.getState().bindOwner(null);
+  if (typeof window !== 'undefined') {
+    for (const key of ['auth-token', 'token', 'accessToken', 'user', 'userId', 'auth-state']) localStorage.removeItem(key);
+    window.dispatchEvent(new Event('entrip:session-changed'));
+  }
+}
+
+const emptySession = { isAuthenticated: false, user: null, token: null, isLoading: false, error: null };
+let sessionGeneration = 0;
 
 export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set, _get) => ({
-      // Initial state
-      isAuthenticated: false,
-      user: null,
-      token: null,
-      isLoading: false,
-      error: null,
-
-      // Actions
-      login: async (credentials: LoginRequest) => {
-        set({ isLoading: true, error: null });
-
-        try {
-          // Map legacy LoginRequest -> v2 login DTO
-          const companyAliases: Record<string, string> = {
-            entrip: 'ENTRIP_MAIN',
-            ENTRIP: 'ENTRIP_MAIN',
-            ENTRIP_MAIN: 'ENTRIP_MAIN',
-            startour: 'star',
-            Startour: 'star',
-            STAR: 'star',
-            star: 'star',
-            happytravel: 'happy',
-            HAPPY: 'happy',
-            happy: 'happy',
-            j1: 'j1',
-          };
-          const normalizedCompany = companyAliases[credentials.companyCode] || credentials.companyCode;
-          const v2Body = {
-            email: credentials.username,
-            password: credentials.password,
-            companyCode: normalizedCompany,
-          };
-          const response = await fetch('/api/v2/auth/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(v2Body),
-            credentials: 'include', // Important for cookies
-          });
-
-          const data: LoginResponse = await response.json();
-
-          if (data.success && data.user) {
-            // HttpOnly cookie will be set by the server
-            // DO NOT store token in localStorage anymore
-            set({
-              isAuthenticated: true,
-              user: data.user,
-              token: null, // No token in client state
-              isLoading: false,
-              error: null,
-            });
-            return true;
-          } else {
-            set({
-              isAuthenticated: false,
-              user: null,
-              token: null,
-              isLoading: false,
-              error: data.message || '로그인에 실패했습니다.',
-            });
-            return false;
-          }
-        } catch (error) {
-          console.error('Login error:', error);
-          set({
-            isAuthenticated: false,
-            user: null,
-            token: null,
-            isLoading: false,
-            error: '서버 연결에 실패했습니다.',
-          });
-          return false;
-        }
-      },
-
-      logout: () => {
-        // ENHANCED: Improve logout error handling without preventing logout
-        const performLogout = async () => {
-          try {
-            // Call logout API to clear HttpOnly cookie
-            const response = await fetch('/api/v2/auth/logout', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              credentials: 'include', // Important for cookies
-            });
-
-            if (!response.ok) {
-              console.warn('Logout API call failed but proceeding with client cleanup:', response.status);
-            } else {
-              console.log('✅ Logout API call successful');
-            }
-          } catch (error) {
-            // Don't prevent logout even if API call fails
-            console.warn('Logout API call error but proceeding with client cleanup:', error);
-          }
-        };
-
-        // Perform async logout call but don't wait for it
-        performLogout();
-
-        // Clear any legacy localStorage items immediately
-        try {
-          localStorage.removeItem('auth-token');
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('userId'); // Added messenger userId cleanup
-        } catch (error) {
-          console.warn('LocalStorage cleanup error:', error);
-        }
-
-        // Clear state immediately
-        set({
-          isAuthenticated: false,
-          user: null,
-          token: null,
-          isLoading: false,
-          error: null,
+  persist((set, get) => ({
+    ...emptySession,
+    login: async (credentials) => {
+      const generation = ++sessionGeneration;
+      set({ isLoading: true, error: null });
+      try {
+        const response = await fetch('/api/v2/auth/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ email: credentials.username, password: credentials.password, companyCode: credentials.companyCode }),
         });
-
-        // Redirect to login page
-        if (typeof window !== 'undefined') {
-          console.log('🔄 Redirecting to login page after logout');
-          window.location.href = '/login';
+        const data = await response.json();
+        if (generation !== sessionGeneration) return false;
+        const user = data.data?.user ?? data.user;
+        if (response.ok && data.success && user) {
+          clearSessionData();
+          set({ isAuthenticated: true, user, token: null, isLoading: false, error: null });
+          return true;
         }
-      },
-
-      clearError: () => {
-        set({ error: null });
-      },
-
-      checkAuth: async () => {
-        try {
-          set({ isLoading: true });
-          
-          // HttpOnly cookie will be sent automatically with credentials: 'include'
-          const response = await fetch('/api/v2/auth/me', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include', // Important for cookies
-          });
-
-          const data = await response.json();
-
-          if (data.success && data.user) {
-            set({
-              isAuthenticated: true,
-              user: data.user,
-              isLoading: false,
-              error: null,
-            });
-            return true;
-          } else {
-            // Token is invalid, clear auth state
-            set({
-              isAuthenticated: false,
-              user: null,
-              token: null,
-              isLoading: false,
-              error: null,
-            });
-            return false;
-          }
-        } catch (error) {
-          console.error('Auth check error:', error);
-          set({
-            isAuthenticated: false,
-            user: null,
-            token: null,
-            isLoading: false,
-            error: null,
-          });
+        set({ isLoading: false, error: data.message || '로그인에 실패했습니다.' });
+        return false;
+      } catch {
+        if (generation === sessionGeneration) set({ isLoading: false, error: '서버 연결에 실패했습니다.' });
+        return false;
+      }
+    },
+    logout: async () => {
+      ++sessionGeneration;
+      clearSessionData();
+      set(emptySession);
+      try { await fetch('/api/v2/auth/logout', { method: 'POST', credentials: 'include' }); }
+      catch { /* Local state is cleared even when the server is unavailable. */ }
+      finally { if (typeof window !== 'undefined') window.location.assign('/login'); }
+    },
+    checkAuth: async () => {
+      const generation = sessionGeneration;
+      set({ isLoading: true });
+      try {
+        const response = await fetch('/api/v2/auth/me', { credentials: 'include', cache: 'no-store' });
+        if (generation !== sessionGeneration) return get().isAuthenticated;
+        if (response.status === 401 || response.status === 403) {
+          clearSessionData();
+          set(emptySession);
           return false;
         }
-      },
-
-      setLoading: (loading: boolean) => {
-        set({ isLoading: loading });
-      },
-    }),
-    {
-      name: 'auth-storage',
-      storage: createJSONStorage(() => 
-        typeof window !== 'undefined' ? localStorage : {
-          getItem: () => null,
-          setItem: () => {},
-          removeItem: () => {},
-        }
-      ),
-      // Only persist essential data (no token for security)
-      partialize: (state) => ({
-        isAuthenticated: state.isAuthenticated,
-        user: state.user,
-        // token is not persisted - using HttpOnly cookies
-      }),
-    }
-  )
+        if (!response.ok) throw new Error('인증 서버에 일시적으로 연결할 수 없습니다.');
+        const data = await response.json();
+        const user = data.data?.user ?? data.user;
+        if (!data.success || !user) throw new Error('인증 응답을 확인할 수 없습니다.');
+        const previous = get().user;
+        if (previous && (previous.id !== user.id || previous.companyCode !== user.companyCode)) clearSessionData();
+        set({ isAuthenticated: true, user, token: null, isLoading: false, error: null });
+        return true;
+      } catch {
+        if (generation === sessionGeneration) set({ isLoading: false, error: '인증 연결을 다시 확인해주세요.' });
+        // A network failure or rate limit does not revoke a valid cookie session.
+        return get().isAuthenticated;
+      }
+    },
+    clearError: () => set({ error: null }),
+    setLoading: isLoading => set({ isLoading }),
+  }), {
+    name: 'auth-storage',
+    storage: createJSONStorage(() => typeof window !== 'undefined' ? localStorage : { getItem: () => null, setItem: () => {}, removeItem: () => {} }),
+    partialize: state => ({ isAuthenticated: state.isAuthenticated, user: state.user }),
+  })
 );
 
-// Helper hook for checking if user has required role
 export const useUserRole = () => {
-  const user = useAuthStore((state) => state.user);
-  
-  return {
-    isAdmin: user?.role === 'ADMIN',
-    isManager: user?.role === 'MANAGER' || user?.role === 'ADMIN',
-    isUser: !!user,
-    role: user?.role,
-  };
+  const user = useAuthStore(state => state.user);
+  return { isAdmin: user?.role === 'ADMIN', isManager: user?.role === 'MANAGER' || user?.role === 'ADMIN', isUser: !!user, role: user?.role };
 };

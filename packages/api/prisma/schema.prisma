@@ -395,9 +395,31 @@ model CalendarEvent {
   @@index([companyCode, start])
 }
 
+// Banking accounts are separate from legacy employee Account records.
+model BankAccount {
+  id            String @id @default(cuid())
+  companyCode   String
+  accountName   String
+  bankName      String
+  accountNumber String
+  holderName    String
+  currency      String @default("KRW")
+  openingBalance Decimal @default(0)
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+  records       FinanceRecord[]
+  @@index([companyCode, deletedAt])
+}
+
 model FinanceRecord {
   // Primary ID
   id            String        @id @default(cuid())
+
+  accountId     String?
+  projectId     String?
+  account       BankAccount? @relation(fields: [accountId], references: [id])
 
   // Finance Information
   type          FinanceType

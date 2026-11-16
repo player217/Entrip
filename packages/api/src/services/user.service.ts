@@ -24,7 +24,7 @@ export interface UserUpdateInput {
 export interface UserListOptions {
   role?: UserRole;
   department?: string;
-  isActive?: boolean;
+  isActive?: boolean | null;
   search?: string;
   skip?: number;
   take?: number;
@@ -83,7 +83,12 @@ export class UserService {
     }
 
     // Hash password if provided
-    let updateData: any = { ...data };
+    const updateData: Prisma.UserUpdateInput = {
+      ...(data.name !== undefined ? { name: data.name } : {}),
+      ...(data.department !== undefined ? { department: data.department } : {}),
+      ...(data.role !== undefined ? { role: data.role } : {}),
+      ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
+    };
     if (data.password) {
       updateData.password = await bcrypt.hash(data.password, 12);
     }
@@ -117,7 +122,7 @@ export class UserService {
     // Build where clause
     const where: Prisma.UserWhereInput = {
       companyCode,
-      isActive,
+      ...(isActive === null ? {} : { isActive }),
       ...(role && { role }),
       ...(department && { department }),
       ...(search && {

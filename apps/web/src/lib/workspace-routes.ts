@@ -1,0 +1,19 @@
+export const workspaceRoutes: Record<string, { label: string; icon: string }> = {
+  '/': { label: '대시보드', icon: 'ph:layout-bold' },
+  '/dashboard': { label: '대시보드', icon: 'ph:layout-bold' },
+  '/calendar-monthly': { label: '월별 캘린더', icon: 'ph:calendar-blank-bold' },
+  '/calendar-weekly': { label: '주별 캘린더', icon: 'ph:calendar-bold' },
+  '/list-monthly': { label: '월별 리스트', icon: 'ph:list-bold' },
+  '/list-weekly': { label: '주별 리스트', icon: 'ph:list-bold' },
+  '/stats': { label: '운영현황', icon: 'ph:chart-line-bold' },
+  '/approval': { label: '결재', icon: 'ph:check-square-bold' },
+  '/accounts': { label: '계좌관리', icon: 'ph:wallet-bold' },
+  '/settings': { label: '맞춤설정', icon: 'ph:gear-bold' },
+  '/mail': { label: '메일', icon: 'ph:envelope-bold' },
+  '/chat': { label: '메신저', icon: 'ph:chat-circle-bold' },
+  '/flight-schedule': { label: '항공편 조회', icon: 'ph:airplane-takeoff-bold' },
+  '/flow': { label: 'Flow', icon: 'ph:flow-arrow-bold' },
+  '/calendar-performance': { label: '캘린더 현황', icon: 'ph:calendar-bold' },
+  '/workspace': { label: '새 작업', icon: 'ph:globe-bold' },
+};
+export const workspaceRouteInfo = (path: string) => workspaceRoutes[path.split('?')[0] ?? path] ?? { label: '작업', icon: 'ph:file-bold' };

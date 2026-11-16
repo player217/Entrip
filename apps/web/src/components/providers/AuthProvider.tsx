@@ -40,27 +40,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       try {
-        // Check if we have a stored token from zustand persist (for header management only)
-        const authStorage = typeof window !== 'undefined' ? localStorage.getItem('auth-storage') : null;
-        let storedToken = null;
-        
-        if (authStorage) {
-          try {
-            const parsed = JSON.parse(authStorage);
-            storedToken = parsed?.state?.token;
-          } catch (e) {
-            console.error('Failed to parse auth storage:', e);
-          }
-        }
-        
-        if (storedToken) {
-          // Set token in API client for requests (HEADER MANAGEMENT ONLY - NO REDIRECTS)
-          apiClient.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-          
-          // Verify token with server
-          await checkAuth();
-          // Note: Redirects are now handled by middleware.ts only
-        }
+        await checkAuth();
         // Note: No redirects here - middleware handles all authentication redirects
       } catch (error) {
         console.error('Auth initialization error:', error);

@@ -1,4 +1,5 @@
-import { Booking, BookingStatus } from '@prisma/client';
+import { randomUUID } from 'crypto';
+import { Booking, BookingStatus, BookingType, Prisma } from '@prisma/client';
 import { BaseService } from '../../services/base.service';
 import prisma from '../../lib/prisma';
 import { BookingCreateInput } from './dtos/BookingCreate.dto';
@@ -19,87 +20,76 @@ export class BookingsService extends BaseService<Booking> {
     userId: string,
     input: BookingCreateInput
   ): Promise<Booking> {
-    // Generate booking number
-    const bookingNumber = `BK${Date.now()}`;
-
-    // Map/normalize fields to match Prisma schema
-    return this.create(companyCode, userId, {
-      ...input,
-      // Normalize type to Prisma enum; fallback to FIT
-      type: ((): any => {
-        const t = (input as any).type;
-        const upper = typeof t === 'string' ? t.toUpperCase() : undefined;
-        const allowed = ['PACKAGE','FIT','GROUP','BUSINESS','INCENTIVE'];
-        return allowed.includes(upper || '') ? upper : 'FIT';
-      })(),
-      bookingNumber,
-      status: BookingStatus.PENDING,
-      startDate: new Date(input.startDate),
-      endDate: new Date(input.endDate),
+    const type = this.normalizeType(input.type);
+    return prisma.$transaction(async tx => {
+      const booking = await tx.booking.create({ data: {
+        ...input, type, bookingNumber: `BK-${randomUUID()}`,
+        status: input.status ?? BookingStatus.PENDING,
+        revenue: input.revenue ?? input.totalPrice ?? 0, totalPrice: input.totalPrice ?? input.revenue ?? 0,
+        companyCode, userId, createdBy: userId, updatedBy: userId,
+        startDate: new Date(input.startDate), endDate: new Date(input.endDate),
+      } });
+      await tx.bookingHistory.create({ data: {
+        bookingId: booking.id, companyCode, changedBy: userId, action: 'create',
+        changedFields: Object.keys(input), newValues: JSON.parse(JSON.stringify(booking)),
+      } });
+      return booking;
     });
+  }
+
+  private normalizeType(type: string): BookingType {
+    const aliases: Record<string, BookingType> = { incentive: 'INCENTIVE', golf: 'FIT', honeymoon: 'PACKAGE',
+      airtel: 'FIT', workshop: 'BUSINESS', reward: 'BUSINESS', teambuilding: 'GROUP' };
+    return aliases[type] ?? type as BookingType;
+  }
+
+  async detail(id: string, companyCode: string) {
+    const booking = await this.findById(id, companyCode);
+    const history = await prisma.bookingHistory.findMany({
+      where: { bookingId: id, companyCode }, orderBy: { changedAt: 'desc' }, take: 100,
+      include: { user: { select: { name: true } } },
+    });
+    return { ...booking, history };
   }
 
   /**
    * Update booking with company validation
    */
   async updateBooking(
-    id: string,
-    companyCode: string,
-    input: BookingUpdateInput,
-    ifMatch?: string
+    id: string, companyCode: string, input: BookingUpdateInput, ifMatch?: string, userId?: string
   ): Promise<Booking> {
-    const updateData: any = { ...input };
-
-    // Convert date strings to Date objects if present
-    if (input.startDate) {
-      updateData.startDate = new Date(input.startDate);
-    }
-    if (input.endDate) {
-      updateData.endDate = new Date(input.endDate);
-    }
-
-    // Optimistic locking via If-Match (expects numeric version)
     const { parseIfMatchVersion } = await import('../../lib/etag');
     const expectedVersion = parseIfMatchVersion(ifMatch);
-    if (expectedVersion === undefined) {
-      throw new ApiError(428, 'Precondition Required: If-Match header (version) is required');
-    }
-
-    const result = await this.model.updateMany({
-      where: { id, companyCode, deletedAt: null, version: expectedVersion },
-      data: {
-        ...updateData,
-        version: { increment: 1 },
-        updatedAt: new Date(),
-      },
+    if (expectedVersion === undefined) throw new ApiError(428, 'If-Match version is required');
+    return prisma.$transaction(async tx => {
+      const previous = await tx.booking.findFirst({ where: { id, companyCode, deletedAt: null } });
+      if (!previous) throw new ApiError(404, 'Booking not found');
+      const start = input.startDate ? new Date(input.startDate) : previous.startDate;
+      const end = input.endDate ? new Date(input.endDate) : previous.endDate;
+      if (end < start) throw new ApiError(400, 'End date must be on or after start date');
+      const data: Prisma.BookingUpdateManyMutationInput = {
+        ...input, type: input.type ? this.normalizeType(input.type) : undefined,
+        startDate: start, endDate: end, version: { increment: 1 }, updatedBy: userId,
+        ...(input.revenue !== undefined ? { totalPrice: input.revenue } : {}),
+        ...(input.totalPrice !== undefined ? { revenue: input.totalPrice } : {}),
+      };
+      const result = await tx.booking.updateMany({ where: { id, companyCode, deletedAt: null, version: expectedVersion }, data });
+      if (result.count !== 1) throw new ApiError(412, '다른 사용자가 변경했습니다. 다시 불러온 후 수정하세요.');
+      const booking = await tx.booking.findUniqueOrThrow({ where: { id } });
+      const changedBy = userId ?? previous.userId;
+      if (changedBy) await tx.bookingHistory.create({ data: {
+        bookingId: id, companyCode, changedBy, action: 'update', changedFields: Object.keys(input),
+        previousValues: JSON.parse(JSON.stringify(previous)), newValues: JSON.parse(JSON.stringify(booking)),
+      } });
+      return booking;
     });
-
-    if (result.count === 0) {
-      throw new ApiError(412, 'Precondition Failed: version mismatch');
-    }
-
-    return this.findById(id, companyCode);
   }
 
   /**
    * Update booking status with company validation
    */
-  async updateBookingStatus(
-    id: string,
-    companyCode: string,
-    input: BookingStatusPatchInput
-  ): Promise<Booking> {
-    // First validate the booking exists and belongs to company
-    await this.findById(id, companyCode);
-
-    return this.model.update({
-      where: { id },
-      data: {
-        status: input.status as BookingStatus,
-        notes: input.notes,
-        updatedAt: new Date(),
-      },
-    });
+  async updateBookingStatus(id: string, companyCode: string, input: BookingStatusPatchInput, ifMatch?: string, userId?: string): Promise<Booking> {
+    return this.updateBooking(id, companyCode, input, ifMatch, userId);
   }
 
   /**
@@ -156,20 +146,7 @@ export class BookingsService extends BaseService<Booking> {
       where: {
         companyCode,
         deletedAt: null,
-        OR: [
-          {
-            startDate: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
-          {
-            endDate: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
-        ],
+        startDate: { lte: endDate }, endDate: { gte: startDate },
       },
       orderBy: {
         startDate: 'asc',

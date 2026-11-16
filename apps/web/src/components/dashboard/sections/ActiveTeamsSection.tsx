@@ -1,10 +1,11 @@
 'use client'
 
 import { useMemo } from 'react'
-import { format, isAfter, isBefore, addDays } from 'date-fns'
+import { format, addDays } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { useBookings } from '../../../hooks/useBookings'
 import type { Booking } from '@entrip/shared'
+import { dateKey, dayDistance } from '../../../lib/bookingAnalytics'
 
 interface TravelingTeam {
   id: string
@@ -31,7 +32,7 @@ interface UpcomingTeam {
 }
 
 export function ActiveTeamsSection() {
-  const { bookings: apiBookings, isLoading } = useBookings()
+  const { bookings: apiBookings, isLoading, isError } = useBookings()
 
   const teamsData = useMemo(() => {
     if (!apiBookings || apiBookings.length === 0) {
@@ -47,24 +48,22 @@ export function ActiveTeamsSection() {
 
     // 현재 여행 중인 팀들
     const travelingTeams: TravelingTeam[] = []
-    
+
     // 곧 출발하는 팀들 (7일 내)
     const upcomingTeams: UpcomingTeam[] = []
 
-    apiBookings.forEach((booking: Booking) => {
-      const startDate = new Date(booking.startDate)
-      const endDate = new Date(booking.endDate)
-      const startDateStr = booking.startDate
-      const endDateStr = booking.endDate
+    apiBookings.filter(b => b.status !== 'CANCELLED').forEach((booking: Booking) => {
+      const startDateStr = dateKey(booking.startDate)
+      const endDateStr = dateKey(booking.endDate)
 
       // 현재 여행 중인 팀 (시작일 <= 오늘 <= 종료일)
-      if (isBefore(startDate, now) && isAfter(endDate, now)) {
+      if (startDateStr <= today && endDateStr >= today && booking.status !== 'PENDING') {
         // 현재 진행 일차 계산
-        const daysPassed = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
-        const totalDays = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+        const daysPassed = dayDistance(startDateStr, today) + 1
+        const totalDays = dayDistance(startDateStr, endDateStr) + 1
 
         let status: 'traveling' | 'returning_today' | 'returning_tomorrow' = 'traveling'
-        
+
         if (endDateStr === today) {
           status = 'returning_today'
         } else if (endDateStr === tomorrow) {
@@ -80,15 +79,15 @@ export function ActiveTeamsSection() {
           startDate: startDateStr,
           endDate: endDateStr,
           paxCount: booking.paxCount,
-          manager: booking.user?.name || '미정',
+          manager: booking.managerName || booking.coordinator || booking.user?.name || '미정',
           status
         })
       }
-      
+
       // 곧 출발하는 팀들 (미래 출발일이지만 7일 이내)
-      else if (isAfter(startDate, now)) {
-        const daysUntilDeparture = Math.ceil((startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-        
+      else if (startDateStr > today) {
+        const daysUntilDeparture = dayDistance(today, startDateStr)
+
         if (daysUntilDeparture <= 7) {
           upcomingTeams.push({
             id: booking.id,
@@ -97,7 +96,7 @@ export function ActiveTeamsSection() {
             startDate: startDateStr,
             paxCount: booking.paxCount,
             daysUntilDeparture,
-            manager: booking.user?.name || '미정',
+            manager: booking.managerName || booking.coordinator || booking.user?.name || '미정',
             status: booking.status === 'CONFIRMED' ? 'confirmed' : 'pending'
           })
         }
@@ -143,6 +142,8 @@ export function ActiveTeamsSection() {
         return '상태'
     }
   }
+
+  if (isError) return <p role="alert" className="p-6 text-red-700">진행 중인 팀을 불러오지 못했습니다.</p>
 
   if (isLoading) {
     return (
@@ -198,10 +199,10 @@ export function ActiveTeamsSection() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* 진행률 바 */}
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                    <div 
+                    <div
                       className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${(team.currentDay / team.totalDays) * 100}%` }}
                     ></div>

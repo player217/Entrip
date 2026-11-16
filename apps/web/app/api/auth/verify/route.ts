@@ -1,34 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.INTERNAL_API_V2_URL || 'http://localhost:4002';
-
-export async function GET(request: NextRequest) {
-  try {
-    // Get the auth-token cookie from the request
-    const authToken = request.cookies.get('auth-token');
-    
-    // Forward the request to the actual API server with cookie
-    const response = await fetch(`${API_URL}/api/v2/auth/me`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // Forward the cookie to the backend
-        'Cookie': authToken ? `auth-token=${authToken.value}` : '',
-      },
-    });
-
-    const data = await response.json();
-    
-    // Return the response from the API server
-    return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error('Auth verify proxy error:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        message: '인증 확인 중 오류가 발생했습니다.' 
-      },
-      { status: 500 }
-    );
-  }
-}
+import { NextRequest } from 'next/server';
+import { proxyApiV2 } from '@/lib/server/api-v2-proxy';
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export function GET(request: NextRequest) { return proxyApiV2(request, 'auth/me'); }

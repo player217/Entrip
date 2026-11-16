@@ -51,10 +51,10 @@ export const getUsersQuerySchema = z.object({
   query: z.object({
     role: z.nativeEnum(UserRole).optional(),
     department: z.string().optional(),
-    isActive: z.enum(['true', 'false']).optional(),
+    isActive: z.enum(['true', 'false', 'all']).optional(),
     search: z.string().optional(),
-    page: z.string().regex(/^\d+$/).transform(Number).optional(),
-    limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+    page: z.coerce.number().int().min(1).optional(),
+    limit: z.coerce.number().int().min(1).max(100).optional(),
     sortBy: z.enum(['name', 'email', 'role', 'department', 'createdAt']).optional(),
     sortOrder: z.enum(['asc', 'desc']).optional(),
   }),

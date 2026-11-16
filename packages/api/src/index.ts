@@ -14,6 +14,7 @@ import { logger } from './lib/logger';
 // Middleware imports
 import { errorHandler } from './middlewares/error.middleware';
 import { loggingMiddleware, errorLoggingMiddleware } from './middlewares/logging.middleware';
+import { optionalAuth } from './middlewares/auth.middleware';
 import { apiRateLimit } from './middlewares/rateLimit.middleware';
 import { requestId } from './middlewares/requestId.middleware';
 import { ipValidation } from './middlewares/ipValidation.middleware';
@@ -24,10 +25,14 @@ import { initializeWebSocket } from './ws';
 // Route imports
 import authRoutes from './routes/auth/auth.route';
 import usersRoutes from './routes/users/users.route';
+import messagesRoutes from './routes/messages/messages.route';
 import bookingRoutes from './routes/bookings/bookings.route';
 import calendarRoutes from './routes/calendar/calendar.route';
 import accountsRoutes from './routes/accounts/accounts.route';
 import financeRoutes from './routes/finance/finance.route';
+import bankAccountsRoutes from './routes/bank-accounts/bank-accounts.route';
+import flightRoutes from './routes/flight.route';
+import fxRoutes from './routes/fx.route';
 import approvalsRoutes from './routes/approvals/approvals.route';
 import healthRoutes from './routes/health/health.route';
 import metricsRoutes from './routes/metrics/metrics.route';
@@ -179,7 +184,7 @@ app.get('/health', (req, res) => {
 const apiV2 = express.Router();
 
 // Apply rate limiting to all API routes
-apiV2.use(apiRateLimit);
+apiV2.use(optionalAuth, apiRateLimit);
 
 app.use('/api/v2', apiV2);
 
@@ -187,10 +192,14 @@ app.use('/api/v2', apiV2);
 apiV2.use('/health', healthRoutes);
 apiV2.use('/auth', authRoutes);
 apiV2.use('/users', usersRoutes);
+apiV2.use('/messages', messagesRoutes);
 apiV2.use('/bookings', bookingRoutes);
 apiV2.use('/calendar', calendarRoutes);
 apiV2.use('/accounts', accountsRoutes);
 apiV2.use('/finance', financeRoutes);
+apiV2.use('/bank-accounts', bankAccountsRoutes);
+apiV2.use('/flights', flightRoutes);
+apiV2.use('/fx', fxRoutes);
 apiV2.use('/approvals', approvalsRoutes);
 apiV2.use('/metrics', metricsRoutes);
 apiV2.use('/notifications', notificationsRoutes);

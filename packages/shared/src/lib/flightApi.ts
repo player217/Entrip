@@ -2,15 +2,6 @@
  * 항공편 크롤링 API 클라이언트
  */
 
-const CRAWLER_API_URL = process.env.NEXT_PUBLIC_CRAWLER_API_URL || 'http://localhost:8001';
-
-// 개발 환경에서 환경변수가 없을 경우 에러 대신 기본값 사용
-if (!process.env.NEXT_PUBLIC_CRAWLER_API_URL) {
-  console.warn('[flightApi.ts] NEXT_PUBLIC_CRAWLER_API_URL is not set, using default: http://localhost:8001');
-}
-
-console.log('[flightApi.ts] CRAWLER_API_URL:', CRAWLER_API_URL);
-
 export interface FlightSchedule {
   airline: string;
   flightNo: string;
@@ -37,6 +28,8 @@ export interface ScheduleResponse {
   method?: string;
   page_title?: string;
   page_accessible?: boolean;
+  source?: string;
+  stale?: boolean;
 }
 
 export interface LiveFlight {
@@ -71,14 +64,16 @@ class FlightAPI {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = CRAWLER_API_URL;
+    this.baseUrl = typeof window === 'undefined'
+      ? (process.env.INTERNAL_API_V2_URL || process.env.API_V2_URL || 'http://localhost:4002') + '/api/v2/flights'
+      : '/api/v2/flights';
   }
 
   /**
    * 공항 스케줄 조회
    */
   async getSchedule(airportCode: string): Promise<ScheduleResponse> {
-    const response = await fetch(`${this.baseUrl}/api/schedule/${airportCode}`);
+    const response = await fetch(`${this.baseUrl}/schedule/${encodeURIComponent(airportCode)}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch schedule: ${response.statusText}`);
     }
@@ -89,7 +84,7 @@ class FlightAPI {
    * 실시간 출도착 현황 조회
    */
   async getLiveStatus(airportCode: string): Promise<LiveStatusResponse> {
-    const response = await fetch(`${this.baseUrl}/api/live/${airportCode}`);
+    const response = await fetch(`${this.baseUrl}/live/${airportCode}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch live status: ${response.statusText}`);
     }
@@ -100,7 +95,7 @@ class FlightAPI {
    * 지원 공항 목록 조회
    */
   async getAirports(): Promise<{ airports: string[]; total: number }> {
-    const response = await fetch(`${this.baseUrl}/api/airports`);
+    const response = await fetch(`${this.baseUrl}/airports`);
     if (!response.ok) {
       throw new Error(`Failed to fetch airports: ${response.statusText}`);
     }
@@ -122,7 +117,7 @@ class FlightAPI {
    * 스케줄 크롤링 수동 트리거
    */
   async triggerScheduleCrawl(): Promise<{ message: string }> {
-    const response = await fetch(`${this.baseUrl}/api/crawl/schedule`, {
+    const response = await fetch(`${this.baseUrl}/crawl/schedule`, {
       method: 'POST'
     });
     if (!response.ok) {
@@ -135,7 +130,7 @@ class FlightAPI {
    * 실시간 크롤링 수동 트리거
    */
   async triggerLiveCrawl(): Promise<{ message: string }> {
-    const response = await fetch(`${this.baseUrl}/api/crawl/live`, {
+    const response = await fetch(`${this.baseUrl}/crawl/live`, {
       method: 'POST'
     });
     if (!response.ok) {

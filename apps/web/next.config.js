@@ -86,7 +86,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'", // Allow inline styles for components
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' http://localhost:4001 ws://localhost:4001 https://api.iconify.design https://api.simplesvg.com https://api.unisvg.com https://cdn.jsdelivr.net", // Allow Iconify API services for dynamic icon loading
+              "connect-src 'self' http://localhost:4002 ws://localhost:4002 https://api.iconify.design https://api.simplesvg.com https://api.unisvg.com https://cdn.jsdelivr.net", // Allow Iconify API services for dynamic icon loading
               "frame-ancestors 'none'", // Prevent clickjacking
               "base-uri 'self'",
               "form-action 'self'",
@@ -141,14 +141,7 @@ const nextConfig = {
   
   // API Proxy Routes
   async rewrites() {
-    return [
-      // v2 API routes should be handled by app/api/v2/[...path]/route.ts
-      // Only rewrite v1 API routes to legacy server
-      {
-        source: '/api/((?!v2).*)', // Negative lookahead: match all except v2
-        destination: 'http://localhost:4001/api/$1',
-      },
-    ];
+    return [];
   },
 
   // Redirects

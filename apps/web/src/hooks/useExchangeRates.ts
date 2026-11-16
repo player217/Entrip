@@ -3,7 +3,7 @@ import useSWR from 'swr';
 export type Rate = { 
   unit: 'USD' | 'EUR' | 'JPY' | 'CNY'; 
   rate: number; 
-  diff: number;
+  diff: number | null;
 };
 
 const fetcher = async (url: string) => {
@@ -40,7 +40,7 @@ export const useExchangeRates = () => {
         return {
           unit,
           rate,
-          diff: Number(r.yy_efee_r || 0) // 전일 대비 %
+          diff: null // EXIM fee fields are not day-over-day price changes
         };
       });
       

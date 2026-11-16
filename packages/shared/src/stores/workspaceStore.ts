@@ -45,6 +45,7 @@ export interface WorkspaceTab {
 }
 
 interface WorkspaceState {
+  ownerId: string | null;
   tabs: WorkspaceTab[];
   activeTabKey: string | null;
   sidebarCollapsed: boolean;
@@ -55,11 +56,14 @@ interface WorkspaceState {
   updateActiveTabContent: (contentType: WorkspaceContentType, label?: string, icon?: string) => void;
   updateTabState: (key: string, state: TabState) => void; // 탭 상태 업데이트
   toggleSidebar: () => void;
+  bindOwner: (ownerId: string | null) => void;
+  reorderTab: (key: string, targetIndex: number) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set, get) => ({
+  ownerId: null,
   tabs: [
     { 
       key: 'tab-1', 
@@ -82,7 +86,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         return;
       }
       
-      const newTabKey = customTab?.key || `tab-${Date.now()}`;
+      const newTabKey = customTab?.key || `tab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      if (get().tabs.some(tab => tab.key === newTabKey)) return;
       const route = customTab?.route || '/';
       const newTab: WorkspaceTab = {
         key: newTabKey,
@@ -146,7 +151,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
   },
 
   setActiveTab: (key: string) => {
-    set({ activeTabKey: key });
+    if (get().tabs.some(tab => tab.key === key)) set({ activeTabKey: key });
   },
 
   updateTab: (key: string, patch: Partial<WorkspaceTab>) => {
@@ -192,11 +197,31 @@ export const useWorkspaceStore = create<WorkspaceState>()(
 
   toggleSidebar: () => {
     set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }));
+  },
+
+  bindOwner: (ownerId: string | null) => {
+    if (get().ownerId === ownerId) return;
+    const key = `tab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    set({ ownerId, tabs: [{ key, label: '대시보드', icon: 'ph:layout-bold', route: '/', history: ['/'], closable: true }], activeTabKey: key });
+  },
+
+  reorderTab: (key: string, targetIndex: number) => {
+    set(state => {
+      const sourceIndex = state.tabs.findIndex(tab => tab.key === key);
+      if (sourceIndex < 0 || !Number.isInteger(targetIndex)) return state;
+      const destination = Math.max(0, Math.min(targetIndex, state.tabs.length - 1));
+      if (sourceIndex === destination) return state;
+      const tabs = [...state.tabs];
+      const [tab] = tabs.splice(sourceIndex, 1);
+      if (!tab) return state;
+      tabs.splice(destination, 0, tab);
+      return { tabs };
+    });
   }
     }),
     {
       name: 'workspace-storage', // localStorage key
-      partialize: (state) => ({ tabs: state.tabs, activeTabKey: state.activeTabKey, sidebarCollapsed: state.sidebarCollapsed }), // Persist tabs, activeTabKey, and sidebarCollapsed
+      partialize: (state) => ({ ownerId: state.ownerId, tabs: state.tabs, activeTabKey: state.activeTabKey, sidebarCollapsed: state.sidebarCollapsed }),
     }
   )
 );

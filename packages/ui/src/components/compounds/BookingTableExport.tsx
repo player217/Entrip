@@ -12,7 +12,7 @@ import {
   type CalendarPrintOptions
 } from '../../utils/calendarPrint';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import ExcelJS from 'exceljs';
 
@@ -177,7 +177,7 @@ export const BookingTableExport: React.FC<BookingTableExportProps> = ({
               ((revenue > 0 ? (profit / revenue) * 100 : 0).toFixed(1) + '%')
             ];
           });
-          (doc as any).autoTable({
+          autoTable(doc, {
             head: [['코드','상품/팀명','날짜','담당자','인원','매출','원가','수익','수익률']],
             body: rows,
             startY: 22,

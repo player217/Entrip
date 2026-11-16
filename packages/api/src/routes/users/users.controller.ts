@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { userService } from '../../services/user.service';
 import { AuthRequest } from '../../middlewares/auth.middleware';
 import { ApiError } from '../../middlewares/error.middleware';
+import { createUserSchema, updateUserSchema } from './users.dto';
 
 export class UsersController {
   /**
@@ -17,7 +18,7 @@ export class UsersController {
       const result = await userService.findAll(req.companyCode!, {
         role: role as any,
         department: department as string,
-        isActive: isActive === 'false' ? false : true,
+        isActive: isActive === 'all' && req.user!.role === 'ADMIN' ? null : isActive === 'false' ? false : true,
         search: search as string,
         skip,
         take,
@@ -82,7 +83,7 @@ export class UsersController {
       }
 
       const userData = {
-        ...req.body,
+        ...createUserSchema.parse({ body: req.body }).body,
         companyCode: req.companyCode!,
       };
 
@@ -109,7 +110,14 @@ export class UsersController {
         throw new ApiError(403, 'You can only update your own profile');
       }
 
-      const user = await userService.update(id, req.body, req.companyCode!);
+      const changes = updateUserSchema.parse({ params: { id }, body: req.body }).body;
+      if (req.user!.role !== 'ADMIN' && (changes.role !== undefined || changes.isActive !== undefined)) {
+        throw new ApiError(403, 'Only admins can change roles or account status');
+      }
+      if (req.user!.id === id && (changes.isActive === false || (changes.role !== undefined && changes.role !== req.user!.role))) {
+        throw new ApiError(400, 'You cannot deactivate or change the role of your own account');
+      }
+      const user = await userService.update(id, changes, req.companyCode!);
 
       // Remove password from response
       const { password, ...userWithoutPassword } = user;

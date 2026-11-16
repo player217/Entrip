@@ -20,9 +20,9 @@ export class BookingsController {
 
       const options: PaginationOptions = {
         page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 20,
-        orderBy: (req.query.orderBy as string) || 'createdAt',
-        order: (req.query.order as 'asc' | 'desc') || 'desc',
+        limit: Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20)),
+        orderBy: ['startDate', 'createdAt', 'updatedAt', 'teamName'].includes(String(req.query.orderBy)) ? String(req.query.orderBy) : 'createdAt',
+        order: req.query.order === 'asc' ? 'asc' : 'desc',
       };
 
       // Extract filters from query params
@@ -43,6 +43,18 @@ export class BookingsController {
         };
       }
 
+      if (req.query.type) filters.type = req.query.type;
+      if (req.query.startDate || req.query.endDate) {
+        const from = req.query.startDate ? new Date(String(req.query.startDate)) : undefined;
+        const to = req.query.endDate ? new Date(String(req.query.endDate)) : undefined;
+        if ((from && Number.isNaN(from.getTime())) || (to && Number.isNaN(to.getTime()))) {
+          return res.status(400).json({ message: 'Invalid date range' });
+        }
+        // Include trips spanning the whole visible range.
+        if (to) { to.setUTCHours(23, 59, 59, 999); filters.startDate = { lte: to }; }
+        if (from) filters.endDate = { gte: from };
+      }
+      if (req.query.q) filters.OR = ['teamName', 'customerName', 'destination'].map(field => ({ [field]: { contains: String(req.query.q), mode: 'insensitive' } }));
       const result = await bookingsService.findAll(companyCode, filters, options);
 
       res.json({
@@ -65,7 +77,7 @@ export class BookingsController {
         });
       }
 
-      const booking = await bookingsService.findById(req.params.id!, companyCode);
+      const booking = await bookingsService.detail(req.params.id!, companyCode);
 
       // Emit weak ETag based on version and updatedAt
       try {
@@ -128,7 +140,7 @@ export class BookingsController {
       // Require If-Match for optimistic locking
       const ifMatch = req.headers['if-match'] as string | undefined;
       const input: BookingUpdateInput = req.body;
-      const booking = await bookingsService.updateBooking(req.params.id!, companyCode, input, ifMatch);
+      const booking = await bookingsService.updateBooking(req.params.id!, companyCode, input, ifMatch, req.userId);
 
       try {
         const { broadcastBookingUpdateForCompany } = await import('../../ws');
@@ -156,7 +168,7 @@ export class BookingsController {
       }
 
       const input: BookingStatusPatchInput = req.body;
-      const booking = await bookingsService.updateBookingStatus(req.params.id!, companyCode, input);
+      const booking = await bookingsService.updateBookingStatus(req.params.id!, companyCode, input, req.headers['if-match'] as string | undefined, req.userId);
 
       res.json({
         success: true,
