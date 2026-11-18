@@ -1,0 +1,110 @@
+name: Entrip LAN host
+
+on:
+  pull_request:
+    paths:
+      - 'run.bat'
+      - 'scripts/windows/**'
+      - 'compose.lan.yml'
+      - 'deploy/lan/**'
+      - 'scripts/verification/verify-lan-ui.mjs'
+      - 'apps/web/**'
+      - 'apps/fx-free/**'
+      - 'apps/api-legacy/src/crawler/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/lan-host.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  launcher:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    env:
+      PROJECT_FOLDER: Entrip 한글
+      ENTRIP_NO_PAUSE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ env.PROJECT_FOLDER }}
+      - name: Parse scripts in Windows PowerShell and open batch help
+        shell: powershell
+        run: |
+          $project = Join-Path $env:GITHUB_WORKSPACE $env:PROJECT_FOLDER
+          Get-ChildItem (Join-Path $project 'scripts/windows/*.ps1') | ForEach-Object {
+            $errors = $null
+            $null = [Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors)
+            if ($errors.Count) { throw ($errors | Out-String) }
+          }
+          Set-Location $env:RUNNER_TEMP
+          $usage = & (Join-Path $project 'run.bat') help
+          if ($LASTEXITCODE -ne 0 -or ($usage -join ' ') -notmatch 'run\.bat status') {
+            throw 'run.bat help failed from an unrelated directory'
+          }
+          if (Test-Path (Join-Path $project '.entrip-lan')) { throw 'Help created host state' }
+
+  shared-server:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      COMPOSE_PROJECT_NAME: entrip-lan
+      COMPOSE_FILE: compose.lan.yml
+      COMPOSE_ENV_FILES: .entrip-lan/server.env
+      LAN_SMOKE_DISPOSABLE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start the full stack with disposable credentials
+        run: |
+          set -euo pipefail
+          address="$(ip -4 route get 1.1.1.1 | awk '{for (i=1;i<NF;i++) if ($i=="src") {print $(i+1); exit}}')"
+          test -n "$address"
+          url="http://${address}:3000"
+          umask 077
+          mkdir -p .entrip-lan
+          {
+            echo "ENTRIP_LAN_HOST=$address"
+            echo 'ENTRIP_LAN_PORT=3000'
+            echo "ENTRIP_LAN_ORIGINS=$url,http://localhost:3000,http://127.0.0.1:3000"
+            echo 'ENTRIP_COMPANY_CODE=entrip'
+            echo 'ENTRIP_ADMIN_EMAIL=admin@entrip.local'
+            for key in POSTGRES_PASSWORD JWT_SECRET JWT_REFRESH_SECRET ENTRIP_ADMIN_PASSWORD; do
+              value="$(openssl rand -hex 32)"
+              echo "::add-mask::$value" >&2
+              echo "$key=$value"
+            done
+          } > "$COMPOSE_ENV_FILES"
+          echo "BASE_URL=$url" >> "$GITHUB_ENV"
+          docker compose config --quiet
+          docker compose up --build -d
+          curl --noproxy '*' --fail --silent --retry-all-errors --retry 90 --retry-delay 2 "$url/health" >/dev/null
+          curl --noproxy '*' --fail --silent --retry-all-errors --retry 90 --retry-delay 2 "$url/login" >/dev/null
+      - name: Recreate containers and check persisted administrator identity
+        run: |
+          set -euo pipefail
+          account() { docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U entrip -d entrip -Atqc "SELECT id FROM \"User\" WHERE email='admin@entrip.local'"; }
+          first_id="$(account)"
+          test -n "$first_id"
+          docker compose down
+          docker compose up -d
+          curl --noproxy '*' --fail --silent --retry-all-errors --retry 90 --retry-delay 2 "$BASE_URL/login" >/dev/null
+          test "$(account)" = "$first_id"
+      - name: Use two browser sessions against the LAN address
+        run: |
+          set -euo pipefail
+          version="$(docker compose exec -T web node -p "require('@playwright/test/package.json').version")"
+          npm install --prefix "$RUNNER_TEMP/browser" --no-audit --no-fund "@playwright/test@$version"
+          "$RUNNER_TEMP/browser/node_modules/.bin/playwright" install --with-deps chromium --only-shell
+          set -a
+          source "$COMPOSE_ENV_FILES"
+          set +a
+          NODE_PATH="$RUNNER_TEMP/browser/node_modules" node scripts/verification/verify-lan-ui.mjs
+      - name: Show container state on failure
+        if: failure()
+        run: docker compose ps -a
+      - name: Remove disposable project
+        if: always()
+        run: docker compose down --volumes
