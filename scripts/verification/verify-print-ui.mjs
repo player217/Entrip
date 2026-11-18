@@ -166,6 +166,26 @@ async function documentPDF(id, doc, expected, excluded = [], options = {}) {
       )
         missing.push('row: ' + group.join(' | '));
     }
+  if (options.accountNumbers) {
+    const header = keyText('계좌 이름 은행 · 계좌 번호 예금주 현재 잔액');
+    const numbers = options.accountNumbers.map(keyText);
+    const sheets = text.trimEnd().split('\f').map(keyText);
+    let balancePages = 0;
+    for (const [index, sheet] of sheets.entries()) {
+      const entries = numbers.filter(number => sheet.includes(number));
+      const heading = sheet.indexOf(header);
+      if (!entries.length && heading < 0 && index > 0) continue;
+      balancePages++;
+      if (!entries.length) missing.push(`계좌 표 ${index + 1}쪽 머리글 아래 계좌 행`);
+      if (heading < 0 || entries.some(number => sheet.indexOf(number) < heading)) {
+        missing.push(`계좌 표 ${index + 1}쪽 반복 열 제목`);
+      }
+    }
+    for (const number of numbers) {
+      if (sheets.filter(sheet => sheet.includes(number)).length !== 1) missing.push('계좌 행 ' + number);
+    }
+    if (options.requireAccountContinuation && balancePages < 2) missing.push('두 쪽 이상에 걸친 계좌 잔액 표');
+  }
   if (options.flightMatrix) {
     // Read the actual ink coordinates, so a schedule moved into an adjacent weekday also fails.
     const xml = execFileSync('pdftotext', ['-bbox', pdfPath, '-'], { encoding: 'utf8' });
@@ -783,6 +803,9 @@ try {
       }
     );
   });
+  const visibleAccountNumbers = () => pane().locator('.account-cards article').evaluateAll(cards =>
+    cards.map(card => card.querySelector('p').innerText.split(' · ').at(-1))
+  );
   await asCase('accounts', async () => {
     await open('/accounts', '계좌 관리');
     await pane().getByLabel('계좌 필터').selectOption(f.bank.id);
@@ -797,7 +820,8 @@ try {
         '7,654,321',
         ...(await cells(pane().getByRole('table'), 1)),
       ],
-      [f.otherExpense]
+      [f.otherExpense],
+      { accountNumbers: await visibleAccountNumbers() }
     );
   });
   await asCase('account-draft', async () => {
@@ -946,6 +970,29 @@ try {
       ['연결된 메일 계정이 없습니다'],
       [f.manager.email, '직원 목록', '직원 및 접근 권한 관리']
     );
+  });
+  await asCase('accounts-pagination', async () => {
+    // Keep the previous reports on their original data. Seed this long ledger last.
+    const existing = await api('bank-accounts?limit=100&page=1');
+    for (let n = 1; n <= 34; n++) {
+      const suffix = String(n).padStart(2, '0');
+      const accountNumber = 'PRINT-PAGE-' + suffix;
+      if (!existing.some(account => account.accountNumber === accountNumber)) {
+        await api('bank-accounts', 'POST', {
+          accountName: '인쇄 검증 계좌 ' + suffix, bankName: '인쇄검증은행',
+          holderName: '인쇄검증팀', currency: 'KRW', openingBalance: 50000 + n, accountNumber,
+        });
+      }
+    }
+    await open('/accounts', '계좌 관리');
+    await pane().locator('.account-cards').getByText('인쇄 검증 계좌 34', { exact: true }).waitFor();
+    await pane().getByLabel('계좌 필터').selectOption(f.bank.id);
+    await pane().getByRole('row').filter({ hasText: f.expense }).waitFor();
+    const numbers = await visibleAccountNumbers();
+    await capture('accounts-pagination', [...numbers, f.expense], [f.otherExpense], {
+      accountNumbers: numbers, requireAccountContinuation: true,
+      source: 'Printed bank account numbers on each page compared with the visible cards and repeated column headings.',
+    });
   });
 } catch (e) {
   report.errors.push({ id: 'setup', message: e.message });

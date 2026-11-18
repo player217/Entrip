@@ -99,13 +99,13 @@ async function login(email, pass, company, savedAccount) {
   return page;
 }
 async function identity(page) {
-  return page.evaluate(async () => {
-    const res = await fetch('/api/v2/auth/me', { cache: 'no-store' });
-    if (!res.ok) return { status: res.status };
-    const data = await res.json();
-    const { id, name, role, companyCode } = data.data?.user ?? data.user;
-    return { status: res.status, id, name, role, companyCode };
-  });
+  // The same browser cookies remain available while revocation navigates the page to login.
+  const response = await page.request.get('/api/v2/auth/me');
+  const status = response.status();
+  if (!response.ok()) return { status };
+  const data = await response.json();
+  const { id, name, role, companyCode } = data.data?.user ?? data.user;
+  return { status, id, name, role, companyCode };
 }
 async function staffSettings(page) {
   await page.goto('/settings');

@@ -195,12 +195,23 @@ export default function AccountsPageContent() {
         ]} />
       )}
       {accounts.length > 0 && (
-        <div className="entrip-print-only account-print-head">
-          <h2>전체 계좌 잔액</h2>
-          <div><span>계좌 이름</span><span>은행 · 계좌 번호</span><span>예금주</span><span>현재 잔액</span></div>
+        <div className="entrip-print-only">
+          <h2 className="account-balance-heading">전체 계좌 잔액</h2>
+          <table className="operations-data-table account-balance-table" aria-label="전체 계좌 잔액">
+            <thead><tr>
+              <th scope="col">계좌 이름</th><th scope="col">은행 · 계좌 번호</th>
+              <th scope="col">예금주</th><th scope="col">현재 잔액</th>
+            </tr></thead>
+            <tbody>{accounts.map(account => (
+              <tr key={account.id}>
+                <td>{account.accountName}</td><td>{account.bankName} · {account.accountNumber}</td>
+                <td>{account.holderName}</td><td>{money(account.balance, account.currency)}</td>
+              </tr>
+            ))}</tbody>
+          </table>
         </div>
       )}
-      <div className="account-cards grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="entrip-no-print account-cards grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {accounts.map((account) => (
           <article key={account.id} className="min-w-0 rounded-lg border bg-white p-4">
             <div className="flex justify-between gap-2">

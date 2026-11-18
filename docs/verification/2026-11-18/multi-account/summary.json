@@ -1,11 +1,11 @@
 {
   "dateKST": "2026-11-18",
   "release": {
-    "revision": 4,
+    "revision": 6,
     "sourceFiles": 495,
     "files": 496,
-    "sha256": "6e36166144b62728fd95b75c9d193546470a0db7f1c551ffebf8342e1efd645b",
-    "bytes": 1118365,
+    "sha256": "ebce8ed5b33f21be270ff1b4e65855b2d54d82340eecdf836c0f1e1c21804849",
+    "bytes": 1118373,
     "releaseBuild": "PASS",
     "crc": "PASS",
     "sourceFileBytes": "identical",
@@ -16,12 +16,12 @@
     "databaseQuickCheck": "ok",
     "foreignKeyViolations": 0,
     "retainedAtRestart": {
-      "User": 10,
-      "Booking": 50,
-      "FinanceRecord": 15,
-      "Approval": 10,
-      "Message": 69,
-      "BankAccount": 13
+      "User": 46,
+      "Booking": 60,
+      "FinanceRecord": 28,
+      "Approval": 18,
+      "Message": 75,
+      "BankAccount": 55
     }
   },
   "fixture": "One disposable SQLite LAN host, independently authenticated profiles of four co-workers and a separate agency administrator, Chromium. No customer data.",
@@ -73,126 +73,126 @@
         "route": "/calendar-weekly",
         "reader": "manager",
         "mode": "passive",
-        "ms": 177
-      },
-      {
-        "action": "create",
-        "route": "/list-monthly",
-        "reader": "manager",
-        "mode": "passive",
-        "ms": 177
-      },
-      {
-        "action": "create",
-        "route": "/list-weekly",
-        "reader": "manager",
-        "mode": "passive",
-        "ms": 178
+        "ms": 180
       },
       {
         "action": "create",
         "route": "/calendar-monthly",
         "reader": "manager",
         "mode": "passive",
-        "ms": 179
+        "ms": 181
+      },
+      {
+        "action": "create",
+        "route": "/list-monthly",
+        "reader": "manager",
+        "mode": "passive",
+        "ms": 181
+      },
+      {
+        "action": "create",
+        "route": "/list-weekly",
+        "reader": "manager",
+        "mode": "passive",
+        "ms": 183
       },
       {
         "action": "edit",
         "route": "/list-monthly",
         "reader": "staff",
         "mode": "passive",
-        "ms": 177
+        "ms": 188
       },
       {
         "action": "dirty-editor-update",
         "route": "/calendar-monthly",
         "reader": "staff",
         "mode": "passive",
-        "ms": 179
+        "ms": 192
       },
       {
         "action": "cancel",
         "route": "/list-monthly",
         "reader": "manager",
         "mode": "passive",
-        "ms": 191
+        "ms": 170
       },
       {
         "action": "cancel",
         "route": "/calendar-monthly",
         "reader": "manager",
         "mode": "passive",
-        "ms": 196
+        "ms": 170
+      },
+      {
+        "action": "cancel",
+        "route": "/list-weekly",
+        "reader": "manager",
+        "mode": "passive",
+        "ms": 170
       },
       {
         "action": "cancel",
         "route": "/calendar-weekly",
         "reader": "manager",
         "mode": "passive",
-        "ms": 197
+        "ms": 171
       },
       {
         "action": "clean-open-editor-status",
         "route": "/list-monthly",
         "reader": "manager",
         "mode": "passive",
-        "ms": 200
+        "ms": 173
       },
       {
-        "action": "cancel",
+        "action": "delete",
+        "route": "/list-monthly",
+        "reader": "manager",
+        "mode": "passive",
+        "ms": 167
+      },
+      {
+        "action": "delete",
         "route": "/list-weekly",
         "reader": "manager",
         "mode": "passive",
-        "ms": 200
+        "ms": 168
+      },
+      {
+        "action": "delete",
+        "route": "/calendar-weekly",
+        "reader": "manager",
+        "mode": "passive",
+        "ms": 168
+      },
+      {
+        "action": "delete",
+        "route": "/calendar-monthly",
+        "reader": "manager",
+        "mode": "passive",
+        "ms": 168
       },
       {
         "action": "delete",
         "route": "/list-monthly",
         "reader": "staff",
         "mode": "passive",
-        "ms": 164
-      },
-      {
-        "action": "delete",
-        "route": "/list-weekly",
-        "reader": "manager",
-        "mode": "passive",
-        "ms": 165
-      },
-      {
-        "action": "delete",
-        "route": "/calendar-monthly",
-        "reader": "manager",
-        "mode": "passive",
-        "ms": 167
-      },
-      {
-        "action": "delete",
-        "route": "/calendar-weekly",
-        "reader": "manager",
-        "mode": "passive",
-        "ms": 167
+        "ms": 170
       },
       {
         "action": "clean-editor-delete",
         "route": "/calendar-monthly",
         "reader": "manager",
         "mode": "passive",
-        "ms": 167
-      },
-      {
-        "action": "delete",
-        "route": "/list-monthly",
-        "reader": "manager",
-        "mode": "passive",
-        "ms": 175
+        "ms": 170
       },
       {
         "action": "dirty-editor-delete",
         "route": "/calendar-weekly",
         "reader": "manager",
         "mode": "passive",
-        "ms": 175
+        "ms": 171
       }
     ]
   },
@@ -210,22 +210,22 @@
       },
       {
         "title": "대기 입금 공유/계좌 필터 유지",
-        "seconds": 0.19,
+        "seconds": 0.2,
         "mode": "passive"
       },
       {
         "title": "작성자 거래 수정",
-        "seconds": 0.19,
+        "seconds": 0.2,
         "mode": "passive"
       },
       {
         "title": "타 계정 승인 후 잔액",
-        "seconds": 0.25,
+        "seconds": 0.19,
         "mode": "passive"
       },
       {
         "title": "반려 대상 입금 공유",
-        "seconds": 0.19,
+        "seconds": 0.21,
         "mode": "passive"
       },
       {
@@ -240,7 +240,7 @@
       },
       {
         "title": "2차 결재자도 요청 조회",
-        "seconds": 0,
+        "seconds": 0.01,
         "mode": "passive"
       },
       {
@@ -265,17 +265,17 @@
       },
       {
         "title": "취소 전 요청 공유",
-        "seconds": 0.45,
+        "seconds": 0.24,
         "mode": "passive"
       },
       {
         "title": "결재 취소 결과",
-        "seconds": 0.2,
+        "seconds": 0.22,
         "mode": "passive"
       },
       {
         "title": "동시 수정 대상 대기 입금 공유",
-        "seconds": 0.2,
+        "seconds": 0.19,
         "mode": "passive"
       }
     ],
@@ -309,7 +309,7 @@
       {
         "name": "직원 등록이 이미 열린 타 직원 명부에 표시",
         "mode": "automatic",
-        "elapsedMs": 259
+        "elapsedMs": 260
       },
       {
         "name": "직원 등록이 열려 있는 메신저 조직도 검색에 반영",
@@ -319,17 +319,17 @@
       {
         "name": "이름·부서·권한 변경을 타 계정 명부에서 확인",
         "mode": "automatic",
-        "elapsedMs": 257
+        "elapsedMs": 261
       },
       {
         "name": "기존 직원 세션 승격 후 관리자 작업 활성화",
         "mode": "automatic",
-        "elapsedMs": 8
+        "elapsedMs": 6
       },
       {
         "name": "열린 조직도에 변경된 직원 이름·부서 반영",
         "mode": "automatic",
-        "elapsedMs": 3
+        "elapsedMs": 4
       },
       {
         "name": "명부·조직도 조회 범위 인쇄, 비밀번호 필드 생략"
@@ -337,7 +337,7 @@
       {
         "name": "조직도에 열린 직원의 부서 변경 자동 반영",
         "mode": "automatic",
-        "elapsedMs": 254
+        "elapsedMs": 89
       },
       {
         "name": "다른 직원의 저장 중 이미 입력한 관리자 폼 유지"
@@ -345,22 +345,22 @@
       {
         "name": "기존 관리자 세션 강등 후 변경 작업 숨김",
         "mode": "automatic",
-        "elapsedMs": 8
+        "elapsedMs": 16
       },
       {
         "name": "비활성 직원이 기존 조직도 검색에서 제거",
         "mode": "automatic",
-        "elapsedMs": 3
+        "elapsedMs": 6
       },
       {
         "name": "비활성 직원 타 직원 명부에서 제거",
         "mode": "automatic",
-        "elapsedMs": 2
+        "elapsedMs": 3
       },
       {
         "name": "비활성화된 직원의 열린 화면 로그인으로 복귀",
         "mode": "automatic",
-        "elapsedMs": 1
+        "elapsedMs": 0
       },
       {
         "name": "비활성 계정 기존 쿠키로 현재 사용자 재요청 시 401"
@@ -368,12 +368,12 @@
       {
         "name": "재활성화된 직원 타 직원 명부에 복귀",
         "mode": "automatic",
-        "elapsedMs": 249
+        "elapsedMs": 86
       },
       {
         "name": "재활성화 직원 기존 조직도 검색에 복귀",
         "mode": "automatic",
-        "elapsedMs": 2
+        "elapsedMs": 3
       },
       {
         "name": "재활성화 후 같은 ID와 기존 비밀번호로 재로그인"
@@ -387,7 +387,7 @@
       {
         "name": "직접 대화 생성·Enter 전송·타 계정 새 대화 및 안 읽음 표시",
         "mode": "automatic",
-        "elapsedMs": 109
+        "elapsedMs": 170
       },
       {
         "name": "대화 선택 후 안 읽음 해제·상대방 입력 중 표시"
@@ -395,27 +395,27 @@
       {
         "name": "직원 답신·여러 줄 본문 전달",
         "mode": "automatic",
-        "elapsedMs": 42
+        "elapsedMs": 46
       },
       {
         "name": "메시지 수정이 상대 대화에 반영",
         "mode": "automatic",
-        "elapsedMs": 70
+        "elapsedMs": 78
       },
       {
         "name": "메시지 삭제 동기화 및 상대 계정 타인 메시지 수정·삭제 제어 없음",
         "mode": "automatic",
-        "elapsedMs": 90
+        "elapsedMs": 51
       },
       {
         "name": "그룹 초대 후 세 번째 직원의 대화 참여",
         "mode": "automatic",
-        "elapsedMs": 144
+        "elapsedMs": 133
       },
       {
         "name": "그룹 직원 회신이 관리자 및 다른 직원에 전달",
         "mode": "automatic",
-        "elapsedMs": 85
+        "elapsedMs": 95
       },
       {
         "name": "열린 대화에서 받은 새 회신 읽음 반영"
@@ -443,14 +443,14 @@
     "checks": {
       "stats": {
         "row": [
-          "조회 담당 mwlufo3q",
+          "조회 담당 mwlv8sij",
           "1",
           "7",
           "723,459 원",
           "미입력 (0/1건)"
         ],
-        "myConfirmedBookings": 43,
-        "myTodayDepartures": 13
+        "myConfirmedBookings": 1,
+        "myTodayDepartures": 1
       },
       "otherCompany": {
         "directBooking": 404,
@@ -467,8 +467,8 @@
         "flow": "execution unavailable on both accounts"
       },
       "cancelledTotals": {
-        "today": 12,
-        "confirmed": 42
+        "today": 0,
+        "confirmed": 0
       },
       "privacy": {
         "draftSurvivedOriginatorReload": true,
@@ -482,30 +482,30 @@
       "bookingCreation": {
         "calendarPerformance": {
           "mode": "automatic",
-          "elapsedMs": 138
+          "elapsedMs": 134
         },
         "stats": {
           "mode": "automatic",
-          "elapsedMs": 147
+          "elapsedMs": 134
         },
         "dashboard": {
           "mode": "automatic",
-          "elapsedMs": 188
+          "elapsedMs": 161
         }
       },
       "bookingCancellation": {
         "stats": {
           "mode": "automatic",
-          "elapsedMs": 160
+          "elapsedMs": 143
         },
         "dashboard": {
           "mode": "automatic",
-          "elapsedMs": 163
+          "elapsedMs": 149
         }
       }
     },
-    "pageErrors": [],
-    "status": "PASS"
+    "status": "PASS",
+    "pageErrors": []
   },
   "headerAndWorkspaces": [
     {
@@ -575,9 +575,12 @@
     "newRestoreStream": true
   },
   "print": {
-    "documents": 27,
-    "pages": 38,
-    "matchedValues": 679,
+    "documents": 28,
+    "pages": 40,
+    "matchedValues": 729,
+    "missing": 0,
+    "leaks": 0,
+    "browserErrors": [],
     "forms": [
       {
         "id": "booking-saved",
@@ -643,7 +646,7 @@
         "id": "calendar-dense",
         "route": "/calendar-monthly",
         "pages": 4,
-        "checkedValues": 114
+        "checkedValues": 119
       },
       {
         "id": "dashboard",
@@ -655,7 +658,7 @@
         "id": "stats",
         "route": "/stats",
         "pages": 2,
-        "checkedValues": 42
+        "checkedValues": 41
       },
       {
         "id": "flights",
@@ -666,7 +669,7 @@
       {
         "id": "accounts",
         "route": "/accounts",
-        "pages": 2,
+        "pages": 1,
         "checkedValues": 16
       },
       {
@@ -740,6 +743,12 @@
         "route": "/mail",
         "pages": 1,
         "checkedValues": 1
+      },
+      {
+        "id": "accounts-pagination",
+        "route": "/accounts",
+        "pages": 3,
+        "checkedValues": 46
       }
     ]
   },
@@ -760,18 +769,18 @@
       "employees/messages",
       "views"
     ],
-    "screenshotsAndSharedPrintSpecimens": "Captured from isolated test data before the public exchange-rate cache adjustment. Booking, finance, employee and print templates were identical in the released ZIP.",
+    "screenshotsAndSharedPrintSpecimens": "The two-account screenshot is from the same booking UI. The financial print layouts and the complete menu print specimen use the corrected paginated balance table.",
     "visualPrintCompilation": {
-      "documents": 48,
-      "pages": 66
+      "documents": 49,
+      "pages": 63
     },
     "finalMenuPrint": {
-      "documents": 27,
-      "pages": 38,
-      "matchedValues": 683,
-      "browserErrors": [],
+      "documents": 28,
+      "pages": 40,
+      "matchedValues": 729,
       "missing": 0,
-      "leaks": 0
+      "leaks": 0,
+      "browserErrors": []
     },
     "publicExchangeRates": {
       "status": "PASS",
