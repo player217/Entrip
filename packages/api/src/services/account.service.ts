@@ -1,3 +1,4 @@
+import { containsText } from '../lib/db-dialect';
 import { Account, AccountRole, AccountStatus } from '@prisma/client';
 import prisma from '../lib/prisma';
 
@@ -64,8 +65,8 @@ export const listAccounts = async (query: AccountQueryDto): Promise<{
     ...(status && { status }),
     ...(keyword && {
       OR: [
-        { name: { contains: keyword, mode: 'insensitive' as const } },
-        { email: { contains: keyword, mode: 'insensitive' as const } },
+        { name: containsText(keyword) },
+        { email: containsText(keyword) },
       ],
     }),
   };
@@ -324,8 +325,8 @@ export const searchAccounts = async (searchTerm: string, role?: AccountRole): Pr
       deletedAt: null,
       ...(role && { role }),
       OR: [
-        { name: { contains: searchTerm, mode: 'insensitive' } },
-        { email: { contains: searchTerm, mode: 'insensitive' } },
+        { name: containsText(searchTerm) },
+        { email: containsText(searchTerm) },
       ],
     },
     select: {

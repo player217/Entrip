@@ -1,3 +1,4 @@
+import { containsText } from '../lib/db-dialect';
 import { User, UserRole, Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 // import { BaseService } from './base.service';
@@ -127,9 +128,9 @@ export class UserService {
       ...(department && { department }),
       ...(search && {
         OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { email: { contains: search, mode: 'insensitive' } },
-          { department: { contains: search, mode: 'insensitive' } },
+          { name: containsText(search) },
+          { email: containsText(search) },
+          { department: containsText(search) },
         ],
       }),
     };

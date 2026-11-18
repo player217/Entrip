@@ -1,0 +1,110 @@
+{
+  "dateKST": "2026-11-18",
+  "distribution": {
+    "sha256": "2320cd3d5908d18dcf74e03c89bd599aac2241001c8cc1e53446e7e9680213d2",
+    "bytes": 1114520,
+    "archiveEntries": 495,
+    "sourceFilesVerified": 494,
+    "crc": "pass"
+  },
+  "hostMode": "one SQLite host, browser clients on the same LAN",
+  "syncScope": "transactional per-agency journal and conflict metadata, no peer transport",
+  "backup": {
+    "zone": "Asia/Seoul",
+    "scheduledTimes": [
+      "08:00",
+      "12:00",
+      "18:00"
+    ],
+    "retentionDays": 30,
+    "backupRestoreCases": 11,
+    "changeJournalCases": 5,
+    "originalChangeIdAndRevisionAfterRestore": true,
+    "rotatesStreamAfterRestore": true
+  },
+  "postgresMigration": {
+    "source": "disposable PostgreSQL DB used to verify the preceding printed release",
+    "businessTables": 35,
+    "businessRows": 321,
+    "archiveRows": 457,
+    "modelCounts": {
+      "User": 14,
+      "Booking": 130,
+      "CalendarEvent": 0,
+      "BankAccount": 2,
+      "FinanceRecord": 2,
+      "Approval": 1,
+      "ApprovalStep": 2,
+      "Account": 0,
+      "Conversation": 3,
+      "ConversationParticipant": 7,
+      "Message": 118,
+      "BookingHistory": 36,
+      "UserPresence": 0,
+      "MessageRead": 0,
+      "MessageReaction": 0,
+      "Flight": 2,
+      "Vehicle": 1,
+      "Hotel": 2,
+      "Settlement": 0,
+      "SystemMessage": 0,
+      "ConversationSettings": 0,
+      "Transaction": 0,
+      "Document": 0,
+      "IdempotencyKey": 0,
+      "Outbox": 0,
+      "AuditLog": 0,
+      "IntegrationProvider": 0,
+      "ExternalCallLog": 0,
+      "FxRateCache": 0,
+      "ExchangeRate": 0,
+      "FlightStatusCache": 0,
+      "IntegrationInbox": 0,
+      "MessageAttachment": 0,
+      "Notification": 1,
+      "NotificationPreference": 0
+    },
+    "registeredEntities": 321,
+    "baselineChanges": 321,
+    "agencies": 4,
+    "sqliteIntegrity": "ok",
+    "foreignKeyViolations": 0,
+    "comparison": "all tables reopened with SQLite Prisma; separate fixture verified decimal, dates, array, SQL NULL, JSON null and relationship round trips"
+  },
+  "sqliteApiTests": {
+    "suites": 18,
+    "passed": 93,
+    "failed": 0,
+    "changeJournal": "enabled"
+  },
+  "launcher": {
+    "status": "PASS",
+    "prepareOnlyDidNotCreateDatabase": true,
+    "restartKeptExistingAdmin": true,
+    "restoredPersistedAdmin": true,
+    "sqliteIntegrity": "ok",
+    "foreignKeyFailures": 0,
+    "wal": true,
+    "rollbackSnapshotSaved": true
+  },
+  "application": {
+    "checks": [
+      "Fresh SQLite bootstrap and second start preserve one administrator and WAL",
+      "Packaged flight snapshot service and FX service health respond",
+      "Independent Chromium users create and share a booking and exchange live messages through the HTTP LAN origin mapped to loopback",
+      "Live backup, version listing, normal API mutation and refusal to restore while active",
+      "Restoring the selected snapshot recovers the original administrator name and ID, clears the post-snapshot mutation and leaves all SQLite checks clean",
+      "Captured all 12 signed-in menu states at desktop, tablet and phone widths"
+    ],
+    "status": "PASS"
+  },
+  "testedScreens": {
+    "menus": 12,
+    "viewportWidths": [
+      1440,
+      800,
+      390
+    ],
+    "capturedScreens": 41
+  }
+}

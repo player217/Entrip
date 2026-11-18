@@ -157,8 +157,13 @@ try {
   });
   captureContext = 'login';
   await page.goto(`${baseURL}/login`);
-  await page.getByLabel('회사 선택').selectOption(process.env.TEST_COMPANY || 'entrip');
-  await page.getByLabel('역할 선택').selectOption(process.env.TEST_ROLE || 'admin');
+  const hostCompany = page.locator('input[name="companyCode"]');
+  if (await hostCompany.isVisible()) {
+    await hostCompany.fill(process.env.TEST_COMPANY || 'entrip');
+  } else {
+    await page.getByLabel('회사 선택').selectOption(process.env.TEST_COMPANY || 'entrip');
+    await page.getByLabel('역할 선택').selectOption(process.env.TEST_ROLE || 'admin');
+  }
   if (process.env.TEST_EMAIL) await page.locator('input[name="username"]').fill(process.env.TEST_EMAIL);
   if (process.env.TEST_PASSWORD) await page.locator('input[name="password"]').fill(process.env.TEST_PASSWORD);
   await page.getByRole('button', { name: '로그인', exact: true }).click();

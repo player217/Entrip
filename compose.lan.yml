@@ -1,13 +1,21 @@
-x-db-url: &db-url "postgresql://entrip:${POSTGRES_PASSWORD:?Missing local database password}@postgres:5432/entrip"
+x-sqlite-env: &sqlite-env
+  DATABASE_URL: file:/data/entrip.sqlite
+  ENTRIP_SQLITE_PATH: /data/entrip.sqlite
+  ENTRIP_BACKUP_DIR: /backups
+x-state-mounts: &state-mounts
+  - ./.entrip-lan/data:/data
+  - ./.entrip-lan/backups:/backups
 
 services:
   postgres:
+    # Used only when importing the previous LAN distribution. The original volume is external.
+    profiles: [migrate]
     image: postgres:15-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: entrip
       POSTGRES_USER: entrip
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Missing local database password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,11 +30,16 @@ services:
       context: .
       dockerfile: deploy/lan/Dockerfile
     command: ["node", "deploy/lan/initialize.cjs"]
-    depends_on:
-      postgres:
-        condition: service_healthy
+    user: "0:0"
+    volumes: *state-mounts
     environment:
-      DATABASE_URL: *db-url
+      <<: *sqlite-env
+      ENTRIP_IMPORT_POSTGRES: ${ENTRIP_IMPORT_POSTGRES:-false}
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: entrip
+      PGDATABASE: entrip
+      PGPASSWORD: ${POSTGRES_PASSWORD:-}
       ENTRIP_ADMIN_EMAIL: ${ENTRIP_ADMIN_EMAIL:?Missing local admin email}
       ENTRIP_ADMIN_PASSWORD: ${ENTRIP_ADMIN_PASSWORD:?Missing local admin password}
       ENTRIP_COMPANY_CODE: ${ENTRIP_COMPANY_CODE:-entrip}
@@ -49,12 +62,16 @@ services:
       start_period: 90s
 
   api:
+    labels:
+      io.entrip.host-id: "${ENTRIP_HOST_ID:-}"
     image: entrip-lan-app:local
     pull_policy: never
     init: true
     restart: unless-stopped
     network_mode: service:gateway
-    command: ["node", "packages/api/dist/index.js"]
+    volumes:
+      - ./.entrip-lan/data:/data
+    command: ["python3", "deploy/lan/sqlite/backup.py", "guard", "--", "node", "packages/api/dist/index.js"]
     depends_on:
       gateway:
         condition: service_started
@@ -63,7 +80,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4002
-      DATABASE_URL: *db-url
+      <<: *sqlite-env
       JWT_SECRET: ${JWT_SECRET:?Missing signing secret}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Missing refresh signing secret}
       CLIENT_URL: http://${ENTRIP_LAN_HOST:?Missing primary LAN IP}:${ENTRIP_LAN_PORT:-3000}
@@ -103,6 +120,19 @@ services:
       timeout: 5s
       retries: 12
 
+  backup:
+    image: entrip-lan-app:local
+    pull_policy: never
+    init: true
+    restart: unless-stopped
+    volumes: *state-mounts
+    environment:
+      <<: *sqlite-env
+    depends_on:
+      initialize:
+        condition: service_completed_successfully
+    command: ["python3", "deploy/lan/sqlite/backup.py", "daemon"]
+
   crawler:
     build:
       context: ./apps/api-legacy/src/crawler
@@ -115,3 +145,5 @@ services:
 
 volumes:
   postgres_data:
+    external: true
+    name: ${ENTRIP_LEGACY_VOLUME:-entrip-lan_postgres_data}

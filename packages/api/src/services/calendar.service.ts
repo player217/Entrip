@@ -1,3 +1,4 @@
+import { containsText } from '../lib/db-dialect';
 import { CalendarEvent, CalendarEventStatus } from '@prisma/client';
 import prisma from '../lib/prisma';
 
@@ -225,9 +226,9 @@ export const searchCalendarEvents = async (searchTerm: string): Promise<Calendar
     where: {
       deletedAt: null,
       OR: [
-        { title: { contains: searchTerm, mode: 'insensitive' } },
-        { description: { contains: searchTerm, mode: 'insensitive' } },
-        { location: { contains: searchTerm, mode: 'insensitive' } },
+        { title: containsText(searchTerm) },
+        { description: containsText(searchTerm) },
+        { location: containsText(searchTerm) },
       ],
     },
     orderBy: { start: 'asc' },

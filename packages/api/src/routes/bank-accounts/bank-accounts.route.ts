@@ -1,3 +1,4 @@
+import { lockRow } from '../../lib/db-dialect';
 import { Router } from 'express';
 import { Prisma, UserRole } from '@prisma/client';
 import { z } from 'zod';
@@ -79,7 +80,7 @@ router.put(
   async (req: AuthRequest, res, next) => {
     try {
       const data = await prisma.$transaction(async (tx) => {
-        await tx.$queryRaw`SELECT id FROM "BankAccount" WHERE id = ${req.params.id} FOR UPDATE`;
+        await lockRow(tx, 'BankAccount', req.params.id);
         const account = await tx.bankAccount.findFirst({
           where: { id: req.params.id, companyCode: req.user!.companyCode, deletedAt: null },
         });
@@ -104,7 +105,7 @@ router.put(
 router.delete('/:id', requireRole([UserRole.ADMIN]), async (req: AuthRequest, res, next) => {
   try {
     await prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT id FROM "BankAccount" WHERE id = ${req.params.id} FOR UPDATE`;
+      await lockRow(tx, 'BankAccount', req.params.id);
       const account = await tx.bankAccount.findFirst({
         where: { id: req.params.id, companyCode: req.user!.companyCode, deletedAt: null },
       });

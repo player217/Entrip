@@ -20,6 +20,8 @@
 !packages/ui/src/**
 !packages/api/types.ts
 !packages/api/prisma/schema.prisma
+!packages/api/prisma/prepare-sqlite.cjs
+!packages/api/prisma/sqlite/**
 !packages/api/prisma/seed.ts
 !packages/api/prisma/migrations/**
 !packages/design-tokens/config.json
@@ -40,6 +42,8 @@
 !apps/fx-free/package.json
 !scripts/verify-build-artifacts.mjs
 !deploy/lan/initialize.cjs
+!deploy/lan/sqlite/*.py
+!deploy/lan/sqlite/*.sql
 **/node_modules
 **/.env*
 **/.next
@@ -49,3 +53,4 @@
 **/__tests__
 **/*.spec.ts
 **/*.test.ts
+**/*.bak

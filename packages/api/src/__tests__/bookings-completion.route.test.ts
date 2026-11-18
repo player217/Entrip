@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { app } from '../index';
 import prisma from '../lib/prisma';
+import { usingSQLite } from '../lib/db-dialect';
 import { authService } from '../routes/auth/auth.service';
 
 const base = { teamName: '완성 검증', type: 'FIT', origin: '부산', destination: '삿포로', startDate: '2026-12-11', endDate: '2026-12-14', totalPax: 4, coordinator: '담당자', customerName: '고객', contact: '01012345678', email: 'client@example.com', revenue: 2400000, depositAmount: 300000, currency: 'KRW', status: 'CONFIRMED', hotelInfo: [{ id: 'h1', name: '첫 호텔', date: '2026-12-11', quantity: 2, unitPrice: 14000, currency: 'JPY' }, { id: 'h2', name: '두번째 호텔', date: '2026-12-12', quantity: 2, unitPrice: 18000, currency: 'JPY' }] };
@@ -62,7 +63,14 @@ test('reopens and edits booking-specific supplier details while preserving raw h
   const linkedFlight = { bookingId: id, airline: '항공사', flightNumber: 'JJ321', origin: 'PUS', destination: 'CTS',
     departureTime: new Date('2026-12-11T00:00:00Z'), arrivalTime: new Date('2026-12-11T02:30:00Z'), seatNumbers: ['4C'] };
   await prisma.flight.create({ data: { ...linkedFlight, companyCode: 'one' } });
-  await prisma.flight.create({ data: { ...linkedFlight, companyCode: 'two', flightNumber: 'HIDDEN' } });
+  const foreignFlight = prisma.flight.create({ data: { ...linkedFlight, companyCode: 'two', flightNumber: 'HIDDEN' } });
+  if (usingSQLite) {
+    // The local hub enforces company ownership at the database write boundary.
+    await expect(foreignFlight).rejects.toMatchObject({ code: 'P2003' });
+  } else {
+    // The previous deployment can contain these rows; the reader must filter them.
+    await foreignFlight;
+  }
   const first = await request(app).get(`/api/v2/bookings/${id}`).set(auth()).expect(200);
   expect(first.body.data.flightInfo).toEqual(old);
   expect(first.body.data.flights.map((row: { flightNumber: string }) => row.flightNumber)).toEqual(['JJ321']);

@@ -1,3 +1,6 @@
+import { Prisma } from '@prisma/client';
+import prisma from '../lib/prisma';
+import { usingSQLite } from '../lib/db-dialect';
 import { ApiError } from '../middlewares/error.middleware';
 
 export interface PaginationOptions {
@@ -28,8 +31,8 @@ export interface FilterOptions {
 export abstract class BaseService<T> {
   protected model: any;
 
-  constructor(model: any) {
-    this.model = model;
+  constructor(private readonly modelName: 'booking' | 'financeRecord' | 'calendarEvent') {
+    this.model = prisma[modelName];
   }
 
   /**
@@ -178,6 +181,24 @@ export abstract class BaseService<T> {
       createdAt: new Date(),
       updatedAt: new Date()
     }));
+
+    if (usingSQLite) {
+      // SQLite Prisma has no skipDuplicates option. A uniqueness conflict rolls
+      // back that statement, leaving the surrounding transaction usable.
+      return prisma.$transaction(async tx => {
+        const model: { create(args: { data: any }): Promise<unknown> } = tx[this.modelName];
+        let count = 0;
+        for (const item of data) {
+          try {
+            await model.create({ data: item });
+            count++;
+          } catch (error) {
+            if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')) throw error;
+          }
+        }
+        return count;
+      });
+    }
 
     const result = await this.model.createMany({
       data,

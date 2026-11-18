@@ -1,3 +1,4 @@
+import { containsText } from '../../lib/db-dialect';
 import { randomUUID } from 'crypto';
 import { Booking, BookingStatus, BookingType, Prisma } from '@prisma/client';
 import { BaseService } from '../../services/base.service';
@@ -9,7 +10,7 @@ import { ApiError } from '../../middlewares/error.middleware';
 
 export class BookingsService extends BaseService<Booking> {
   constructor() {
-    super(prisma.booking);
+    super('booking');
   }
 
   /**
@@ -176,16 +177,10 @@ export class BookingsService extends BaseService<Booking> {
         deletedAt: null,
         OR: [
           {
-            customerName: {
-              contains: query,
-              mode: 'insensitive',
-            },
+            customerName: containsText(query),
           },
           {
-            teamName: {
-              contains: query,
-              mode: 'insensitive',
-            },
+            teamName: containsText(query),
           },
         ],
       },

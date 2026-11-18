@@ -1,3 +1,4 @@
+import { containsText } from '../../lib/db-dialect';
 import { Booking, BookingStatus } from '@prisma/client';
 import prisma from '../../lib/prisma';
 import { BaseService, PaginationOptions, PaginatedResult } from '../../services/base.service';
@@ -33,7 +34,7 @@ const mapV2StatusToPrisma = (values?: unknown): BookingStatus[] | undefined => {
 
 export class TeamBookingsService extends BaseService<Booking> {
   constructor() {
-    super(prisma.booking);
+    super('booking');
   }
 
   async list(
@@ -46,9 +47,9 @@ export class TeamBookingsService extends BaseService<Booking> {
     const and: any[] = [];
     if (startDate) and.push({ startDate: { gte: new Date(String(startDate)) } });
     if (endDate) and.push({ endDate: { lte: new Date(String(endDate)) } });
-    if (destination) and.push({ destination: { contains: String(destination), mode: 'insensitive' } });
-    if (customerName) and.push({ customerName: { contains: String(customerName), mode: 'insensitive' } });
-    if (teamCode) and.push({ teamName: { contains: String(teamCode), mode: 'insensitive' } });
+    if (destination) and.push({ destination: containsText(String(destination)) });
+    if (customerName) and.push({ customerName: containsText(String(customerName)) });
+    if (teamCode) and.push({ teamName: containsText(String(teamCode)) });
 
     const statuses = mapV2StatusToPrisma(status);
     if (statuses && statuses.length) {

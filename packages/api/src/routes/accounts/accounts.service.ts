@@ -1,3 +1,4 @@
+import { containsText } from '../../lib/db-dialect';
 import { Account as AccountRecord, AccountRole, AccountStatus, Prisma } from '@prisma/client';
 import prisma from '../../lib/prisma';
 import { ApiError } from '../../middlewares/error.middleware';
@@ -31,7 +32,7 @@ export class AccountsService {
       companyCode: this.scope(companyCode),
       ...(status ? { status: statuses[status] } : { deletedAt: null }),
       ...(role ? { role: roles[role] } : {}),
-      ...(keyword ? { OR: [{ name: { contains: keyword, mode: 'insensitive' } }, { email: { contains: keyword, mode: 'insensitive' } }] } : {}),
+      ...(keyword ? { OR: [{ name: containsText(keyword) }, { email: containsText(keyword) }] } : {}),
     };
     const [rows, total] = await Promise.all([
       prisma.account.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (page - 1) * limit, take: limit }), prisma.account.count({ where }),

@@ -1,3 +1,4 @@
+import { lockRow } from '../../lib/db-dialect';
 import { Prisma, ApprovalStatus } from '@prisma/client';
 import prisma from '../../lib/prisma';
 import { ApiError } from '../../middlewares/error.middleware';
@@ -57,7 +58,7 @@ export class ApprovalsService {
       let currency = input.currency || 'KRW';
       if (input.targetType === 'finance') {
         if (!input.targetId) throw new ApiError(400, '결재할 거래를 선택해 주세요.');
-        await tx.$queryRaw`SELECT id FROM "FinanceRecord" WHERE id = ${input.targetId} FOR UPDATE`;
+        await lockRow(tx, 'FinanceRecord', input.targetId);
         const record = await tx.financeRecord.findFirst({
           where: { id: input.targetId, companyCode: user.companyCode, deletedAt: null },
         });
@@ -143,7 +144,7 @@ export class ApprovalsService {
   }
   async update(id: string, input: ApprovalUpdateInput, user: AuthUser) {
     return prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT id FROM "Approval" WHERE id = ${id} FOR UPDATE`;
+      await lockRow(tx, 'Approval', id);
       const approval = await tx.approval.findFirst({
         where: { id, companyCode: user.companyCode, deletedAt: null },
         include,
@@ -180,7 +181,7 @@ export class ApprovalsService {
   async action(id: string, input: ApprovalActionInput, user: AuthUser) {
     return prisma.$transaction(async (tx) => {
       // All state transitions take the same row lock, so two clicks cannot advance two steps.
-      await tx.$queryRaw`SELECT id FROM "Approval" WHERE id = ${id} FOR UPDATE`;
+      await lockRow(tx, 'Approval', id);
       const approval = await tx.approval.findFirst({
         where: { id, companyCode: user.companyCode, deletedAt: null },
         include,
@@ -211,7 +212,7 @@ export class ApprovalsService {
             ? 'APPROVED'
             : 'PENDING';
       if (approval.targetType === 'PAYMENT' && approval.targetId) {
-        await tx.$queryRaw`SELECT id FROM "FinanceRecord" WHERE id = ${approval.targetId} FOR UPDATE`;
+        await lockRow(tx, 'FinanceRecord', approval.targetId);
         const record = await tx.financeRecord.findFirst({
           where: { id: approval.targetId, companyCode: user.companyCode, deletedAt: null },
         });

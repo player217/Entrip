@@ -1,3 +1,4 @@
+import { lockConversationPair } from '../lib/db-dialect';
 import { ConversationType, ParticipantRole, Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { ApiError } from '../middlewares/error.middleware';
@@ -47,9 +48,8 @@ export class MessageService {
     if (users !== ids.length) throw new ApiError(400, '같은 회사의 활성 직원만 참여할 수 있습니다.');
     const result = await prisma.$transaction(async tx => {
       if (type === 'DIRECT') {
-        // Serialize creation of the same pair without locking unrelated conversations.
         const key = `${actor.companyCode}:${[...ids].sort().join(':')}`;
-        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${key}))`;
+        await lockConversationPair(tx, key);
         const existing = await tx.conversation.findFirst({ where: {
           companyCode: actor.companyCode, type: 'DIRECT', deletedAt: null,
           AND: ids.map(id => ({ participants: { some: { userId: id, isActive: true } } })),

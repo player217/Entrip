@@ -1,3 +1,4 @@
+import { containsText } from '../../lib/db-dialect';
 import { Request, Response, NextFunction } from 'express';
 import { AuthRequest } from '../../middlewares/auth.middleware';
 import { bookingsService } from './bookings.service';
@@ -32,16 +33,10 @@ export class BookingsController {
         filters.status = String(req.query.status);
       }
       if (req.query.teamName) {
-        filters.teamName = {
-          contains: req.query.teamName as string,
-          mode: 'insensitive',
-        };
+        filters.teamName = containsText(req.query.teamName as string);
       }
       if (req.query.customerName) {
-        filters.customerName = {
-          contains: req.query.customerName as string,
-          mode: 'insensitive',
-        };
+        filters.customerName = containsText(req.query.customerName as string);
       }
 
       if (req.query.type) {
@@ -58,7 +53,7 @@ export class BookingsController {
         if (to) { to.setUTCHours(23, 59, 59, 999); filters.startDate = { lte: to }; }
         if (from) filters.endDate = { gte: from };
       }
-      if (req.query.q) filters.OR = ['teamName', 'customerName', 'destination'].map(field => ({ [field]: { contains: String(req.query.q), mode: 'insensitive' } }));
+      if (req.query.q) filters.OR = ['teamName', 'customerName', 'destination'].map(field => ({ [field]: containsText(String(req.query.q)) }));
       const result = await bookingsService.findAll(companyCode, filters, options);
 
       res.json({

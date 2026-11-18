@@ -1,3 +1,4 @@
+import { containsText, lockRow } from '../../lib/db-dialect';
 import { FinanceRecord, Prisma, FinanceStatus, FinanceType } from '@prisma/client';
 import { BaseService } from '../../services/base.service';
 import prisma from '../../lib/prisma';
@@ -9,7 +10,7 @@ import { FinanceApproveInput } from './dtos/FinanceApprove.dto';
 
 export class FinanceService extends BaseService<FinanceRecord> {
   constructor() {
-    super(prisma.financeRecord);
+    super('financeRecord');
   }
   async listFinanceRecords(companyCode: string, query: FinanceQueryInput) {
     const { page = 1, limit = 20 } = query;
@@ -20,7 +21,7 @@ export class FinanceService extends BaseService<FinanceRecord> {
       ...(query.status && { status: query.status.toUpperCase() as FinanceStatus }),
       ...(query.accountId && { accountId: query.accountId }),
       ...(query.projectId && { projectId: query.projectId }),
-      ...(query.category && { category: { contains: query.category, mode: 'insensitive' } }),
+      ...(query.category && { category: containsText(query.category) }),
       ...((query.dateFrom || query.dateTo) && {
         occurredAt: {
           ...(query.dateFrom && { gte: new Date(query.dateFrom) }),
@@ -35,8 +36,8 @@ export class FinanceService extends BaseService<FinanceRecord> {
       }),
       ...(query.keyword && {
         OR: [
-          { category: { contains: query.keyword, mode: 'insensitive' } },
-          { description: { contains: query.keyword, mode: 'insensitive' } },
+          { category: containsText(query.keyword) },
+          { description: containsText(query.keyword) },
         ],
       }),
     };
@@ -58,7 +59,7 @@ export class FinanceService extends BaseService<FinanceRecord> {
     input: { accountId?: string | null; projectId?: string | null; currency: string }
   ) {
     if (input.accountId) {
-      await tx.$queryRaw`SELECT id FROM "BankAccount" WHERE id = ${input.accountId} FOR UPDATE`;
+      await lockRow(tx, 'BankAccount', input.accountId);
       const account = await tx.bankAccount.findFirst({
         where: { id: input.accountId, companyCode, deletedAt: null },
       });
@@ -97,7 +98,7 @@ export class FinanceService extends BaseService<FinanceRecord> {
     userId?: string
   ) {
     return prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT id FROM "FinanceRecord" WHERE id = ${id} FOR UPDATE`;
+      await lockRow(tx, 'FinanceRecord', id);
       const record = await tx.financeRecord.findFirst({
         where: { id, companyCode, deletedAt: null },
       });
@@ -143,7 +144,7 @@ export class FinanceService extends BaseService<FinanceRecord> {
     input: FinanceApproveInput
   ) {
     return prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT id FROM "FinanceRecord" WHERE id = ${id} FOR UPDATE`;
+      await lockRow(tx, 'FinanceRecord', id);
       const record = await tx.financeRecord.findFirst({
         where: { id, companyCode, deletedAt: null },
       });
@@ -178,7 +179,7 @@ export class FinanceService extends BaseService<FinanceRecord> {
   }
   async delete(id: string, companyCode: string) {
     await prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT id FROM "FinanceRecord" WHERE id = ${id} FOR UPDATE`;
+      await lockRow(tx, 'FinanceRecord', id);
       const record = await tx.financeRecord.findFirst({
         where: { id, companyCode, deletedAt: null },
       });
