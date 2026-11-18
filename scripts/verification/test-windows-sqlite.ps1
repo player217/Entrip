@@ -137,3 +137,5 @@ try {
     $env:ENTRIP_TEST_MOCK_FAIL = $null
     if (Test-Path -LiteralPath $fixture) { Remove-Item -LiteralPath $fixture -Recurse -Force }
 }
+# All expected failures were asserted above. Do not propagate the last negative test's exit code.
+exit 0
