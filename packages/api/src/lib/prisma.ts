@@ -1,3 +1,4 @@
+import { databaseUrl } from './db-dialect';
 import { PrismaClient } from '@prisma/client';
 
 declare global {
@@ -9,10 +10,6 @@ declare global {
 // Singleton pattern for Prisma client
 // In development, preserve the client across HMR reloads
 // In production, create a new client instance
-// In test, use test database URL if set
-const databaseUrl = process.env.NODE_ENV === 'test' && process.env.TEST_DATABASE_URL
-  ? process.env.TEST_DATABASE_URL
-  : process.env.DATABASE_URL;
 
 const prisma =
   globalThis.prisma ??

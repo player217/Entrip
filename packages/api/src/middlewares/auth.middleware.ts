@@ -54,11 +54,7 @@ export const authMiddleware = async (
       });
     }
 
-    return res.status(401).json({
-      success: false,
-      error: 'UNAUTHORIZED',
-      message: 'Invalid or expired token',
-    });
+    return next(error); // Database/network failures are not expired sessions.
   }
 };
 

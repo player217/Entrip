@@ -1,161 +1,85 @@
 import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
-import { jwtService } from './lib/jwt.service';
-import { AuthTokenPayload } from './routes/auth/auth.service';
+import type { RequestHandler } from 'express';
+import { authService, AuthTokenPayload } from './routes/auth/auth.service';
 import { logger } from './lib/logger';
+import { appConfig } from './config';
+import prisma from './lib/prisma';
+import { messageService } from './services/message.service';
 
 let io: Server;
 
+// Clients re-read the view through its normal authenticated HTTP endpoint.
+// No booking details, employee records or financial values travel in this event.
+export function notifyCompanyWrites(topic: 'bookings' | 'finance' | 'users'): RequestHandler {
+  return (req, res, next) => {
+    const company = req.companyCode;
+    if (company && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+      res.once('finish', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          io?.to(`company:${company}`).emit('company:changed', topic);
+        }
+      });
+    }
+    next();
+  };
+}
+
 export const initializeWebSocket = (server: HttpServer): Server => {
   io = new Server(server, {
-    cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:3000',
-      credentials: true
+    cors: { origin: appConfig.browser.origins, credentials: true },
+    // WebSocket upgrades do not use browser CORS checks. Same-origin polling
+    // GETs may have no Origin, but browser WebSocket handshakes supply one.
+    allowRequest: (req, callback) => {
+      const origin = req.headers.origin;
+      const websocket = req.headers.upgrade?.toLowerCase() === 'websocket';
+      const allowed = origin ? appConfig.browser.permitsOrigin(origin) : !appConfig.browser.lanHttp || !websocket;
+      callback(null, allowed);
     },
     path: '/socket.io/',
   });
-
-  // 인증 미들웨어 - Uses cookies from handshake headers
-  io.use((socket: any, next: any) => {
-    // Try to get token from cookie in handshake headers
-    const cookieHeader = socket.handshake.headers.cookie;
-    let token = null;
-
-    if (cookieHeader) {
-      // Parse cookies to find auth-token
-      const cookies = cookieHeader.split(';').map((c: string) => c.trim());
-      const authCookie = cookies.find((c: string) => c.startsWith('auth-token='));
-      if (authCookie) {
-        token = authCookie.split('=')[1];
-      }
-    }
-
-    // Fallback to auth.token for backward compatibility
-    if (!token) {
-      token = socket.handshake.auth.token;
-    }
-
-    if (!token) {
-      // In development, allow connection without token but with limited features
-      if (process.env.NODE_ENV === 'development') {
-        logger.warn('[WS] Connection without token - limited features available');
-        socket.data.user = { id: 'anonymous', email: 'anonymous@entrip.com' };
-        return next();
-      }
-      return next(new Error('Authentication error'));
-    }
-
+  io.use(async (socket, next) => {
     try {
-      const decoded = jwtService.verifyAccessToken<AuthTokenPayload>(token);
-      socket.data.user = decoded;
+      const cookie = socket.handshake.headers.cookie?.split(';').map(c => c.trim()).find(c => c.startsWith('auth-token='));
+      const token = cookie ? decodeURIComponent(cookie.slice('auth-token='.length)) : socket.handshake.auth?.token;
+      if (!token || typeof token !== 'string') return next(new Error('Authentication required'));
+      socket.data.user = await authService.verifyAccessToken(token);
       next();
-    } catch (err) {
-      // In development, allow connection with invalid token
-      if (process.env.NODE_ENV === 'development') {
-        logger.warn('[WS] Invalid token - using anonymous user');
-        socket.data.user = {
-          id: 'anonymous',
-          email: 'anonymous@entrip.com',
-          companyCode: 'ENTRIP_MAIN',
-          name: 'Anonymous',
-          role: 'USER' as any
-        };
-        return next();
-      }
-      next(new Error('Authentication error'));
-    }
+    } catch { next(new Error('Authentication required')); }
   });
 
-  io.on('connection', (socket: any) => {
-    const userId = socket.data.user?.id;
-    const userEmail = socket.data.user?.email;
-    const companyCode = socket.data.user?.companyCode;
-    logger.ws('Client connected', socket.id, { userId, userEmail, companyCode });
-
-    // 사용자별 룸 참가 (메시징용)
-    if (userId && userId !== 'anonymous') {
-      socket.join(`user:${userId}`);
+  io.on('connection', socket => {
+    const actor = socket.data.user as AuthTokenPayload;
+    const { id: userId, email: userEmail, companyCode } = actor;
+    socket.join(`user:${userId}`);
+    for (const suffix of ['', ':bookings', ':users', ':flights']) socket.join(`company:${companyCode}${suffix}`);
+    // Revalidate sessions on every inbound packet so disabled accounts lose access immediately.
+    socket.use(async (_packet, next) => {
+      const active = await prisma.user.findFirst({ where: { id: userId, companyCode, isActive: true } }).catch(() => null);
+      if (!active) { socket.disconnect(true); return next(new Error('Authentication required')); }
+      next();
+    });
+    socket.on('conversation:join', async (conversationId: string) => {
+      try { await messageService.requireMember(actor, conversationId); socket.join(`conversation:${conversationId}`); }
+      catch { socket.emit('message:error', { error: '대화방에 접근할 수 없습니다.' }); }
+    });
+    socket.on('conversation:leave', (id: string) => { socket.leave(`conversation:${id}`); });
+    socket.on('message:send', async (data: { conversationId: string; content: string }, ack?: (result: unknown) => void) => {
+      try {
+        if (typeof data?.content !== 'string' || typeof data?.conversationId !== 'string') throw new Error('메시지를 확인하세요.');
+        const message = await messageService.send(actor, data.conversationId, data.content);
+        await publishConversationEvent(message.conversationId, 'message:new', { conversationId: message.conversationId, message });
+        ack?.({ success: true, message });
+      } catch (error) { const result = { error: error instanceof Error ? error.message : '전송 실패' }; socket.emit('message:error', result); ack?.(result); }
+    });
+    for (const event of ['typing:start', 'typing:stop'] as const) {
+      socket.on(event, async (conversationId: string) => {
+        try {
+          await messageService.requireMember(actor, conversationId, true);
+          socket.to(`conversation:${conversationId}`).emit('typing:status', { conversationId, userId, isTyping: event === 'typing:start' });
+        } catch { /* Ignore unauthorized typing events. */ }
+      });
     }
-
-    // 회사별 룸 참가 (multi-tenancy support)
-    if (companyCode) {
-      socket.join(`company:${companyCode}`);
-      socket.join(`company:${companyCode}:bookings`);
-      socket.join(`company:${companyCode}:users`);
-      socket.join(`company:${companyCode}:flights`);
-    }
-
-    // === 메시징 이벤트 핸들러 ===
-
-    // 대화방 참가
-    socket.on('conversation:join', (conversationId: string) => {
-      socket.join(`conversation:${conversationId}`);
-      logger.ws('User joined conversation', socket.id, { userEmail, conversationId });
-    });
-
-    // 대화방 나가기
-    socket.on('conversation:leave', (conversationId: string) => {
-      socket.leave(`conversation:${conversationId}`);
-      logger.ws('User left conversation', socket.id, { userEmail, conversationId });
-    });
-
-    // 메시지 전송
-    socket.on('message:send', async (data: any) => {
-      try {
-        const { conversationId, content, type, attachments, replyToId } = data;
-
-        // TODO: 메시징 서비스 연동 (Phase 1.2에서 구현)
-        logger.ws('Message sent', socket.id, { conversationId, userId });
-        socket.emit('message:sent', { success: true });
-      } catch (error: any) {
-        socket.emit('message:error', { error: error.message });
-      }
-    });
-
-    // 메시지 수정
-    socket.on('message:edit', async (data: any) => {
-      try {
-        const { messageId, content } = data;
-
-        // TODO: 메시징 서비스 연동 (Phase 1.2에서 구현)
-        logger.ws('Message edited', socket.id, { messageId, userId });
-        socket.emit('message:edited', { success: true });
-      } catch (error: any) {
-        socket.emit('message:error', { error: error.message });
-      }
-    });
-
-    // 메시지 삭제
-    socket.on('message:delete', async (messageId: string) => {
-      try {
-        // TODO: 메시징 서비스 연동 (Phase 1.2에서 구현)
-        logger.ws('Message deleted', socket.id, { messageId, userId });
-        socket.emit('message:deleted', { messageId });
-      } catch (error: any) {
-        socket.emit('message:error', { error: error.message });
-      }
-    });
-
-    // 타이핑 시작
-    socket.on('typing:start', async (conversationId: string) => {
-      try {
-        // TODO: 메시징 서비스 연동 (Phase 1.2에서 구현)
-        logger.ws('Typing started', socket.id, { conversationId, userId });
-      } catch (error: any) {
-        logger.error('[WS] Typing start error', { error: error.message });
-      }
-    });
-
-    // 타이핑 종료
-    socket.on('typing:stop', async (conversationId: string) => {
-      try {
-        // TODO: 메시징 서비스 연동 (Phase 1.2에서 구현)
-        logger.ws('Typing stopped', socket.id, { conversationId, userId });
-      } catch (error: any) {
-        logger.error('[WS] Typing stop error', { error: error.message });
-      }
-    });
-
     // 항공편 감시 요청
     socket.on('watch:flight', (flightNo: string) => {
       // TODO: 항공편 감시 서비스 연동
@@ -275,3 +199,15 @@ export const broadcastPresenceUpdate = (userId: string, status: string) => {
 };
 
 export { io };
+
+/** Deliver once per user, including participants who have not opened the room yet. */
+export async function publishConversationEvent(conversationId: string, event: string, data: unknown) {
+  if (!io) return;
+  const conversation = await prisma.conversation.findUnique({ where: { id: conversationId }, select: { companyCode: true } });
+  if (!conversation) return;
+  const participants = await prisma.conversationParticipant.findMany({ where: {
+    conversationId, isActive: true, user: { isActive: true, companyCode: conversation.companyCode },
+  }, select: { userId: true } });
+  const rooms = participants.map(p => `user:${p.userId}`);
+  if (rooms.length) io.to(rooms).emit(event, data);
+}

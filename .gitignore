@@ -103,7 +103,10 @@ nul
 
 # Local scratch workspaces
 work/
-workspace/
+/workspace/
 
 # One-off local SQL scratch file
 tmp_update.sql
+/.entrip-lan/
+/deploy/lan/sqlite/__pycache__/
+/scripts/verification/__pycache__/

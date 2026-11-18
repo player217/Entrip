@@ -1,3 +1,4 @@
+import { containsText } from '../lib/db-dialect';
 import { User, UserRole, Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 // import { BaseService } from './base.service';
@@ -24,7 +25,7 @@ export interface UserUpdateInput {
 export interface UserListOptions {
   role?: UserRole;
   department?: string;
-  isActive?: boolean;
+  isActive?: boolean | null;
   search?: string;
   skip?: number;
   take?: number;
@@ -60,7 +61,7 @@ export class UserService {
     // Create user
     return await this.model.create({
       data: {
-        ...data,
+        name: data.name, email: data.email, role: data.role, department: data.department,
         password: hashedPassword,
         companyCode,
         isActive: true,
@@ -83,7 +84,12 @@ export class UserService {
     }
 
     // Hash password if provided
-    let updateData: any = { ...data };
+    const updateData: Prisma.UserUpdateInput = {
+      ...(data.name !== undefined ? { name: data.name } : {}),
+      ...(data.department !== undefined ? { department: data.department } : {}),
+      ...(data.role !== undefined ? { role: data.role } : {}),
+      ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
+    };
     if (data.password) {
       updateData.password = await bcrypt.hash(data.password, 12);
     }
@@ -117,14 +123,14 @@ export class UserService {
     // Build where clause
     const where: Prisma.UserWhereInput = {
       companyCode,
-      isActive,
+      ...(isActive === null ? {} : { isActive }),
       ...(role && { role }),
       ...(department && { department }),
       ...(search && {
         OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { email: { contains: search, mode: 'insensitive' } },
-          { department: { contains: search, mode: 'insensitive' } },
+          { name: containsText(search) },
+          { email: containsText(search) },
+          { department: containsText(search) },
         ],
       }),
     };
@@ -457,7 +463,7 @@ export class UserService {
         // Create user
         const user = await this.model.create({
           data: {
-            ...userData,
+            name: userData.name, email: userData.email, role: userData.role, department: userData.department,
             password: hashedPassword,
             companyCode,
             isActive: true,

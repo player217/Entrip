@@ -1,384 +1,123 @@
 'use client';
+import { FormEvent, useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useAuthStore } from '@/lib/auth-store';
+import { useCompanyRefresh } from '@/hooks/useCompanyRefresh';
+import { messengerRequest } from '@/lib/messenger-store';
+import printStyles from './records-print.module.css';
 
-import React, { useState } from 'react';
-import { Icon, Button } from '@entrip/ui';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
-
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  department: string;
-  role: string;
-  status: 'active' | 'inactive';
-  joinDate: Date;
-}
-
-interface TeamType {
-  id: string;
-  name: string;
-  code: string;
-  description: string;
-  isActive: boolean;
-}
+interface Employee { id: string; name: string; email: string; department: string | null; role: 'ADMIN' | 'MANAGER' | 'USER'; isActive: boolean; createdAt: string }
+const roles = { ADMIN: '관리자', MANAGER: '매니저', USER: '직원' };
+const initialForm = { name: '', email: '', department: '', password: '', role: 'USER' as Employee['role'] };
 
 export default function SettingsPageContent() {
-  const [activeTab, setActiveTab] = useState<'employees' | 'teamTypes'>('employees');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<Employee | TeamType | null>(null);
-
-  // 더미 직원 데이터
-  const [employees, setEmployees] = useState<Employee[]>([
-    {
-      id: '1',
-      name: '김철수',
-      email: 'kim.cs@entrip.com',
-      department: '영업팀',
-      role: '팀장',
-      status: 'active',
-      joinDate: new Date('2020-03-15')
-    },
-    {
-      id: '2',
-      name: '이영희',
-      email: 'lee.yh@entrip.com',
-      department: '기획팀',
-      role: '과장',
-      status: 'active',
-      joinDate: new Date('2021-06-20')
-    },
-    {
-      id: '3',
-      name: '박민수',
-      email: 'park.ms@entrip.com',
-      department: '영업팀',
-      role: '대리',
-      status: 'active',
-      joinDate: new Date('2022-09-10')
-    },
-    {
-      id: '4',
-      name: '정수현',
-      email: 'jung.sh@entrip.com',
-      department: '운영팀',
-      role: '사원',
-      status: 'active',
-      joinDate: new Date('2023-01-05')
+  const scrollHelpId = useId();
+  const user = useAuthStore(state => state.user);
+  const admin = user?.role === 'ADMIN';
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [search, setSearch] = useState('');
+  const [activeOnly, setActiveOnly] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [editing, setEditing] = useState<Employee | 'new' | null>(null);
+  const [form, setForm] = useState(initialForm);
+  const latestLoad = useRef(0);
+  const load = useCallback(async (signal?: AbortSignal) => {
+    const request = ++latestLoad.current;
+    const current = () => request === latestLoad.current && !signal?.aborted;
+    setLoading(true);
+    try {
+      let page = 1;
+      const rows: Employee[] = [];
+      while (current()) {
+        const result = await messengerRequest<{ data: Employee[]; totalPages: number }>(
+          `users?isActive=${admin ? 'all' : 'true'}&page=${page}&limit=100`, 'GET', undefined, signal
+        );
+        rows.push(...result.data);
+        if (page >= result.totalPages) break;
+        page++;
+      }
+      if (current()) setEmployees(rows);
+    } catch (e) {
+      if (current()) setError(e instanceof Error ? e.message : '직원을 불러오지 못했습니다.');
+    } finally {
+      if (current()) setLoading(false);
     }
-  ]);
-
-  // 더미 팀 타입 데이터
-  const [teamTypes, setTeamTypes] = useState<TeamType[]>([
-    {
-      id: '1',
-      name: '골프',
-      code: 'GOLF',
-      description: '골프 관련 여행 상품',
-      isActive: true
-    },
-    {
-      id: '2',
-      name: '인센티브',
-      code: 'INCENTIVE',
-      description: '기업 인센티브 여행',
-      isActive: true
-    },
-    {
-      id: '3',
-      name: '허니문',
-      code: 'HONEYMOON',
-      description: '신혼여행 패키지',
-      isActive: true
-    },
-    {
-      id: '4',
-      name: '에어텔',
-      code: 'AIRTEL',
-      description: '항공+호텔 패키지',
-      isActive: true
-    },
-    {
-      id: '5',
-      name: 'FIT',
-      code: 'FIT',
-      description: '개별 자유여행',
-      isActive: true
-    },
-    {
-      id: '6',
-      name: '단체',
-      code: 'GROUP',
-      description: '단체 관광 상품',
-      isActive: true
-    },
-    {
-      id: '7',
-      name: 'MICE',
-      code: 'MICE',
-      description: '국제회의 및 전시 관련',
-      isActive: true
-    }
-  ]);
-
-  const filteredEmployees = employees.filter(emp =>
-    emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    emp.department.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredTeamTypes = teamTypes.filter(type =>
-    type.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    type.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    type.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleAddEmployee = () => {
-    alert('직원 추가 기능은 추후 구현 예정입니다.');
-    setShowAddModal(false);
+  }, [admin, user?.id, user?.companyCode]);
+  useCompanyRefresh(['users'], load);
+  useEffect(() => {
+    const controller = new AbortController();
+    setEmployees([]); setEditing(null); setError(''); setSuccess('');
+    void load(controller.signal);
+    return () => { controller.abort(); latestLoad.current++; };
+  }, [load]);
+  const open = (employee?: Employee) => {
+    setEditing(employee || 'new'); setError(''); setSuccess('');
+    setForm(employee ? { name: employee.name, email: employee.email, department: employee.department || '', password: '', role: employee.role } : initialForm);
   };
-
-  const handleEditEmployee = (employee: Employee) => {
-    setSelectedItem(employee);
-    setShowEditModal(true);
+  const save = async (e: FormEvent) => {
+    e.preventDefault(); if (!editing) return;
+    setBusy(true); setError('');
+    try {
+      const { password, email, ...changes } = form;
+      if (editing === 'new') await messengerRequest('users', 'POST', { ...changes, email, password });
+      else await messengerRequest(`users/${editing.id}`, 'PUT', changes);
+      setEditing(null); setSuccess(editing === 'new' ? '직원을 추가했습니다.' : '직원 정보를 저장했습니다.'); await load();
+    } catch (e) { setError(e instanceof Error ? e.message : '저장하지 못했습니다.'); }
+    finally { setBusy(false); }
   };
-
-  const handleDeleteEmployee = (id: string) => {
-    if (confirm('정말로 이 직원을 삭제하시겠습니까?')) {
-      setEmployees(prev => prev.filter(emp => emp.id !== id));
-    }
+  const toggle = async (employee: Employee) => {
+    if (!window.confirm(`${employee.name} 계정을 ${employee.isActive ? '비활성화' : '재활성화'}할까요?`)) return;
+    setBusy(true); setError('');
+    try {
+      await messengerRequest(`users/${employee.id}${employee.isActive ? '' : '/reactivate'}`, employee.isActive ? 'DELETE' : 'POST');
+      setSuccess(employee.isActive ? '계정을 비활성화했습니다.' : '계정을 재활성화했습니다.'); await load();
+    } catch (e) { setError(e instanceof Error ? e.message : '변경하지 못했습니다.'); }
+    finally { setBusy(false); }
   };
-
-  const handleAddTeamType = () => {
-    alert('팀 타입 추가 기능은 추후 구현 예정입니다.');
-    setShowAddModal(false);
-  };
-
-  const handleEditTeamType = (teamType: TeamType) => {
-    setSelectedItem(teamType);
-    setShowEditModal(true);
-  };
-
-  const handleToggleTeamType = (id: string) => {
-    setTeamTypes(prev =>
-      prev.map(type =>
-        type.id === id ? { ...type, isActive: !type.isActive } : type
-      )
-    );
-  };
-
-  return (
-    <div className="h-full flex flex-col bg-gray-50">
-      {/* 헤더 */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-900">맞춤설정</h1>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Icon 
-                icon="ph:magnifying-glass" 
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" 
-              />
-              <input
-                type="text"
-                placeholder={activeTab === 'employees' ? '직원 검색...' : '팀 타입 검색...'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
-              />
-            </div>
-            <Button
-              onClick={() => setShowAddModal(true)}
-              className="bg-brand-primary text-white hover:bg-brand-hover"
-            >
-              <Icon icon="ph:plus" className="w-4 h-4 mr-2" />
-              {activeTab === 'employees' ? '직원 추가' : '팀 타입 추가'}
-            </Button>
-          </div>
-        </div>
-
-        {/* 탭 */}
-        <div className="flex items-center gap-6 mt-4">
-          <button
-            onClick={() => setActiveTab('employees')}
-            className={`pb-3 border-b-2 font-medium transition-colors ${
-              activeTab === 'employees'
-                ? 'text-brand-primary border-brand-primary'
-                : 'text-gray-500 border-transparent hover:text-gray-700'
-            }`}
-          >
-            직원 관리
-          </button>
-          <button
-            onClick={() => setActiveTab('teamTypes')}
-            className={`pb-3 border-b-2 font-medium transition-colors ${
-              activeTab === 'teamTypes'
-                ? 'text-brand-primary border-brand-primary'
-                : 'text-gray-500 border-transparent hover:text-gray-700'
-            }`}
-          >
-            팀 타입 관리
-          </button>
-        </div>
+  const visible = employees.filter(e => (!activeOnly || e.isActive) && `${e.name} ${e.email} ${e.department || ''}`.toLowerCase().includes(search.toLowerCase()));
+  return <div className={`h-full overflow-auto bg-gray-50 p-4 md:p-6 ${printStyles.sheet}`}>
+    <div className={editing ? 'entrip-no-print' : undefined}>
+      <div className="entrip-print-only">
+        <h2>직원 명부</h2>
+        <p className={printStyles.summary}>{user?.companyCode} · {activeOnly || !admin ? '활성 직원' : '전체 직원'} · 조회 {visible.length}명{search && <> · 검색어 “{search}”</>}</p>
       </div>
-
-      {/* 컨텐츠 */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {activeTab === 'employees' ? (
-          <div className="bg-white rounded-lg shadow-sm">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    이름
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    이메일
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    부서
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    직급
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    상태
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    입사일
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    작업
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredEmployees.map((employee) => (
-                  <tr key={employee.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium">
-                          {employee.name.charAt(0)}
-                        </div>
-                        <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">{employee.name}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {employee.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {employee.department}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {employee.role}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          employee.status === 'active'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {employee.status === 'active' ? '활성' : '비활성'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {format(employee.joinDate, 'yyyy-MM-dd', { locale: ko })}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleEditEmployee(employee)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-3"
-                      >
-                        편집
-                      </button>
-                      <button
-                        onClick={() => handleDeleteEmployee(employee.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        삭제
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredTeamTypes.map((type) => (
-              <div
-                key={type.id}
-                className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{type.name}</h3>
-                    <p className="text-sm text-gray-500 font-mono">{type.code}</p>
-                  </div>
-                  <button
-                    onClick={() => handleToggleTeamType(type.id)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      type.isActive ? 'bg-blue-600' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        type.isActive ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <p className="text-sm text-gray-600 mb-4">{type.description}</p>
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      type.isActive
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {type.isActive ? '활성' : '비활성'}
-                  </span>
-                  <button
-                    onClick={() => handleEditTeamType(type)}
-                    className="text-sm text-indigo-600 hover:text-indigo-900 font-medium"
-                  >
-                    편집
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="entrip-no-print mb-5 flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-2xl font-semibold text-gray-900">설정</h1><p className="mt-1 text-sm text-gray-500">{user?.companyCode} · 직원 및 접근 권한 관리</p></div>{admin && <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white" onClick={() => open()}>직원 추가</button>}</div>
+      <div className="entrip-no-print mb-4 flex flex-wrap items-center gap-3"><input aria-label="직원 검색" className="min-w-0 flex-1 rounded-lg border bg-white p-2" placeholder="이름, 이메일, 부서 검색" value={search} onChange={e => setSearch(e.target.value)} /><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} />활성 직원만</label><button className="rounded border bg-white px-3 py-2 text-sm" onClick={() => void load()}>새로고침</button></div>
+      {error && <p role="alert" className="mb-3 rounded bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {success && <p role="status" className="entrip-no-print mb-3 rounded bg-green-50 p-3 text-sm text-green-700">{success}</p>}
+      {!admin && <p className="entrip-no-print mb-3 text-sm text-gray-500">직원 정보를 조회할 수 있습니다. 계정 변경은 관리자에게 요청하세요.</p>}
+      <p id={scrollHelpId} className="entrip-no-print mb-2 text-xs text-gray-500">표를 좌우로 스크롤해 직원 정보를 확인하세요. 이름 열은 고정됩니다.</p>
+      <div className="overflow-x-auto rounded-lg border bg-white" role="region" aria-label="직원 목록 표" aria-describedby={scrollHelpId} tabIndex={0}>
+        <table className="w-full text-left text-sm">
+          <thead className="border-b bg-gray-50 text-gray-500">
+            <tr>{['이름', '이메일', '부서', '권한', '상태', '작업'].map((h, index) => <th scope="col" className={`whitespace-nowrap p-3 font-medium ${h === '작업' ? 'entrip-no-print' : ''} ${index === 0 ? 'sticky left-0 z-10 border-r bg-gray-50' : ''}`} key={h}>{h}</th>)}</tr>
+          </thead>
+          <tbody>{visible.map(employee => <tr key={employee.id} className="border-b last:border-0">
+            <th scope="row" className="sticky left-0 z-10 min-w-[7rem] max-w-[9rem] break-words border-r bg-white p-3 font-medium [overflow-wrap:anywhere]">{employee.name}</th>
+            <td className="p-3 text-gray-600">{employee.email}</td>
+            <td className="whitespace-nowrap p-3">{employee.department || '미지정'}</td>
+            <td className="whitespace-nowrap p-3">{roles[employee.role]}</td>
+            <td className="p-3"><span className={`whitespace-nowrap rounded-full px-2 py-1 text-xs ${employee.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{employee.isActive ? '활성' : '비활성'}</span></td>
+            <td className="entrip-no-print p-3">{admin && <div className="flex gap-3 whitespace-nowrap">{employee.isActive && <button disabled={busy} onClick={() => open(employee)} className="text-blue-700">편집</button>}<button disabled={busy || employee.id === user?.id} onClick={() => void toggle(employee)} className="text-gray-600 disabled:opacity-30">{employee.isActive ? '비활성화' : '재활성화'}</button></div>}</td>
+          </tr>)}</tbody>
+        </table>
+        {loading && <p role="status" className="p-6 text-center text-sm text-gray-500">불러오는 중…</p>}
+        {!loading && !visible.length && <p className="p-6 text-center text-sm text-gray-500">조건에 맞는 직원이 없습니다.</p>}
       </div>
-
-      {/* 수정 모달 */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h2 className="text-xl font-semibold mb-4">
-              {activeTab === 'employees' ? '직원 정보 수정' : '팀 타입 수정'}
-            </h2>
-            <p className="text-gray-600 mb-4">
-              수정 기능은 추후 구현 예정입니다.
-            </p>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => setShowEditModal(false)}
-              >
-                닫기
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
-  );
+    {editing && <section className="entrip-print-only" aria-label="직원 입력 내용">
+      <h2>{editing === 'new' ? '신규 직원' : '직원 정보'}</h2>
+      <p className={printStyles.summary}>{user?.companyCode} · 현재 입력 내용 · 저장 전</p>
+      <table><tbody>
+        <tr><th scope="row">이름</th><td>{form.name || '미입력'}</td></tr>
+        <tr><th scope="row">이메일</th><td>{form.email || '미입력'}</td></tr>
+        <tr><th scope="row">부서</th><td>{form.department || '미지정'}</td></tr>
+        <tr><th scope="row">권한</th><td>{roles[form.role]}</td></tr>
+        {editing !== 'new' && <tr><th scope="row">상태</th><td>{editing.isActive ? '활성' : '비활성'}</td></tr>}
+      </tbody></table>
+    </section>}
+    {editing && <div className="entrip-no-print fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"><form role="dialog" aria-modal="true" aria-label={editing === 'new' ? '직원 추가' : '직원 편집'} onSubmit={save} className="max-h-[90vh] w-full max-w-md overflow-auto rounded-xl bg-white p-6 shadow-xl"><h2 className="mb-4 text-xl font-semibold">{editing === 'new' ? '직원 추가' : '직원 편집'}</h2><div className="space-y-3"><label className="block text-sm">이름<input required minLength={2} maxLength={100} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="mt-1 block w-full rounded border p-2" /></label><label className="block text-sm">이메일<input required type="email" disabled={editing !== 'new'} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="mt-1 block w-full rounded border p-2 disabled:bg-gray-50" /></label><label className="block text-sm">부서<input maxLength={100} value={form.department} onChange={e => setForm({ ...form, department: e.target.value })} className="mt-1 block w-full rounded border p-2" /></label><label className="block text-sm">권한<select aria-label="권한" disabled={editing !== 'new' && editing.id === user?.id} value={form.role} onChange={e => setForm({ ...form, role: e.target.value as Employee['role'] })} className="mt-1 block w-full rounded border p-2">{Object.entries(roles).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>{editing === 'new' && <label className="block text-sm">초기 비밀번호<input required type="password" minLength={6} maxLength={100} autoComplete="new-password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="mt-1 block w-full rounded border p-2" /></label>}</div>{error && <p className="mt-3 text-sm text-red-600">{error}</p>}<div className="mt-6 flex justify-end gap-2"><button type="button" onClick={() => window.print()} className="mr-auto rounded border px-4 py-2 text-sm">인쇄</button><button type="button" disabled={busy} onClick={() => setEditing(null)} className="rounded border px-4 py-2 text-sm">취소</button><button disabled={busy} className="rounded bg-blue-600 px-4 py-2 text-sm text-white">{busy ? '저장 중…' : '저장'}</button></div></form></div>}
+  </div>;
 }

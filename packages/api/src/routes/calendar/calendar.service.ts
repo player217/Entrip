@@ -19,7 +19,7 @@ const DEFAULT_COLORS = [
 
 export class CalendarService extends BaseService<CalendarEvent> {
   constructor() {
-    super(prisma.calendarEvent);
+    super('calendarEvent');
   }
 
   /**

@@ -5,7 +5,7 @@ import { Icon } from '@entrip/ui'
 import { useTeamBookingCalendar } from '@entrip/shared/hooks/useTeamBooking'
 import { NewTeamModal } from '@entrip/ui'
 import type { TeamBooking } from '@entrip/shared/types/team-booking'
-import { logger, BookingStatus } from '@entrip/shared'
+import { BookingStatus } from '@entrip/shared'
 import { createBooking } from '../../hooks/useBookings'
 
 export function TeamBookingCalendarView() {

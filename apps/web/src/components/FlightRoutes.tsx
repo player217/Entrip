@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Plane } from 'lucide-react';
 import useSWR from 'swr';
 import { fetcher } from '../lib/api-client';

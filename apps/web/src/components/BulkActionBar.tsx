@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import { Trash2, X } from 'lucide-react';
-import apiClient from '../lib/api-client';
-import { useBookings } from '../hooks/useBookings';
-import { useBulkUndo } from '../hooks/useBulkUndo';
+import { useBookings, deleteBooking } from '../hooks/useBookings';
 import { toast } from 'react-toastify';
 import { Booking, logger } from '@entrip/shared';
 
@@ -16,48 +14,27 @@ interface BulkActionBarProps {
 export default function BulkActionBar({ selectedIds, onClearSelection }: BulkActionBarProps) {
   const { bookings, mutate } = useBookings();
   const [isDeleting, setIsDeleting] = useState(false);
-  const { addUndoItem } = useBulkUndo();
   
   if (selectedIds.length === 0) return null;
   
   const handleBulkDelete = async () => {
+    if (!window.confirm(`선택한 예약 ${selectedIds.length}건을 삭제할까요?`)) return;
     setIsDeleting(true);
-    
+    let deleted = 0;
     try {
-      // 삭제될 예약 데이터를 저장
-      const deletedBookings = bookings.filter((booking: Booking) => selectedIds.includes(booking.id));
-      
-      // Optimistic update - 선택된 항목들을 즉시 제거
-      await mutate(
-        async (currentData: typeof bookings | undefined) => {
-          return currentData?.filter((booking: Booking) => 
-            !selectedIds.includes(booking.id)
-          );
-        },
-        { revalidate: false }
-      );
-      
-      // API 호출
-      const response = await apiClient.delete('/api/bookings/bulk', {
-        data: { ids: selectedIds }
-      });
-      
-      logger.info('[BulkActionBar]', `Bulk delete successful - DELETE 200, deleted: ${response.data.deleted}`);
-      
-      // Undo 스택에 추가 - Booking을 UndoItem으로 타입 변환
-      addUndoItem('delete', deletedBookings as any[]);
-      
-      // 성공 후 서버 데이터로 갱신
-      await mutate();
-      
-      // 선택 초기화
+      const selected = bookings.filter((booking: Booking) => selectedIds.includes(booking.id));
+      if (selected.length !== selectedIds.length) throw new Error('선택한 예약을 모두 불러오지 못했습니다. 새로고침 후 다시 선택하세요.');
+      for (const booking of selected) {
+        await deleteBooking(booking.id, { ifMatch: booking.version });
+        deleted += 1;
+      }
       onClearSelection();
+      toast.success(`${deleted}건의 예약을 삭제했습니다.`);
     } catch (error) {
       logger.error('[BulkActionBar]', 'Bulk delete failed:', error);
-      toast.error('삭제에 실패했습니다');
-      // 실패 시 롤백
-      await mutate();
+      toast.error(`${deleted}건 삭제 완료. ${error instanceof Error ? error.message : '나머지 삭제에 실패했습니다.'}`);
     } finally {
+      await mutate();
       setIsDeleting(false);
     }
   };

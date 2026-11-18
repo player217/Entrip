@@ -6,8 +6,8 @@ import { Skeleton } from '@entrip/ui';
 
 const unitLabel: Record<Rate['unit'], string> = {
   USD: 'USD',
-  EUR: 'EUR', 
-  JPY: 'JPY',
+  EUR: 'EUR',
+  JPY: 'JPY(100)',
   CNY: 'CNY'
 };
 
@@ -31,14 +31,14 @@ export default function HeaderExchange() {
       {data.map(({ unit, rate, diff }) => (
         <li key={unit} className="flex items-center gap-1">
           <span>{unitLabel[unit]}</span>
-          <span>{rate.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-          <span className={clsx(
+          <span>{(unit === 'JPY' ? rate * 100 : rate).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          {diff !== null && <span className={clsx(
             'flex items-center',
             diff >= 0 ? 'text-green-300' : 'text-red-300'
           )}>
             {diff >= 0 ? '▲' : '▼'}
             {Math.abs(diff).toFixed(1)}%
-          </span>
+          </span>}
         </li>
       ))}
     </ul>

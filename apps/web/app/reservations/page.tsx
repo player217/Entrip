@@ -1,8 +1,6 @@
-'use client'
-
-import ReservationsPageContent from '@/components/pages/ReservationsPageContent'
+import { redirect } from 'next/navigation'
 
 export default function ReservationsPage() {
-  return <ReservationsPageContent />
+  redirect('/calendar-monthly')
 }
 

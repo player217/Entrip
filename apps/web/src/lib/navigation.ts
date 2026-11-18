@@ -5,7 +5,7 @@ export const routes = {
     `/workspace?content=${content}`,
   
   // Direct reservations page (no workspace redirect)
-  reservations: (view?: string) => {
+  reservations: (_view?: string) => {
     // Now returns direct URL to reservations page
     return '/reservations';
   }

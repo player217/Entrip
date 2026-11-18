@@ -1,0 +1,135 @@
+{
+  "startedAt": "2026-11-17T00:27:55.870Z",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "V01/V05/V06: all four booking toolbars fit mobile; agenda is readable",
+      "status": "PASS",
+      "details": [
+        {
+          "route": "/calendar-monthly",
+          "x": 22,
+          "y": 214,
+          "width": 255,
+          "height": 33.5
+        },
+        {
+          "route": "/calendar-weekly",
+          "x": 22,
+          "y": 214,
+          "width": 255,
+          "height": 33.5
+        },
+        {
+          "route": "/list-monthly",
+          "x": 22,
+          "y": 214,
+          "width": 255,
+          "height": 33.5
+        },
+        {
+          "route": "/list-weekly",
+          "x": 22,
+          "y": 214,
+          "width": 255,
+          "height": 33.5
+        }
+      ]
+    },
+    {
+      "name": "V12/V20: search no-match differs from outage and outage retry recovers",
+      "status": "PASS"
+    },
+    {
+      "name": "V08/V09: Korean history fields and print column layout",
+      "status": "PASS"
+    },
+    {
+      "name": "V03: dashboard more expands exact collection and collapses",
+      "status": "PASS"
+    },
+    {
+      "name": "V04/V10/V19: accurate menu labels and canonical protected routes",
+      "status": "PASS"
+    },
+    {
+      "name": "V11: active tab and close affordance remain inside strip at limit",
+      "status": "PASS"
+    },
+    {
+      "name": "V07: terminal approval steps no longer read pending",
+      "status": "PASS"
+    },
+    {
+      "name": "V13/V15: account immutable fields locked; ledger identity remains on horizontal scroll",
+      "status": "PASS"
+    },
+    {
+      "name": "V13: employee identity remains available with right-side actions",
+      "status": "PASS"
+    },
+    {
+      "name": "V14/V20: count chart has integer ticks, Korean measure, readable mobile money",
+      "status": "PASS"
+    },
+    {
+      "name": "V13/V18: airport names and sticky airline on stored timetable",
+      "status": "PASS"
+    },
+    {
+      "name": "V02/V16: history prepend preserves read position and no-match is explained",
+      "status": "PASS",
+      "details": {
+        "before": {
+          "top": 0,
+          "height": 4201,
+          "client": 547
+        },
+        "after": {
+          "top": 3080,
+          "height": 7281,
+          "client": 547
+        }
+      }
+    },
+    {
+      "name": "V17: authentication error is Korean",
+      "status": "PASS"
+    }
+  ],
+  "screenshots": [
+    "01-mobile-month-calendar.webp",
+    "01-mobile-week-calendar.webp",
+    "01-mobile-month-list.webp",
+    "01-mobile-week-list.webp",
+    "02-empty-search.webp",
+    "03-booking-error.webp",
+    "04-booking-recovered.webp",
+    "05-booking-history.webp",
+    "06-booking-print.webp",
+    "07-dashboard-expanded.webp",
+    "08-user-menu.webp",
+    "09-canonical-route.webp",
+    "10-tabs-mobile.webp",
+    "11-tabs-desktop.webp",
+    "12-rejected-approval.webp",
+    "13-cancelled-approval.webp",
+    "14-locked-account.webp",
+    "15-ledger-mobile-right.webp",
+    "16-settings-mobile-right.webp",
+    "17-stats-desktop.webp",
+    "18-stats-quarter.webp",
+    "19-stats-mobile.webp",
+    "20-flights-mobile-right.webp",
+    "21-flights-desktop.webp",
+    "22-messenger-empty.webp",
+    "23-message-history-before.webp",
+    "24-message-history-after.webp",
+    "25-login-error.webp"
+  ],
+  "pageErrors": [],
+  "fixtures": [
+    "Stored PUS timetable for presentation only; no live availability assertion."
+  ],
+  "finishedAt": "2026-11-17T00:28:27.383Z"
+}

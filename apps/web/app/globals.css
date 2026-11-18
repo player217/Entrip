@@ -1,5 +1,7 @@
 @import '@entrip/design-tokens/build/variables.css';
 @import '../src/styles/calendar.css';
+@import '../src/styles/workspace-print.css';
+@import '../src/styles/operations-print.css';
 
 @tailwind base;
 @tailwind components;
@@ -9,15 +11,14 @@
 @layer base {
   html {
     font-family: Inter, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-    font-size: 20px; /* 125% 스케일 (16px * 1.25) */
+    font-size: 16px;
     -webkit-text-size-adjust: 100%; /* 모바일 브라우저 자동 크기 조정 방지 */
     text-size-adjust: 100%;
-    zoom: 1.25; /* 전체 UI 125% 스케일 */
   }
   
   body {
     @apply text-base leading-normal;
-    font-size: 1rem; /* html 기준 20px */
+    font-size: 1rem;
   }
 }
 

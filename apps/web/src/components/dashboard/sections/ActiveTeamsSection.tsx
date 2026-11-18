@@ -1,10 +1,11 @@
 'use client'
 
-import { useMemo } from 'react'
-import { format, isAfter, isBefore, addDays } from 'date-fns'
+import { useId, useMemo, useState } from 'react'
+import { format, addDays } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { useBookings } from '../../../hooks/useBookings'
 import type { Booking } from '@entrip/shared'
+import { dateKey, dayDistance } from '../../../lib/bookingAnalytics'
 
 interface TravelingTeam {
   id: string
@@ -31,7 +32,11 @@ interface UpcomingTeam {
 }
 
 export function ActiveTeamsSection() {
-  const { bookings: apiBookings, isLoading } = useBookings()
+  const { bookings: apiBookings, isLoading, isError } = useBookings()
+  const [showAllTraveling, setShowAllTraveling] = useState(false)
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false)
+  const travelingId = useId()
+  const upcomingId = useId()
 
   const teamsData = useMemo(() => {
     if (!apiBookings || apiBookings.length === 0) {
@@ -47,24 +52,22 @@ export function ActiveTeamsSection() {
 
     // 현재 여행 중인 팀들
     const travelingTeams: TravelingTeam[] = []
-    
+
     // 곧 출발하는 팀들 (7일 내)
     const upcomingTeams: UpcomingTeam[] = []
 
-    apiBookings.forEach((booking: Booking) => {
-      const startDate = new Date(booking.startDate)
-      const endDate = new Date(booking.endDate)
-      const startDateStr = booking.startDate
-      const endDateStr = booking.endDate
+    apiBookings.filter(b => b.status !== 'CANCELLED').forEach((booking: Booking) => {
+      const startDateStr = dateKey(booking.startDate)
+      const endDateStr = dateKey(booking.endDate)
 
       // 현재 여행 중인 팀 (시작일 <= 오늘 <= 종료일)
-      if (isBefore(startDate, now) && isAfter(endDate, now)) {
+      if (startDateStr <= today && endDateStr >= today && booking.status !== 'PENDING') {
         // 현재 진행 일차 계산
-        const daysPassed = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
-        const totalDays = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+        const daysPassed = dayDistance(startDateStr, today) + 1
+        const totalDays = dayDistance(startDateStr, endDateStr) + 1
 
         let status: 'traveling' | 'returning_today' | 'returning_tomorrow' = 'traveling'
-        
+
         if (endDateStr === today) {
           status = 'returning_today'
         } else if (endDateStr === tomorrow) {
@@ -80,15 +83,15 @@ export function ActiveTeamsSection() {
           startDate: startDateStr,
           endDate: endDateStr,
           paxCount: booking.paxCount,
-          manager: booking.user?.name || '미정',
+          manager: booking.managerName || booking.coordinator || booking.user?.name || '미정',
           status
         })
       }
-      
+
       // 곧 출발하는 팀들 (미래 출발일이지만 7일 이내)
-      else if (isAfter(startDate, now)) {
-        const daysUntilDeparture = Math.ceil((startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-        
+      else if (startDateStr > today) {
+        const daysUntilDeparture = dayDistance(today, startDateStr)
+
         if (daysUntilDeparture <= 7) {
           upcomingTeams.push({
             id: booking.id,
@@ -97,7 +100,7 @@ export function ActiveTeamsSection() {
             startDate: startDateStr,
             paxCount: booking.paxCount,
             daysUntilDeparture,
-            manager: booking.user?.name || '미정',
+            manager: booking.managerName || booking.coordinator || booking.user?.name || '미정',
             status: booking.status === 'CONFIRMED' ? 'confirmed' : 'pending'
           })
         }
@@ -105,8 +108,8 @@ export function ActiveTeamsSection() {
     })
 
     return {
-      travelingTeams: travelingTeams.slice(0, 6), // 최대 6개
-      upcomingTeams: upcomingTeams.slice(0, 4)    // 최대 4개
+      travelingTeams,
+      upcomingTeams
     }
   }, [apiBookings])
 
@@ -144,6 +147,8 @@ export function ActiveTeamsSection() {
     }
   }
 
+  if (isError) return <p role="alert" className="p-6 text-red-700">진행 중인 팀을 불러오지 못했습니다.</p>
+
   if (isLoading) {
     return (
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -175,8 +180,8 @@ export function ActiveTeamsSection() {
             여행 중인 팀 ({teamsData.travelingTeams.length}팀)
           </h4>
           {teamsData.travelingTeams.length > 0 ? (
-            <div className="grid gap-3">
-              {teamsData.travelingTeams.map((team) => (
+            <div id={travelingId} className="grid gap-3">
+              {(showAllTraveling ? teamsData.travelingTeams : teamsData.travelingTeams.slice(0, 6)).map((team) => (
                 <div key={team.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
@@ -198,10 +203,10 @@ export function ActiveTeamsSection() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* 진행률 바 */}
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                    <div 
+                    <div
                       className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${(team.currentDay / team.totalDays) * 100}%` }}
                     ></div>
@@ -213,6 +218,14 @@ export function ActiveTeamsSection() {
                   </div>
                 </div>
               ))}
+              {!showAllTraveling && teamsData.travelingTeams.length > 6 && <p className="entrip-print-only dashboard-preview-count">전체 {teamsData.travelingTeams.length}건 중 화면에 표시된 6건</p>}
+              {teamsData.travelingTeams.length > 6 && (
+                <button type="button" aria-expanded={showAllTraveling} aria-controls={travelingId}
+                  onClick={() => setShowAllTraveling(value => !value)}
+                  className="w-full rounded py-2 text-center text-xs text-blue-700 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500">
+                  {showAllTraveling ? '여행 중인 팀 접기' : `+${teamsData.travelingTeams.length - 6}개 팀 더보기`}
+                </button>
+              )}
             </div>
           ) : (
             <p className="text-sm text-gray-500 py-4">현재 여행 중인 팀이 없습니다.</p>
@@ -226,8 +239,8 @@ export function ActiveTeamsSection() {
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
               출발 예정 ({teamsData.upcomingTeams.length}팀)
             </h4>
-            <div className="space-y-2">
-              {teamsData.upcomingTeams.map((team) => (
+            <div id={upcomingId} className="space-y-2">
+              {(showAllUpcoming ? teamsData.upcomingTeams : teamsData.upcomingTeams.slice(0, 4)).map((team) => (
                 <div key={team.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${
@@ -246,6 +259,14 @@ export function ActiveTeamsSection() {
                   </div>
                 </div>
               ))}
+              {!showAllUpcoming && teamsData.upcomingTeams.length > 4 && <p className="entrip-print-only dashboard-preview-count">전체 {teamsData.upcomingTeams.length}건 중 화면에 표시된 4건</p>}
+              {teamsData.upcomingTeams.length > 4 && (
+                <button type="button" aria-expanded={showAllUpcoming} aria-controls={upcomingId}
+                  onClick={() => setShowAllUpcoming(value => !value)}
+                  className="w-full rounded py-2 text-center text-xs text-blue-700 hover:bg-green-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500">
+                  {showAllUpcoming ? '출발 예정 접기' : `+${teamsData.upcomingTeams.length - 4}개 팀 더보기`}
+                </button>
+              )}
             </div>
           </div>
         )}

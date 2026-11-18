@@ -9,7 +9,10 @@ export const ipValidation = (req: Request, res: Response, next: NextFunction) =>
   const whitelist = envList.length > 0 ? envList : DEV_DEFAULTS;
 
   // Express may return IPv6-mapped IPv4 as ::ffff:127.0.0.1
-  const ip = (req.ip || '').replace('::ffff:', '');
+  // In LAN mode req.ip describes the client for rate limiting. The access
+  // list checks the peer actually connecting to the private API socket.
+  const peer = process.env.ENTRIP_LAN_HTTP === 'true' ? req.socket.remoteAddress : req.ip;
+  const ip = (peer || '').replace('::ffff:', '');
 
   if (whitelist.some((allowed) => ip === allowed)) {
     return next();

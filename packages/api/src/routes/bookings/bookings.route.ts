@@ -1,9 +1,7 @@
 import { Router } from 'express';
 import { bookingsController } from './bookings.controller';
 import { validateBody } from '../../middlewares/validate.middleware';
-import { cacheMiddleware, invalidateCacheMiddleware } from '../../middlewares/cache.middleware';
 import { authMiddleware } from '../../middlewares/auth.middleware';
-import { strictRateLimit } from '../../middlewares/rateLimit.middleware';
 import { extractCompanyCode, validateCompanyAccess } from '../../middlewares/multitenancy.middleware';
 import { BookingCreateDto } from './dtos/BookingCreate.dto';
 import { BookingUpdateDto } from './dtos/BookingUpdate.dto';
@@ -17,39 +15,31 @@ router.use(extractCompanyCode);
 router.use(validateCompanyAccess);
 
 // GET /api/v2/bookings (with caching)
-router.get('/', cacheMiddleware({ ttl: 300 }), bookingsController.list);
+router.get('/', bookingsController.list);
 
 // GET /api/v2/bookings/:id (with caching)
-router.get('/:id', cacheMiddleware({ ttl: 600 }), bookingsController.getById);
+router.get('/:id', bookingsController.getById);
 
 // POST /api/v2/bookings (with cache invalidation)
 router.post('/', 
-  strictRateLimit,
   validateBody(BookingCreateDto), 
-  invalidateCacheMiddleware(['bookings']),
   bookingsController.create
 );
 
 // PUT /api/v2/bookings/:id (with cache invalidation)
 router.put('/:id', 
-  strictRateLimit,
   validateBody(BookingUpdateDto), 
-  invalidateCacheMiddleware(['bookings']),
   bookingsController.update
 );
 
 // PATCH /api/v2/bookings/:id/status (with cache invalidation)
 router.patch('/:id/status', 
-  strictRateLimit,
   validateBody(BookingStatusPatchDto), 
-  invalidateCacheMiddleware(['bookings']),
   bookingsController.updateStatus
 );
 
 // DELETE /api/v2/bookings/:id (with cache invalidation)
 router.delete('/:id', 
-  strictRateLimit,
-  invalidateCacheMiddleware(['bookings']),
   bookingsController.delete
 );
 

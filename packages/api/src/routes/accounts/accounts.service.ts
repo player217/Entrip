@@ -1,134 +1,86 @@
+import { containsText } from '../../lib/db-dialect';
+import { Account as AccountRecord, AccountRole, AccountStatus, Prisma } from '@prisma/client';
+import prisma from '../../lib/prisma';
 import { ApiError } from '../../middlewares/error.middleware';
 import { AccountCreateInput } from './dtos/AccountCreate.dto';
 import { AccountUpdateInput } from './dtos/AccountUpdate.dto';
 import { AccountQueryInput } from './dtos/AccountQuery.dto';
 
-// Types
 export interface Account {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
+  id: string; name: string; email: string; phone?: string;
   role: 'admin' | 'approver' | 'staff' | 'viewer';
   status: 'active' | 'suspended' | 'deleted';
-  createdAt: string;
-  updatedAt?: string;
-  deletedAt?: string;
+  createdAt: string; updatedAt?: string; deletedAt?: string;
 }
+const roles = { admin: AccountRole.ADMIN, approver: AccountRole.APPROVER, staff: AccountRole.STAFF, viewer: AccountRole.VIEWER };
+const statuses = { active: AccountStatus.ACTIVE, suspended: AccountStatus.SUSPENDED, deleted: AccountStatus.DELETED };
+const toDto = (row: AccountRecord): Account => ({
+  id: row.id, name: row.name, email: row.email, ...(row.phone ? { phone: row.phone } : {}),
+  role: row.role.toLowerCase() as Account['role'], status: row.status.toLowerCase() as Account['status'],
+  createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString(), ...(row.deletedAt ? { deletedAt: row.deletedAt.toISOString() } : {}),
+});
 
-// In-memory storage
-const accounts: Account[] = [];
-const accountsById = new Map<string, Account>();
-let idCounter = 1;
-
-// Service implementation
+/** Legacy employee records. Login identities use User; bank details use BankAccount. */
 export class AccountsService {
-  async list(query: AccountQueryInput) {
+  private scope(companyCode?: string) {
+    if (!companyCode) throw new ApiError(401, 'Company identity is required');
+    return companyCode;
+  }
+  async list(query: AccountQueryInput, companyCode?: string) {
     const { page = 1, limit = 20, status, role, keyword } = query;
-    
-    // Filter accounts (exclude soft-deleted unless specifically requested)
-    const filtered = accounts.filter(account => {
-      if (!status && account.deletedAt) return false;
-      if (status && account.status !== status) return false;
-      if (role && account.role !== role) return false;
-      if (keyword) {
-        const searchTerm = keyword.toLowerCase();
-        return (
-          account.name.toLowerCase().includes(searchTerm) ||
-          account.email.toLowerCase().includes(searchTerm)
-        );
-      }
-      return true;
-    });
-
-    // Pagination
-    const start = (page - 1) * limit;
-    const end = start + limit;
-    const paginated = filtered.slice(start, end);
-
-    return {
-      data: paginated,
-      pagination: {
-        page,
-        limit,
-        total: filtered.length,
-        pages: Math.ceil(filtered.length / limit),
-      },
+    const where: Prisma.AccountWhereInput = {
+      companyCode: this.scope(companyCode),
+      ...(status ? { status: statuses[status] } : { deletedAt: null }),
+      ...(role ? { role: roles[role] } : {}),
+      ...(keyword ? { OR: [{ name: containsText(keyword) }, { email: containsText(keyword) }] } : {}),
     };
+    const [rows, total] = await Promise.all([
+      prisma.account.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (page - 1) * limit, take: limit }), prisma.account.count({ where }),
+    ]);
+    return { data: rows.map(toDto), pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
   }
-
-  async findById(id: string): Promise<Account> {
-    const account = accountsById.get(id);
-    if (!account || account.deletedAt) {
-      throw new ApiError(404, 'Account not found');
+  async findById(id: string, companyCode?: string): Promise<Account> {
+    const row = await prisma.account.findFirst({ where: { id, companyCode: this.scope(companyCode), deletedAt: null } });
+    if (!row) throw new ApiError(404, 'Account not found');
+    return toDto(row);
+  }
+  async findByEmail(email: string, companyCode?: string): Promise<Account | undefined> {
+    const row = await prisma.account.findFirst({ where: { email, companyCode: this.scope(companyCode), deletedAt: null } });
+    return row ? toDto(row) : undefined;
+  }
+  async create(input: AccountCreateInput, companyCode?: string, createdBy?: string): Promise<Account> {
+    try {
+      return toDto(await prisma.account.create({ data: {
+        name: input.name, email: input.email, phone: input.phone, role: roles[input.role], companyCode: this.scope(companyCode), createdBy,
+      } }));
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') throw new ApiError(409, 'Email already exists in this company');
+      throw error;
     }
-    return account;
   }
-
-  async findByEmail(email: string): Promise<Account | undefined> {
-    return accounts.find(
-      account => account.email === email && !account.deletedAt
-    );
-  }
-
-  async create(input: AccountCreateInput): Promise<Account> {
-    // Check email uniqueness
-    const existing = await this.findByEmail(input.email);
-    if (existing) {
-      throw new ApiError(409, 'Email already exists');
+  async update(id: string, input: AccountUpdateInput, companyCode?: string): Promise<Account> {
+    await this.findById(id, companyCode);
+    try {
+      return toDto(await prisma.account.update({ where: { id }, data: {
+        name: input.name, email: input.email, phone: input.phone,
+        ...(input.role ? { role: roles[input.role] } : {}),
+        ...(input.status ? { status: statuses[input.status], deletedAt: input.status === 'deleted' ? new Date() : null } : {}),
+      } }));
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') throw new ApiError(409, 'Email already exists in this company');
+      throw error;
     }
-
-    const newAccount: Account = {
-      id: `acc-${idCounter++}`,
-      ...input,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-    };
-
-    accounts.push(newAccount);
-    accountsById.set(newAccount.id, newAccount);
-
-    return newAccount;
   }
-
-  async update(id: string, input: AccountUpdateInput): Promise<Account> {
-    const account = await this.findById(id);
-
-    // Check email uniqueness if email is being updated
-    if (input.email && input.email !== account.email) {
-      const existing = await this.findByEmail(input.email);
-      if (existing) {
-        throw new ApiError(409, 'Email already exists');
-      }
-    }
-
-    // Update fields
-    Object.assign(account, {
-      ...input,
-      updatedAt: new Date().toISOString(),
-    });
-
-    return account;
+  async delete(id: string, companyCode?: string): Promise<void> {
+    await this.findById(id, companyCode);
+    await prisma.account.update({ where: { id }, data: { status: 'DELETED', deletedAt: new Date() } });
   }
-
-  async delete(id: string): Promise<void> {
-    const account = await this.findById(id);
-    
-    // Soft delete
-    account.status = 'deleted';
-    account.deletedAt = new Date().toISOString();
+  async getAll(companyCode?: string): Promise<Account[]> {
+    return (await prisma.account.findMany({ where: { companyCode: this.scope(companyCode) } })).map(toDto);
   }
-
-  // Utility methods for testing
-  async clearAll() {
-    accounts.length = 0;
-    accountsById.clear();
-    idCounter = 1;
-  }
-
-  async getAll(): Promise<Account[]> {
-    return [...accounts];
+  async clearAll(companyCode?: string): Promise<void> {
+    if (process.env.NODE_ENV !== 'test') throw new ApiError(403, 'Test helper is disabled');
+    await prisma.account.deleteMany({ where: { companyCode: this.scope(companyCode) } });
   }
 }
-
 export const accountsService = new AccountsService();

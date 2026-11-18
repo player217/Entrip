@@ -1,0 +1,18 @@
+{
+  "name": "messaging",
+  "status": "PASS",
+  "checks": [
+    "Two independent demo users logged in through UI with cookie sessions",
+    "Organization directory creates a persisted direct conversation",
+    "Typing appears in the other live session and clears on input blur",
+    "Both directions deliver real persisted messages over realtime transport",
+    "Third employee is invited into the same room and sees its persisted history",
+    "Cookie-only reload restores conversation without localStorage tokens",
+    "J1 directory and conversation access are isolated from Entrip",
+    "Mobile viewport remains within 390px"
+  ],
+  "runAt": "2026-11-17T00:27:21.452Z",
+  "receiveMilliseconds": 129,
+  "pageErrorCount": 0,
+  "publicationScope": "Result summary; generated business record IDs, raw dialog payloads and environment addresses omitted."
+}

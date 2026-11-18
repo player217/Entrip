@@ -1,0 +1,1551 @@
+{
+  "schema": "entrip.visual-menu-collection/1",
+  "runId": "2026-11-17T00-21-37-648Z-235",
+  "startedAt": "2026-11-17T00:21:37.650Z",
+  "status": "COLLECTION_COMPLETE_REQUIRES_HUMAN_REVIEW",
+  "requiresHumanReview": true,
+  "scope": "Initial/read-only menu states; forms, save flows and remote service success need separate inspection.",
+  "limitations": [
+    "No screenshot comparison or automatic visual PASS is performed.",
+    "Bounding-box observations are review candidates, not confirmed defects.",
+    "Scrollable tables and content below the viewport may be intentionally clipped.",
+    "Accessible names below are DOM label candidates; the separate ARIA snapshot is the browser accessibility representation.",
+    "No forms are submitted after login; messenger conversations are not opened."
+  ],
+  "expectedCaptures": 36,
+  "completedAt": "2026-11-17T00:22:04.804Z",
+  "summary": {
+    "capturedMenus": 36,
+    "screenshotCount": 43,
+    "geometryReviewCandidates": 19,
+    "pageErrorCount": 0
+  },
+  "publicationScope": "Public summary: screenshots, route coverage, dimensions and counts only. Raw controls, account/transaction payloads, ARIA dumps and environment logs are excluded.",
+  "visualAssessment": "Reviewed; see visual-review.md. Functional results are separate.",
+  "pageErrorCount": 0,
+  "failureCount": 0,
+  "dialogCount": 0,
+  "captures": [
+    {
+      "id": "dashboard",
+      "label": "대시보드",
+      "route": "/",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-dashboard-top.webp",
+        "1440-dashboard-bottom.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 1979
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      },
+      "bottomGeometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 1979
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "month-calendar",
+      "label": "월별 캘린더",
+      "route": "/calendar-monthly",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-month-calendar-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 2
+      }
+    },
+    {
+      "id": "week-calendar",
+      "label": "주별 캘린더",
+      "route": "/calendar-weekly",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-week-calendar-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 2
+      }
+    },
+    {
+      "id": "month-list",
+      "label": "월별 리스트",
+      "route": "/list-monthly",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-month-list-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 2
+      }
+    },
+    {
+      "id": "week-list",
+      "label": "주별 리스트",
+      "route": "/list-weekly",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-week-list-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 2
+      }
+    },
+    {
+      "id": "stats",
+      "label": "운영현황",
+      "route": "/stats",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-stats-top.webp",
+        "1440-stats-bottom.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 1866
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      },
+      "bottomGeometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 1866
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "flights",
+      "label": "항공편 조회",
+      "route": "/flight-schedule",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-flights-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "approval",
+      "label": "결재",
+      "route": "/approval",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-approval-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "accounts",
+      "label": "계좌관리",
+      "route": "/accounts",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-accounts-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "messenger",
+      "label": "메신저",
+      "route": "/chat",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-messenger-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "mail",
+      "label": "메일",
+      "route": "/mail",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-mail-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "settings",
+      "label": "맞춤설정",
+      "route": "/settings",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "1440-settings-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "bodyWidth": 1440,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 1440,
+            "bottom": 1000,
+            "width": 1230,
+            "height": 895
+          },
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "dashboard",
+      "label": "대시보드",
+      "route": "/",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-dashboard-top.webp",
+        "800-dashboard-bottom.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 3064
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      },
+      "bottomGeometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 3064
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "month-calendar",
+      "label": "월별 캘린더",
+      "route": "/calendar-monthly",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-month-calendar-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 2
+      }
+    },
+    {
+      "id": "week-calendar",
+      "label": "주별 캘린더",
+      "route": "/calendar-weekly",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-week-calendar-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 2
+      }
+    },
+    {
+      "id": "month-list",
+      "label": "월별 리스트",
+      "route": "/list-monthly",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-month-list-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 3
+      }
+    },
+    {
+      "id": "week-list",
+      "label": "주별 리스트",
+      "route": "/list-weekly",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-week-list-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 3
+      }
+    },
+    {
+      "id": "stats",
+      "label": "운영현황",
+      "route": "/stats",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-stats-top.webp",
+        "800-stats-bottom.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 2360
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 1
+      },
+      "bottomGeometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 2360
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 1
+      }
+    },
+    {
+      "id": "flights",
+      "label": "항공편 조회",
+      "route": "/flight-schedule",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-flights-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "approval",
+      "label": "결재",
+      "route": "/approval",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-approval-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 899
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "accounts",
+      "label": "계좌관리",
+      "route": "/accounts",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-accounts-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 1
+      }
+    },
+    {
+      "id": "messenger",
+      "label": "메신저",
+      "route": "/chat",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-messenger-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "mail",
+      "label": "메일",
+      "route": "/mail",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-mail-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "settings",
+      "label": "맞춤설정",
+      "route": "/settings",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "800-settings-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 800,
+          "height": 1000
+        },
+        "documentWidth": 800,
+        "bodyWidth": 800,
+        "activePane": {
+          "bounds": {
+            "x": 210,
+            "y": 105,
+            "left": 210,
+            "top": 105,
+            "right": 800,
+            "bottom": 1000,
+            "width": 590,
+            "height": 895
+          },
+          "clientWidth": 590,
+          "scrollWidth": 590,
+          "clientHeight": 895,
+          "scrollHeight": 895
+        },
+        "reviewCandidateCount": 7,
+        "overflowContainerCount": 1
+      }
+    },
+    {
+      "id": "dashboard",
+      "label": "대시보드",
+      "route": "/",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-dashboard-top.webp",
+        "390-dashboard-bottom.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 3295
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      },
+      "bottomGeometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 3295
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "month-calendar",
+      "label": "월별 캘린더",
+      "route": "/calendar-monthly",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-month-calendar-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 739
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 2
+      }
+    },
+    {
+      "id": "week-calendar",
+      "label": "주별 캘린더",
+      "route": "/calendar-weekly",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-week-calendar-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 739
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 2
+      }
+    },
+    {
+      "id": "month-list",
+      "label": "월별 리스트",
+      "route": "/list-monthly",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-month-list-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 739
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 3
+      }
+    },
+    {
+      "id": "week-list",
+      "label": "주별 리스트",
+      "route": "/list-weekly",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-week-list-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 739
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 3
+      }
+    },
+    {
+      "id": "stats",
+      "label": "운영현황",
+      "route": "/stats",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-stats-top.webp",
+        "390-stats-bottom.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 2425
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 1
+      },
+      "bottomGeometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 2425
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 1
+      }
+    },
+    {
+      "id": "flights",
+      "label": "항공편 조회",
+      "route": "/flight-schedule",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-flights-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 739
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "approval",
+      "label": "결재",
+      "route": "/approval",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-approval-top.webp",
+        "390-approval-bottom.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 860
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      },
+      "bottomGeometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 860
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "accounts",
+      "label": "계좌관리",
+      "route": "/accounts",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-accounts-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 739
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 1
+      }
+    },
+    {
+      "id": "messenger",
+      "label": "메신저",
+      "route": "/chat",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-messenger-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 739
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "mail",
+      "label": "메일",
+      "route": "/mail",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-mail-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 739
+        },
+        "reviewCandidateCount": 0,
+        "overflowContainerCount": 0
+      }
+    },
+    {
+      "id": "settings",
+      "label": "맞춤설정",
+      "route": "/settings",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "screenshots": [
+        "390-settings-top.webp"
+      ],
+      "routeMatches": true,
+      "geometry": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "bodyWidth": 390,
+        "activePane": {
+          "bounds": {
+            "x": 0,
+            "y": 105,
+            "left": 0,
+            "top": 105,
+            "right": 390,
+            "bottom": 844,
+            "width": 390,
+            "height": 739
+          },
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "clientHeight": 739,
+          "scrollHeight": 739
+        },
+        "reviewCandidateCount": 12,
+        "overflowContainerCount": 1
+      }
+    }
+  ]
+}

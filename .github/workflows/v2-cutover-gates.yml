@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -41,10 +41,10 @@ jobs:
         run: pnpm run verify:schema:v2
 
       - name: Web v2 proxy contract tests
-        run: pnpm --filter @entrip/web test -- app/api/v2 app/api/auth
+        run: pnpm --filter @entrip/web exec jest --runInBand app/api/v2 app/api/auth
 
-      - name: Web bookings v2 mapping tests
-        run: pnpm --filter @entrip/web test -- route.v2-mapping.test.ts
+      - name: Web booking editor and session contracts
+        run: pnpm exec jest --config apps/web/jest.config.js --runInBand --runTestsByPath apps/web/__tests__/booking-editor-model.test.ts apps/web/__tests__/booking-editor-accessibility.test.tsx apps/web/__tests__/auth-session.test.ts
 
   db-and-runtime-gates:
     name: DB + Runtime Smoke Gates
@@ -63,7 +63,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2

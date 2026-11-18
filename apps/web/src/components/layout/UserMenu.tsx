@@ -2,7 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@entrip/ui';
-import { useAuthStore, useUserRole } from '../../lib/auth-store';
+import { useAuthStore } from '../../lib/auth-store';
+import { useWorkspaceStore } from '@entrip/shared/client';
+import { useTabRouter } from '@/hooks/useTabRouter';
 
 interface UserMenuProps {
   className?: string;
@@ -10,7 +12,8 @@ interface UserMenuProps {
 
 export function UserMenu({ className = '' }: UserMenuProps) {
   const { user, logout } = useAuthStore();
-  const { isAdmin, isManager, role } = useUserRole();
+  const { navigateInTab } = useTabRouter();
+  const [showHelp, setShowHelp] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -33,6 +36,7 @@ export function UserMenu({ className = '' }: UserMenuProps) {
   }
 
   const handleLogout = () => {
+    if (useWorkspaceStore.getState().tabs.some(tab => tab.state?.isDirty) && !window.confirm('저장하지 않은 작업이 있습니다. 로그아웃하시겠습니까?')) return;
     setIsOpen(false);
     logout();
   };
@@ -64,15 +68,15 @@ export function UserMenu({ className = '' }: UserMenuProps) {
       {/* User Avatar Button */}
       <button
         onClick={() => {
-          console.log('UserMenu clicked, current isOpen:', isOpen, '→ will be:', !isOpen);
           setIsOpen(!isOpen);
         }}
+        aria-label="사용자 메뉴" aria-expanded={isOpen}
         className="flex items-center space-x-2 p-2 rounded-lg hover:bg-white/10 transition-colors"
       >
         {/* Avatar */}
         <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
           <span className="text-brand-primary text-sm font-medium">
-            {user.name.charAt(user.name.length - 2)}
+            {user.name.slice(-1)}
           </span>
         </div>
         
@@ -93,14 +97,13 @@ export function UserMenu({ className = '' }: UserMenuProps) {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        console.log('Dropdown is now rendering with isOpen:', isOpen),
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[9999]">
+        <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-24px)] bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-[9999]">
           {/* User Info */}
           <div className="px-4 py-3 border-b border-gray-200">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
                 <span className="text-white font-medium">
-                  {user.name.charAt(user.name.length - 2)}
+                  {user.name.slice(-1)}
                 </span>
               </div>
               <div className="flex-1">
@@ -121,37 +124,24 @@ export function UserMenu({ className = '' }: UserMenuProps) {
             <button
               onClick={() => {
                 setIsOpen(false);
-                // TODO: Open profile modal
+                navigateInTab('/settings');
               }}
               className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
             >
               <Icon icon="ph:user" className="w-4 h-4 mr-3" />
-              프로필 설정
+              직원 정보
             </button>
-
-            {isAdmin && (
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  // TODO: Navigate to admin panel
-                }}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-              >
-                <Icon icon="ph:gear" className="w-4 h-4 mr-3" />
-                시스템 관리
-              </button>
-            )}
 
             <button
               onClick={() => {
-                setIsOpen(false);
-                // TODO: Open help modal
+                setShowHelp(value => !value);
               }}
               className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
             >
               <Icon icon="ph:question" className="w-4 h-4 mr-3" />
               도움말
             </button>
+            {showHelp && <p className="mx-3 rounded bg-blue-50 p-3 text-xs leading-relaxed text-gray-600">캘린더에서 날짜를 눌러 예약을 등록하세요. + 버튼이나 Ctrl / ⌘ + 메뉴 클릭으로 새 작업 탭을 열 수 있습니다. 각 탭의 입력은 따로 보관됩니다.</p>}
 
             <div className="border-t border-gray-200 my-1"></div>
 

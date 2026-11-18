@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { clsx } from 'clsx'
-import { useWorkspaceStore } from '@entrip/shared/client'
 
 interface ContentShellProps extends React.ComponentProps<'main'> {
   children: React.ReactNode
@@ -13,15 +12,11 @@ export function ContentShell({
   children,
   ...props
 }: ContentShellProps) {
-  const { sidebarCollapsed } = useWorkspaceStore()
-  
-  // Version tracking  
-  console.log('🏗️ ContentShell loaded - Version: 2025-01-22-v2');
   
   return (
     <main
       className={clsx(
-        'relative bg-white flex-1 min-h-0 overflow-auto transition-all duration-300',
+        'relative bg-white flex-1 min-h-0 min-w-0 overflow-auto transition-all duration-300',
         'shadow-lg',
         className
       )}
@@ -42,7 +37,7 @@ export function ContentShell({
         }}
         aria-hidden="true"
       />
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         {children}
       </div>
     </main>

@@ -1,6 +1,5 @@
 /**
- * Booking optimistic locking + ETag/If-Match contract tests (skipped placeholder)
- * TODO: implement with supertest against running v2 server and seeded DB
+ * Booking optimistic locking + ETag/If-Match contracts against a real isolated database
  */
 
 import request from 'supertest';

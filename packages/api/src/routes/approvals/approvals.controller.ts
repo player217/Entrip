@@ -13,7 +13,7 @@ export class ApprovalsController {
   list = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const query = req.query as unknown as ApprovalQueryInput;
-      const result = await approvalsService.list(query);
+      const result = await approvalsService.list(query, req.user!.companyCode);
 
       res.json({
         success: true,
@@ -30,7 +30,7 @@ export class ApprovalsController {
   findById = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const approval = await approvalsService.findById(id);
+      const approval = await approvalsService.findById(id, req.user!.companyCode);
 
       res.json({
         success: true,
@@ -103,7 +103,7 @@ export class ApprovalsController {
   delete = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      await approvalsService.delete(id);
+      await approvalsService.delete(id, req.user!);
 
       res.status(204).send();
     } catch (error) {
@@ -117,11 +117,11 @@ export class ApprovalsController {
   getStats = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { year, month } = req.query;
-      
+
       const yearNum = year ? parseInt(year as string) : new Date().getFullYear();
       const monthNum = month ? parseInt(month as string) : undefined;
 
-      const stats = await approvalsService.getStats(yearNum, monthNum);
+      const stats = await approvalsService.getStats(yearNum, monthNum, req.user!.companyCode);
 
       res.json({
         success: true,

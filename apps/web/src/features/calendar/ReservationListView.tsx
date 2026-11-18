@@ -6,32 +6,14 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { BookingModal } from '@/components/booking/BookingModal';
 import { clsx } from 'clsx';
 import type { BookingEvent } from '@entrip/shared';
-import { Booking as SharedBooking, logger, BookingStatus } from '@entrip/shared';
+import { Booking as SharedBooking, BookingStatus } from '@entrip/shared';
 import { useBookings } from '@/hooks/useBookings';
-import { exportToExcel, exportToPDF } from '@/utils/export';
-import { apiClient } from '@/lib/api-client';
-import { getBookingDate, priceOf, getPaxCount, getCustomerName, getReturnDate } from '@/utils/booking-helpers';
-import { useToast } from '@/providers/ToastProvider';
+import { getBookingDate, getPaxCount, getCustomerName, getReturnDate } from '@/utils/booking-helpers';
 import { format } from 'date-fns';
 import { useReservationViewStore } from '@/stores/reservationViewStore';
 
 // Import working WeekView
 import WeekView from './WeekView';
-const WeekViewMobile = (_props: { events: CalendarEvent[]; currentDate: Date }) => null;
-const CalendarVirtual = (_props: { currentDate: Date; bookings: Booking[]; onDayClick: (date: Date) => void; onBookingClick: (booking: Booking) => void }) => null;
-const BulkActionBar = (_props: { selectedCount: number; onAction: (action: string) => void; onClose: () => void }) => null;
-
-// CalendarEvent type from CalendarWeek component
-interface CalendarEvent {
-  id: string;
-  date: string;
-  title: string;
-  type: 'golf' | 'incentive' | 'honeymoon' | 'airtel' | 'other';
-  status: BookingStatus.CONFIRMED | 'pending' | BookingStatus.CANCELLED;
-  time?: string;
-  details?: string;
-}
-
 interface Booking {
   id: string;
   bookingNumber?: string;
@@ -61,28 +43,21 @@ export default function ReservationListView({
   viewType = 'calendar-month',
   currentMonth = new Date()
 }: ReservationListViewProps) {
-  const { addToast } = useToast();
   
   // Use Zustand store for state management
   const {
     activeView,
     currentMonth: storeCurrentMonth,
-    selectedDate,
     isModalOpen,
     selectedBookingId,
     selectedIds,
-    searchQuery,
-    statusFilter,
     setActiveView,
     setCurrentMonth,
-    setSelectedDate,
     openModal,
     closeModal,
     setSelectedIds: setStoreSelectedIds,
     toggleSelectedId,
     clearSelection,
-    setSearchQuery,
-    setStatusFilter
   } = useReservationViewStore();
   
   // Use store's currentMonth or fallback to prop with type safety

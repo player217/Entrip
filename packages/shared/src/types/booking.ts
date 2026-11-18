@@ -68,6 +68,14 @@ export interface NewTeamPayload {
 
 // New Phase 2 Booking interface (matches API schema)
 export interface Booking {
+  type?: string;
+  contact?: string;
+  email?: string;
+  representative?: string;
+  flightInfo?: unknown;
+  hotelInfo?: unknown;
+  vehicleInfo?: unknown;
+  insuranceInfo?: unknown;
   id: string;
   bookingNumber: string;
   customerName: string; // Maps to API schema

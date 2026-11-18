@@ -6,6 +6,7 @@ interface RateLimitEntry {
   count: number;
   resetTime: number;
   lastRequest: number;
+  penaltyApplied?: boolean;
   violations: number; // Track repeated violations
   burstCount: number; // Track burst requests
   burstResetTime: number; // Burst window reset time
@@ -94,7 +95,7 @@ class RateLimiter {
 
     if (!entry || now > entry.resetTime) {
       // Create new entry or reset expired entry
-      const violations = entry?.violations || 0; // Preserve violations across resets
+      const violations = entry?.penaltyApplied ? 0 : entry?.violations || 0;
       entry = {
         count: 0,
         resetTime: now + windowMs,
@@ -104,6 +105,8 @@ class RateLimiter {
         burstResetTime: now + (config.burstWindowMs || 1000),
       };
     }
+
+    if (entry.penaltyApplied) return { allowed: false, remaining: 0, resetTime: entry.resetTime };
 
     // Reset burst counter if burst window expired
     if (now > entry.burstResetTime) {
@@ -141,6 +144,7 @@ class RateLimiter {
       if (config.enableProgressivePenalty) {
         const penaltyMultiplier = Math.min(entry.violations, 10); // Cap at 10x
         entry.resetTime = now + (windowMs * penaltyMultiplier);
+        entry.penaltyApplied = true;
         this.store.set(key, entry);
 
         logger.warn('Rate limit extended penalty applied', {
@@ -246,7 +250,7 @@ export function createRateLimit(config: Partial<RateLimitConfig> = {}): (req: Re
     // Base key
     const baseKey = rateLimiter.generateKey(req, finalConfig.keyGenerator);
     // Test isolation: allow per-run prefix via header/env in test mode
-    const maybeHeaderPrefix = req.get('X-Test-Run-Id') || '';
+    const maybeHeaderPrefix = process.env.NODE_ENV === 'test' ? (req.get('X-Test-Run-Id') || '') : '';
     const maybeEnvPrefix = process.env.NODE_ENV === 'test' ? (process.env.RATE_LIMIT_PREFIX || '') : '';
     const key = [maybeHeaderPrefix || maybeEnvPrefix, baseKey].filter(Boolean).join(':');
     const result = rateLimiter.check(key, finalConfig);
@@ -342,7 +346,7 @@ export const authRateLimit = (req: Request, res: Response, next: NextFunction) =
   return _authRateLimitInner(req, res, next);
 };
 
-export const apiRateLimit = createRateLimit({
+const anonymousLimits = {
   windowMs: 60 * 1000, // 1 minute
   maxRequests: appConfig.server.isProduction ? 30 : 60, // Stricter in production
   message: 'API rate limit exceeded. Please slow down your requests.',
@@ -350,6 +354,11 @@ export const apiRateLimit = createRateLimit({
   enableDDoSProtection: true,
   burstLimit: appConfig.server.isProduction ? 15 : 20,
   maxViolations: appConfig.server.isProduction ? 3 : 5,
+};
+const anonymousApiRateLimit = createRateLimit(anonymousLimits);
+export const publicFxRateLimit = createRateLimit({
+  ...anonymousLimits,
+  keyGenerator: req => `${req.ip || req.socket.remoteAddress || 'unknown'}:public-fx`,
 });
 
 // New: Ultra-strict rate limiter for critical endpoints
@@ -362,3 +371,16 @@ export const criticalRateLimit = createRateLimit({
   burstLimit: 1, // No burst allowed
   maxViolations: 1, // Immediate extended ban
 });
+
+// Only verified middleware claims select a personal budget; headers never do.
+const authenticatedApiRateLimit = createRateLimit({
+  windowMs: 60_000,
+  maxRequests: Number(process.env.AUTHENTICATED_RATE_LIMIT || 300),
+  burstLimit: Number(process.env.AUTHENTICATED_BURST_LIMIT || 60),
+  enableProgressivePenalty: false,
+  maxViolations: 0,
+  message: 'API rate limit exceeded. Please retry shortly.',
+  keyGenerator: (req: Request) => `user:${(req as any).user.companyCode}:${(req as any).user.id}`,
+});
+export const apiRateLimit = (req: Request, res: Response, next: NextFunction) =>
+  (req as any).user?.id ? authenticatedApiRateLimit(req, res, next) : anonymousApiRateLimit(req, res, next);

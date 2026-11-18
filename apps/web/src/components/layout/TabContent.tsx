@@ -1,99 +1,70 @@
-'use client'
+'use client';
 
-import React, { useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import dynamic from 'next/dynamic'
+import React, { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useWorkspaceStore } from '@entrip/shared/client';
+import { WorkspaceTabContext } from '@/components/workspace/WorkspaceTabContext';
+import { workspaceRouteInfo } from '@/lib/workspace-routes';
+import { useTabRouter } from '@/hooks/useTabRouter';
 
-interface TabContentProps {
-  tabKey: string
-  route: string
-  visible: boolean
-  onStateChange?: (state: any) => void
-  savedState?: any
-}
-
-// 라우트별 컴포넌트 동적 로딩 - 고유 컴포넌트 사용 (page.tsx 안티패턴 해결)
-const routeComponents: Record<string, React.ComponentType<any>> = {
+const pages: Record<string, React.ComponentType> = {
   '/': dynamic(() => import('../pages/DashboardPageContent'), { ssr: false }),
   '/dashboard': dynamic(() => import('../pages/DashboardPageContent'), { ssr: false }),
-  '/reservations': dynamic(() => import('../pages/ReservationsPageContent'), { ssr: false }),
-  '/calendar-performance': dynamic(() => import('../pages/CalendarPerformancePageContent'), { ssr: false }),
-  '/approval': dynamic(() => import('../pages/ApprovalPageContent'), { ssr: false }),
-  '/accounts': dynamic(() => import('../pages/AccountsPageContent'), { ssr: false }),
-  '/stats': dynamic(() => import('../pages/StatsPageContent'), { ssr: false }),
-  '/settings': dynamic(() => import('../pages/SettingsPageContent'), { ssr: false }),
-  '/mail': dynamic(() => import('../pages/MailPageContent'), { ssr: false }),
-  '/chat': dynamic(() => import('../pages/ChatPageContent'), { ssr: false }),
-  '/flow': dynamic(() => import('../pages/FlowPageContent'), { ssr: false }),
-  '/workspace': dynamic(() => import('../pages/WorkspacePageWrapper'), { ssr: false }),
-  '/flight-schedule': dynamic(() => import('../pages/FlightSchedulePageContent'), { ssr: false }),
+  '/calendar-monthly': dynamic(() => import('../../../app/(main)/calendar-monthly/page'), { ssr: false }),
+  '/calendar-weekly': dynamic(() => import('../../../app/(main)/calendar-weekly/page'), { ssr: false }),
+  '/calendar-week': dynamic(() => import('../../../app/(main)/calendar-weekly/page'), { ssr: false }),
+  '/list-monthly': dynamic(() => import('../../../app/(main)/list-monthly/page'), { ssr: false }),
+  '/list-weekly': dynamic(() => import('../../../app/(main)/list-weekly/page'), { ssr: false }),
+  '/approval': dynamic(() => import('../../../app/(main)/approval/page'), { ssr: false }),
+  '/accounts': dynamic(() => import('../../../app/(main)/accounts/page'), { ssr: false }),
+  '/stats': dynamic(() => import('../../../app/(main)/stats/page'), { ssr: false }),
+  '/settings': dynamic(() => import('../../../app/(main)/settings/page'), { ssr: false }),
+  '/mail': dynamic(() => import('../../../app/(main)/mail/page'), { ssr: false }),
+  '/chat': dynamic(() => import('../../../app/(main)/chat/page'), { ssr: false }),
+  '/flow': dynamic(() => import('../../../app/(main)/flow/page'), { ssr: false }),
+  '/calendar-performance': dynamic(() => import('../../../app/(main)/calendar-performance/page'), { ssr: false }),
+  '/flight-schedule': dynamic(() => import('../../../app/(main)/flight-schedule/page'), { ssr: false }),
+};
+
+function EmptyWorkspace() {
+  const { navigateInTab } = useTabRouter();
+  return <div className="mx-auto flex max-w-xl flex-col items-center gap-5 py-16 text-center">
+    <h1 className="text-2xl font-semibold text-gray-800">새 작업</h1>
+    <p className="entrip-no-print text-sm text-gray-500">사이드바에서 메뉴를 선택하세요. 다른 탭의 작업은 그대로 유지됩니다.</p>
+    <p className="entrip-print-only">선택한 업무가 없습니다.</p>
+    <div className="entrip-no-print flex flex-wrap justify-center gap-3">
+      <button className="rounded-lg border px-4 py-3 hover:bg-blue-50" onClick={() => navigateInTab('/calendar-monthly')}>예약관리</button>
+      <button className="rounded-lg border px-4 py-3 hover:bg-blue-50" onClick={() => navigateInTab('/accounts')}>계좌관리</button>
+      <button className="rounded-lg border px-4 py-3 hover:bg-blue-50" onClick={() => navigateInTab('/approval')}>결재</button>
+    </div>
+  </div>;
 }
 
-export function TabContent({ 
-  tabKey, 
-  route, 
-  visible, 
-  onStateChange,
-  savedState 
-}: TabContentProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [scrollPosition, setScrollPosition] = useState(0)
-  const [isLoaded, setIsLoaded] = useState(false)
-  
-  // 스크롤 위치 저장 및 복원
+interface TabContentProps {
+  tabKey: string;
+  route: string;
+  visible: boolean;
+  fallback?: React.ReactNode;
+}
+
+export function TabContent({ tabKey, route, visible, fallback }: TabContentProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [loaded, setLoaded] = useState(visible);
+  useEffect(() => { if (visible) setLoaded(true); }, [visible]);
   useEffect(() => {
-    if (!containerRef.current) return
-    
-    if (visible && savedState?.scrollPosition) {
-      // 탭이 활성화될 때 스크롤 위치 복원
-      containerRef.current.scrollTop = savedState.scrollPosition
-    }
-    
-    const handleScroll = () => {
-      if (visible && containerRef.current) {
-        const position = containerRef.current.scrollTop
-        setScrollPosition(position)
-        onStateChange?.({ scrollPosition: position })
-      }
-    }
-    
-    const container = containerRef.current
-    container?.addEventListener('scroll', handleScroll)
-    
-    return () => {
-      container?.removeEventListener('scroll', handleScroll)
-    }
-  }, [visible, savedState, onStateChange])
-  
-  // 컴포넌트 로드 상태 관리
-  useEffect(() => {
-    if (visible && !isLoaded) {
-      setIsLoaded(true)
-    }
-  }, [visible, isLoaded])
-  
-  // 라우트에 해당하는 컴포넌트 가져오기
-  const Component = routeComponents[route] || routeComponents['/']
-  
-  return (
-    <div
-      ref={containerRef}
-      className="tab-content-container"
-      style={{
-        display: visible ? 'block' : 'none',
-        height: '100%',
-        width: '100%',
-        overflow: 'auto',
-        position: 'relative'
-      }}
-      data-tab-key={tabKey}
-    >
-      {/* 한 번 로드된 컴포넌트는 계속 유지 */}
-      {(isLoaded || visible) && Component && (
-        <div className="tab-content-wrapper">
-          <Component />
-        </div>
-      )}
-    </div>
-  )
+    const element = containerRef.current;
+    if (!element || !visible) return;
+    const position = useWorkspaceStore.getState().tabs.find(tab => tab.key === tabKey)?.state?.scrollPosition;
+    if (typeof position === 'number') element.scrollTop = position;
+  }, [tabKey, visible]);
+  const path = route.split('?')[0] ?? route;
+  const Component = pages[path];
+  return <div ref={containerRef} role="tabpanel" id={`pane-${tabKey}`} aria-labelledby={`tab-${tabKey}`} hidden={!visible}
+    data-print-route={path} className="entrip-workspace-pane h-full min-w-0 overflow-auto p-3 sm:p-6" style={{ display: visible ? 'block' : 'none' }} data-tab-key={tabKey}
+    onScroll={event => useWorkspaceStore.getState().updateTabState(tabKey, { scrollPosition: event.currentTarget.scrollTop })}>
+    {(loaded || visible) && <WorkspaceTabContext.Provider value={{ tabKey, active: visible }}>
+      <div className="entrip-report-brand entrip-print-only"><strong>ENTRIP</strong><span>{workspaceRouteInfo(path).label}</span></div>
+      {Component ? <Component key={route} /> : path === '/workspace' ? <EmptyWorkspace /> : visible ? fallback : null}
+    </WorkspaceTabContext.Provider>}
+  </div>;
 }

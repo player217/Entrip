@@ -2,6 +2,7 @@ import { createServer } from 'http';
 import { io as ioc, Socket as ClientSocket } from 'socket.io-client';
 import { initializeWebSocket, broadcastBookingUpdateForCompany } from '../ws';
 import { jwtService } from '../lib/jwt.service';
+import prisma from '../lib/prisma';
 
 describe('WS booking events (cookie-first auth)', () => {
   let httpServer: any;
@@ -31,6 +32,7 @@ describe('WS booking events (cookie-first auth)', () => {
       role: 'ADMIN' as any,
       companyCode: 'j1',
     };
+    await prisma.user.create({ data: { ...payload, password: 'unused', isActive: true } });
     const token = jwtService.signAccessToken(payload);
 
     const client: ClientSocket = ioc(`http://localhost:${port}`, {

@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "pnpm run prisma:generate:v2 || true",
+    "postinstall": "pnpm run prisma:generate:v2",
     "dev": "cross-env NODE_OPTIONS=--no-warnings NEXT_TELEMETRY_DISABLED=1 pnpm run build:tokens && turbo run dev",
     "dev:all": "npm-run-all --parallel dev:web dev:api-v2",
     "dev:web": "pnpm --filter @entrip/web dev",
@@ -34,9 +34,9 @@
     "prisma:migrate": "node scripts/prisma-manager.js migrate",
     "prisma:cleanup": "node scripts/prisma-manager.js force-cleanup",
     "setup:wsl2": "powershell -ExecutionPolicy Bypass -File scripts/setup-wsl2.ps1",
-    "build": "pnpm run build:tokens && pnpm run build:ts && turbo run bundle",
+    "build": "pnpm run build:tokens && pnpm run build:ts && turbo run bundle && node scripts/verify-build-artifacts.mjs",
     "build:tokens": "pnpm --filter @entrip/design-tokens build",
-    "build:ts": "tsc -b --pretty",
+    "build:ts": "tsc -b tsconfig.base.json --pretty && tsc -b packages/api --pretty && tsc -p packages/api/tsconfig.seed.json --pretty",
     "build:clean": "tsc -b --clean",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -45,10 +45,10 @@
     "lint:fix": "pnpm -r exec eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
-    "type-check": "tsc -b tsconfig.base.json --pretty",
-    "type-check:strict": "cross-env CI_TYPE_CHECK=strict tsc -b tsconfig.base.json --pretty",
-    "type-check:prod": "cross-env CI_TYPE_CHECK=strict tsc -b tsconfig.base.json --pretty",
-    "ci:type-check": "cross-env CI_TYPE_CHECK=strict tsc -b tsconfig.base.json --pretty",
+    "type-check": "pnpm run build:ts",
+    "type-check:strict": "pnpm run build:ts",
+    "type-check:prod": "pnpm run build:ts",
+    "ci:type-check": "pnpm run build:ts",
     "build:strict": "cross-env CI_TYPE_CHECK=strict pnpm run build",
     "test": "jest --config jest.config.js --selectProjects @entrip/shared",
     "test:watch": "jest --watch",
@@ -135,7 +135,7 @@
     "ts-node-dev": "^2.0.0"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=22.0.0",
     "pnpm": ">=8.0.0"
   },
   "msw": {

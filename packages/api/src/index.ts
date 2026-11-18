@@ -14,20 +14,25 @@ import { logger } from './lib/logger';
 // Middleware imports
 import { errorHandler } from './middlewares/error.middleware';
 import { loggingMiddleware, errorLoggingMiddleware } from './middlewares/logging.middleware';
-import { apiRateLimit } from './middlewares/rateLimit.middleware';
+import { optionalAuth } from './middlewares/auth.middleware';
+import { apiRateLimit, publicFxRateLimit } from './middlewares/rateLimit.middleware';
 import { requestId } from './middlewares/requestId.middleware';
 import { ipValidation } from './middlewares/ipValidation.middleware';
 
 // WebSocket import
-import { initializeWebSocket } from './ws';
+import { initializeWebSocket, notifyCompanyWrites } from './ws';
 
 // Route imports
 import authRoutes from './routes/auth/auth.route';
 import usersRoutes from './routes/users/users.route';
+import messagesRoutes from './routes/messages/messages.route';
 import bookingRoutes from './routes/bookings/bookings.route';
 import calendarRoutes from './routes/calendar/calendar.route';
 import accountsRoutes from './routes/accounts/accounts.route';
 import financeRoutes from './routes/finance/finance.route';
+import bankAccountsRoutes from './routes/bank-accounts/bank-accounts.route';
+import flightRoutes from './routes/flight.route';
+import fxRoutes from './routes/fx.route';
 import approvalsRoutes from './routes/approvals/approvals.route';
 import healthRoutes from './routes/health/health.route';
 import metricsRoutes from './routes/metrics/metrics.route';
@@ -42,6 +47,8 @@ validateConfig();
 
 // Create Express app
 export const app: Application = express();
+const { browser } = appConfig;
+if (browser.lanHttp) app.set('trust proxy', 'loopback');
 
 // Global middlewares
 app.use(loggingMiddleware);
@@ -65,7 +72,7 @@ app.use(helmet({
         : ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Development only
       scriptSrcAttr: ["'none'"],
       styleSrc: ["'self'", "https:", "'unsafe-inline'"],
-      upgradeInsecureRequests: appConfig.server.isProduction ? [] : null,
+      upgradeInsecureRequests: appConfig.server.isProduction && !browser.lanHttp ? [] : null,
     },
   },
 
@@ -87,7 +94,7 @@ app.use(helmet({
   referrerPolicy: { policy: ["no-referrer", "strict-origin-when-cross-origin"] },
 
   // HTTP Strict Transport Security - Forces HTTPS
-  hsts: appConfig.server.isProduction
+  hsts: appConfig.server.isProduction && !browser.lanHttp
     ? {
         maxAge: 31536000, // 1 year
         includeSubDomains: true,
@@ -120,41 +127,19 @@ app.use(helmet({
   })
 }));
 // Enhanced CORS Configuration with Security Validation
-const getAllowedOrigins = (): string[] => {
-  const origins = [appConfig.cors.clientUrl];
-
-  // Add environment-specific origins
-  if (appConfig.server.isDevelopment) {
-    origins.push('http://localhost:3000', 'http://127.0.0.1:3000');
-  } else if (appConfig.server.isProduction) {
-    // Add production domains here
-    // origins.push('https://your-production-domain.com');
+// Browser writes in LAN mode require an explicit launcher-approved origin.
+app.use((req, res, next) => {
+  if (browser.lanHttp && !['GET', 'HEAD', 'OPTIONS'].includes(req.method) &&
+      !browser.permitsOrigin(req.get('origin'))) {
+    return res.status(403).json({ message: '허용된 서버 주소에서 접속해 주세요.' });
   }
-
-  return origins;
-};
+  return next();
+});
 
 app.use(cors({
   origin: (origin, callback) => {
-    const allowedOrigins = getAllowedOrigins();
-
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin && appConfig.server.isDevelopment) {
-      return callback(null, true);
-    }
-
-    // Check if origin is allowed
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      logger.warn('CORS blocked request from unauthorized origin', {
-        origin,
-        allowedOrigins,
-        userAgent: 'Unknown',
-        timestamp: new Date().toISOString(),
-      });
-      callback(new Error('Not allowed by CORS policy'));
-    }
+    if (!origin || browser.permitsOrigin(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS policy'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -178,23 +163,28 @@ app.get('/health', (req, res) => {
 // API Routes with v2 prefix for new API
 const apiV2 = express.Router();
 
-// Apply rate limiting to all API routes
-apiV2.use(apiRateLimit);
+// The shared public rate feed has its own budget, including requests from the web proxy.
+apiV2.use('/fx', publicFxRateLimit, fxRoutes);
+
+apiV2.use(optionalAuth, apiRateLimit);
 
 app.use('/api/v2', apiV2);
 
 // Mount routes
 apiV2.use('/health', healthRoutes);
 apiV2.use('/auth', authRoutes);
-apiV2.use('/users', usersRoutes);
-apiV2.use('/bookings', bookingRoutes);
-apiV2.use('/calendar', calendarRoutes);
-apiV2.use('/accounts', accountsRoutes);
-apiV2.use('/finance', financeRoutes);
-apiV2.use('/approvals', approvalsRoutes);
+apiV2.use('/users', notifyCompanyWrites('users'), usersRoutes);
+apiV2.use('/messages', messagesRoutes);
+apiV2.use('/bookings', notifyCompanyWrites('bookings'), bookingRoutes);
+apiV2.use('/calendar', notifyCompanyWrites('bookings'), calendarRoutes);
+apiV2.use('/accounts', notifyCompanyWrites('finance'), accountsRoutes);
+apiV2.use('/finance', notifyCompanyWrites('finance'), financeRoutes);
+apiV2.use('/bank-accounts', notifyCompanyWrites('finance'), bankAccountsRoutes);
+apiV2.use('/flights', flightRoutes);
+apiV2.use('/approvals', notifyCompanyWrites('finance'), approvalsRoutes);
 apiV2.use('/metrics', metricsRoutes);
 apiV2.use('/notifications', notificationsRoutes);
-apiV2.use('/team-bookings', teamBookingsRoutes);
+apiV2.use('/team-bookings', notifyCompanyWrites('bookings'), teamBookingsRoutes);
 // apiV1.use('/payments', paymentRoutes);
 // apiV1.use('/messaging', messagingRoutes);
 // apiV1.use('/mail', mailRoutes);
@@ -216,7 +206,7 @@ if (!appConfig.server.isTest) {
   const io = initializeWebSocket(server);
   app.set('io', io); // Store io instance in app for routes to use
 
-  server.listen(PORT, () => {
+  server.listen(browser.lanHttp ? { port: PORT, host: '127.0.0.1' } : { port: PORT }, () => {
     logger.info('🚀 API v2 Server started successfully', {
       port: PORT,
       environment: appConfig.server.nodeEnv,

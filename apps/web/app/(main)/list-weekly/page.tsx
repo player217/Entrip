@@ -1,8 +1,3 @@
 'use client';
-
-import WeeklyListPage from '@/features/calendar/WeeklyListPage';
-
-export default function ListWeeklyPage() {
-  return <WeeklyListPage />;
-}
-
+import { BookingWorkspace } from '@/features/bookings/BookingWorkspace';
+export default function BookingPage() { return <BookingWorkspace view="week-list" />; }

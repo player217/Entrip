@@ -3,7 +3,15 @@ import { UserRole } from '@prisma/client';
 import { authService, AuthTokenPayload } from './auth.service';
 import { AuthRequest } from '../../middlewares/auth.middleware';
 import { RegisterInput } from './dtos/Register.dto';
+import { appConfig } from '../../config';
 import { LoginInput } from './dtos/Login.dto';
+
+const sessionCookie = {
+  httpOnly: true,
+  secure: appConfig.browser.secureCookies,
+  sameSite: 'lax' as const,
+  path: '/',
+};
 
 export class AuthController {
   /**
@@ -18,20 +26,14 @@ export class AuthController {
 
       // Set auth token as HttpOnly cookie
       res.cookie('auth-token', result.tokens.accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        ...sessionCookie,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/',
       });
 
       // Set refresh token cookie
       res.cookie('refresh-token', result.tokens.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        ...sessionCookie,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        path: '/',
       });
 
       res.status(201).json({
@@ -59,20 +61,14 @@ export class AuthController {
 
       // Set auth token as HttpOnly cookie
       res.cookie('auth-token', result.tokens.accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        ...sessionCookie,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/',
       });
 
       // Set refresh token cookie
       res.cookie('refresh-token', result.tokens.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        ...sessionCookie,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        path: '/',
       });
 
       res.json({
@@ -105,20 +101,14 @@ export class AuthController {
 
       // Update auth token cookie
       res.cookie('auth-token', tokens.accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        ...sessionCookie,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/',
       });
 
       // Update refresh token cookie
       res.cookie('refresh-token', tokens.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        ...sessionCookie,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        path: '/',
       });
 
       res.json({
@@ -136,19 +126,9 @@ export class AuthController {
   logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Clear all auth cookies
-      res.clearCookie('auth-token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      });
+      res.clearCookie('auth-token', sessionCookie);
 
-      res.clearCookie('refresh-token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      });
+      res.clearCookie('refresh-token', sessionCookie);
 
       res.json({
         success: true,

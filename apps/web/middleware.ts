@@ -1,95 +1,28 @@
-// apps/web/middleware.ts - D2.1: Enhanced Authentication Middleware
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-// Public routes that don't require authentication
-const publicPaths = ['/login', '/api/auth/login', '/api/exchange', '/api/health', '/api/v2', '/_next/static', '/_next/image', '/favicon.ico']
-
-/**
- * D2.1: Enhanced Token Validation
- * Validates JWT tokens server-side for improved security
- */
-async function validateToken(token: string): Promise<{ isValid: boolean; error?: string }> {
-  try {
-    // D2.1: Server-side token validation via API v2
-    // Prefer v2 internal URL; fall back to v1 var for legacy setups
-    const baseUrl = process.env.INTERNAL_API_V2_URL
-      || process.env.API_V2_URL
-      || process.env.INTERNAL_API_URL
-      || 'http://api-v2:4000';
-    const response = await fetch(`${baseUrl}/api/v2/auth/me`, {
-      method: 'GET',
-      headers: {
-        'Cookie': `auth-token=${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      return { 
-        isValid: false, 
-        error: `Token validation failed: ${response.status}` 
-      }
+export function middleware(request: NextRequest) {
+  // Reject development diagnostics before streaming starts so production returns HTTP 404.
+  const pathname = request.nextUrl.pathname;
+  if (process.env.NODE_ENV === 'production' && (pathname === '/icon-test' || pathname.startsWith('/icon-test/'))) {
+    return new NextResponse('Not Found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+  }
+  // API authorization is enforced by the API itself. Page data is verified by MainLayout.
+  // Avoid a second server check on every asset/navigation, which exhausted login budgets.
+  if (!request.cookies.get('auth-token')?.value) {
+    // Next may reconstruct request.url with its container address. Use the
+    // gateway's external Host only after matching a launch-time allowed origin.
+    let base = request.url;
+    if (process.env.NEXT_PUBLIC_ENTRIP_LAN === 'true') {
+      const origin = `http://${request.headers.get('host')}`;
+      const allowed = (process.env.ENTRIP_LAN_ORIGINS || '').split(',').map(value => value.trim());
+      if (!allowed.includes(origin)) return new NextResponse('Unknown server address', { status: 400 });
+      base = origin;
     }
-
-    const data = await response.json()
-    return { 
-      isValid: data.success === true,
-      error: data.success ? undefined : data.message 
-    }
-  } catch (error) {
-    console.error('[D2.1] Token validation error:', error)
-    return { 
-      isValid: false, 
-      error: 'Token validation service unavailable' 
-    }
+    const login = new URL('/login', base);
+    login.searchParams.set('from', request.nextUrl.pathname);
+    return NextResponse.redirect(login);
   }
+  return NextResponse.next();
 }
-
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-  
-  // Allow public routes
-  if (publicPaths.some(path => pathname.startsWith(path))) {
-    return NextResponse.next()
-  }
-
-  // D2.1: Enhanced authentication checks
-  const token = request.cookies.get('auth-token')?.value
-  
-  // If no token, redirect to login
-  if (!token) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('from', pathname)
-    return NextResponse.redirect(loginUrl)
-  }
-
-  // D2.1: Validate token integrity and expiration
-  const validation = await validateToken(token)
-  
-  if (!validation.isValid) {
-    console.warn(`[D2.1] Token validation failed for ${pathname}:`, validation.error)
-    
-    // Clear invalid token and redirect to login
-    const response = NextResponse.redirect(new URL('/login', request.url))
-    response.cookies.delete('auth-token')
-    return response
-  }
-
-  // Token is valid, allow access
-  return NextResponse.next()
-}
-
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next (Next.js internal files)
-     * - favicon.ico (favicon file)
-     * - api/auth (authentication endpoints only)
-     * - login (login page)
-     * - public (public assets)
-     */
-    '/((?!_next|favicon.ico|api/auth|login|public).*)',
-  ],
-}
+export const config = { matcher: ['/((?!api|_next|favicon.ico|login|public|.*\\..*).*)'] };

@@ -1,10 +1,11 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { format, isToday } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { useBookings } from '../../../hooks/useBookings'
 import type { Booking } from '@entrip/shared'
+import { dateKey, bookingCurrency, money } from '../../../lib/bookingAnalytics'
 
 interface DepartureTeam {
   id: string
@@ -22,11 +23,16 @@ interface NewBookingToday {
   destination: string
   customerName: string
   totalPrice: number
+  currency: string
   createdTime: string
 }
 
 export function TodayBookingsSection() {
-  const { bookings: apiBookings, isLoading } = useBookings()
+  const { bookings: apiBookings, isLoading, isError } = useBookings()
+  const [showAllDepartures, setShowAllDepartures] = useState(false)
+  const [showAllNewBookings, setShowAllNewBookings] = useState(false)
+  const departuresId = useId()
+  const newBookingsId = useId()
 
   const todayData = useMemo(() => {
     if (!apiBookings || apiBookings.length === 0) {
@@ -42,14 +48,14 @@ export function TodayBookingsSection() {
 
     // 오늘 출발하는 팀들
     const departures: DepartureTeam[] = apiBookings
-      .filter((booking: Booking) => booking.startDate === todayStr)
+      .filter((booking: Booking) => dateKey(booking.startDate) === todayStr && booking.status !== 'CANCELLED')
       .map((booking: Booking) => ({
         id: booking.id,
         teamName: booking.teamName,
         destination: booking.destination,
         paxCount: booking.paxCount,
-        departureTime: '09:00', // 임시값 - 실제로는 booking에서 가져와야 함
-        manager: booking.user?.name || '미정',
+        departureTime: '출발 시각 미제공',
+        manager: booking.managerName || booking.coordinator || booking.user?.name || '미정',
         status: booking.status === 'CONFIRMED' ? 'confirmed' : 'checking'
       }))
 
@@ -65,6 +71,7 @@ export function TodayBookingsSection() {
         destination: booking.destination,
         customerName: booking.customerName,
         totalPrice: booking.totalPrice,
+        currency: bookingCurrency(booking),
         createdTime: format(new Date(booking.createdAt), 'HH:mm')
       }))
 
@@ -79,6 +86,8 @@ export function TodayBookingsSection() {
       pendingCount
     }
   }, [apiBookings])
+
+  if (isError) return <p role="alert" className="p-6 text-red-700">오늘의 예약을 불러오지 못했습니다.</p>
 
   if (isLoading) {
     return (
@@ -111,8 +120,8 @@ export function TodayBookingsSection() {
             오늘 출발 ({todayData.departures.length}팀)
           </h4>
           {todayData.departures.length > 0 ? (
-            <div className="space-y-2">
-              {todayData.departures.slice(0, 3).map((team) => (
+            <div id={departuresId} className="space-y-2">
+              {(showAllDepartures ? todayData.departures : todayData.departures.slice(0, 3)).map((team) => (
                 <div key={team.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${
@@ -129,10 +138,13 @@ export function TodayBookingsSection() {
                   </div>
                 </div>
               ))}
+              {!showAllDepartures && todayData.departures.length > 3 && <p className="entrip-print-only dashboard-preview-count">전체 {todayData.departures.length}건 중 화면에 표시된 3건</p>}
               {todayData.departures.length > 3 && (
-                <p className="text-xs text-gray-500 text-center py-2">
-                  +{todayData.departures.length - 3}개 팀 더보기
-                </p>
+                <button type="button" aria-expanded={showAllDepartures} aria-controls={departuresId}
+                  onClick={() => setShowAllDepartures(value => !value)}
+                  className="w-full rounded py-2 text-center text-xs text-blue-700 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500">
+                  {showAllDepartures ? '오늘 출발 접기' : `+${todayData.departures.length - 3}개 팀 더보기`}
+                </button>
               )}
             </div>
           ) : (
@@ -147,23 +159,26 @@ export function TodayBookingsSection() {
             신규 예약 ({todayData.newBookings.length}건)
           </h4>
           {todayData.newBookings.length > 0 ? (
-            <div className="space-y-2">
-              {todayData.newBookings.slice(0, 3).map((booking) => (
+            <div id={newBookingsId} className="space-y-2">
+              {(showAllNewBookings ? todayData.newBookings : todayData.newBookings.slice(0, 3)).map((booking) => (
                 <div key={booking.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                   <div>
                     <p className="text-sm font-medium text-gray-900">{booking.teamName}</p>
                     <p className="text-xs text-gray-600">{booking.customerName} · {booking.destination}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-gray-700">{booking.totalPrice.toLocaleString()}원</p>
+                    <p className="text-sm text-gray-700">{money(booking.totalPrice, booking.currency)}</p>
                     <p className="text-xs text-gray-500">{booking.createdTime}</p>
                   </div>
                 </div>
               ))}
+              {!showAllNewBookings && todayData.newBookings.length > 3 && <p className="entrip-print-only dashboard-preview-count">전체 {todayData.newBookings.length}건 중 화면에 표시된 3건</p>}
               {todayData.newBookings.length > 3 && (
-                <p className="text-xs text-gray-500 text-center py-2">
-                  +{todayData.newBookings.length - 3}건 더보기
-                </p>
+                <button type="button" aria-expanded={showAllNewBookings} aria-controls={newBookingsId}
+                  onClick={() => setShowAllNewBookings(value => !value)}
+                  className="w-full rounded py-2 text-center text-xs text-blue-700 hover:bg-green-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500">
+                  {showAllNewBookings ? '신규 예약 접기' : `+${todayData.newBookings.length - 3}건 더보기`}
+                </button>
               )}
             </div>
           ) : (

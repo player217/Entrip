@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { NewTeamModal } from '@entrip/ui'
 import { useBookings } from '../../hooks/useBookings'
-import { getBookingDate, priceOf, getPaxCount, getCustomerName } from '@/utils/booking-helpers'
+import { getBookingDate, priceOf, getPaxCount } from '@/utils/booking-helpers'
 
 export default function MainPageContent() {
   const [showEventModal, setShowEventModal] = useState(false)

@@ -1,0 +1,12 @@
+{
+  "name": "settings",
+  "runAt": "2026-11-16T23:20:26.781Z",
+  "status": "PASS",
+  "checks": [
+    "J1 demo company/admin login and actual employee creation through UI",
+    "Name, department and role edit persisted in API",
+    "Deactivation persists and rejects subsequent authentication",
+    "Reactivation restores the existing employee"
+  ],
+  "pageErrors": []
+}

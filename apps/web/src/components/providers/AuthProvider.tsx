@@ -4,7 +4,6 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth-store';
 import { AuthContextValue } from '@entrip/shared';
-import { api, apiClient } from '@/lib/api-client';
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -16,7 +15,6 @@ interface AuthProviderProps {
 const PUBLIC_ROUTES = ['/login'];
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const [isInitializing, setIsInitializing] = useState(true);
   const {
@@ -32,6 +30,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   } = useAuthStore();
 
   useEffect(() => {
+    let active = true;
     const initAuth = async () => {
       // Skip auth check for public routes
       if (PUBLIC_ROUTES.includes(pathname)) {
@@ -40,31 +39,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       try {
-        // Check if we have a stored token from zustand persist (for header management only)
-        const authStorage = typeof window !== 'undefined' ? localStorage.getItem('auth-storage') : null;
-        let storedToken = null;
-        
-        if (authStorage) {
-          try {
-            const parsed = JSON.parse(authStorage);
-            storedToken = parsed?.state?.token;
-          } catch (e) {
-            console.error('Failed to parse auth storage:', e);
-          }
-        }
-        
-        if (storedToken) {
-          // Set token in API client for requests (HEADER MANAGEMENT ONLY - NO REDIRECTS)
-          apiClient.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-          
-          // Verify token with server
-          await checkAuth();
-          // Note: Redirects are now handled by middleware.ts only
-        }
-        // Note: No redirects here - middleware handles all authentication redirects
+        const signedIn = await checkAuth();
+        if (active && !signedIn && !useAuthStore.getState().error) window.location.replace('/login');
       } catch (error) {
         console.error('Auth initialization error:', error);
-        // Note: No redirects here - middleware handles all authentication redirects
       } finally {
         setIsInitializing(false);
       }
@@ -76,7 +54,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } else {
       setIsInitializing(false);
     }
-  }, [pathname]);
+    return () => { active = false; };
+  }, [pathname, checkAuth]);
+
+  useEffect(() => {
+    const syncSession = (event: StorageEvent) => {
+      if (event.key === 'entrip-session-revision') window.location.reload();
+    };
+    window.addEventListener('storage', syncSession);
+    return () => window.removeEventListener('storage', syncSession);
+  }, []);
 
   const contextValue: AuthContextValue = {
     isAuthenticated,
@@ -128,7 +115,6 @@ export function RouteGuard({
 }: RouteGuardProps) {
   const { isAuthenticated, user, isLoading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     if (isLoading) return;

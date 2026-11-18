@@ -24,7 +24,7 @@ const isServer = typeof window === 'undefined';
 const getBaseURL = (): string => {
   if (isServer) {
     // Server-side: default to legacy v1 internal API; requests to /api/v2 are rerouted in the interceptor
-    return process.env.INTERNAL_API_URL || 'http://api:4000';
+    return process.env.INTERNAL_API_V2_URL || process.env.API_V2_URL || 'http://localhost:4002';
   } else {
     // Client-side: Use Next.js API routes as proxy
     return '/';
@@ -67,11 +67,12 @@ const createApiClient = (): AxiosInstance => {
       config.withCredentials = true;
 
       // On the server, route /api/v2/* directly to v2 internal service to avoid double-proxy and wrong base
-      if (isServer && typeof config.url === 'string' && config.url.startsWith('/api/v2')) {
+      if (isServer && typeof config.url === 'string' && config.url.startsWith('/api/')) {
         const base = process.env.INTERNAL_API_V2_URL
           || process.env.API_V2_URL
-          || 'http://api-v2:4000';
-        config.baseURL = base;
+          || 'http://localhost:4002';
+        config.baseURL = base.replace(/\/+$/, '').replace(/\/api\/v2$/, '');
+        config.url = config.url.replace(/^\/api\/(?!v2\/)/, '/api/v2/');
       }
 
       // Log request in development

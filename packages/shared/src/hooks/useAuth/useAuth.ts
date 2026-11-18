@@ -191,6 +191,7 @@ export function useAuth(config: AuthHookConfig = {}): UseAuthReturn {
     try {
       const result = await authService.verify();
       
+      if (result.unavailable) return useAuthStore.getState().isAuthenticated;
       if (result.isAuthenticated && result.user) {
         setAuth(result.user);
         return true;
@@ -200,8 +201,7 @@ export function useAuth(config: AuthHookConfig = {}): UseAuthReturn {
       }
     } catch (error) {
       console.error('Verify error:', error);
-      setAuth(null);
-      return false;
+      return useAuthStore.getState().isAuthenticated;
     } finally {
       setLoading(false);
     }

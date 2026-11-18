@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "checks": [
+    "date-cell create; customer contacts, repeated hotels/flights, status, deposit persisted in real API",
+    "print popup and persisted create history",
+    "draft and repeated detail rows survive full reload in their workspace tab",
+    "versioned edit and actual history persisted",
+    "390px editor fits viewport; repeated detail price edits persist",
+    "Detailed history displays actual hotel name, currency, quantity and 12,000 to 14,000 price change on mobile and desktop",
+    "month/week list and weekly calendar render shared persisted editor"
+  ],
+  "startedAt": "2026-11-17T00:27:08.783Z",
+  "finishedAt": "2026-11-17T00:27:15.925Z",
+  "screenshots": [
+    "booking-print.webp",
+    "booking-desktop.webp",
+    "booking-mobile.webp",
+    "booking-history-mobile.webp",
+    "booking-history-desktop.webp"
+  ],
+  "pageErrorCount": 0,
+  "publicationScope": "Result summary; generated business record IDs, raw dialog payloads and environment addresses omitted."
+}

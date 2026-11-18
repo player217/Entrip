@@ -1,0 +1,74 @@
+/* Printed documents follow the active workspace and its current query. */
+@media screen {
+  .entrip-print-only { display: none !important; }
+}
+
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+  @bottom-right {
+    content: counter(page) " / " counter(pages);
+    font: 8pt Arial, sans-serif;
+    color: #526475;
+  }
+}
+
+@page entrip-wide {
+  size: A4 landscape;
+  margin: 10mm 12mm;
+}
+
+@media print {
+  html, body, .entrip-app-frame, .entrip-shell-row, .entrip-shell-main,
+  .entrip-shell-content, .entrip-panes, .entrip-workspace-pane:not([hidden]), .entrip-login {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    background: white !important;
+    color: #102338;
+  }
+
+  .entrip-no-print, .Toastify, .entrip-workspace-pane[hidden],
+  .entrip-workspace-pane:has([data-booking-print]) > .entrip-report-brand,
+  input[type="password"] { display: none !important; }
+
+  .entrip-workspace-pane {
+    font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
+    font-size: 10pt;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  .entrip-workspace-pane:is([data-print-route^="/calendar-"], [data-print-route^="/list-"],
+    [data-print-route="/stats"], [data-print-route="/flight-schedule"],
+    [data-print-route="/accounts"], [data-print-route="/approval"]) { page: entrip-wide; }
+  .entrip-workspace-pane:has([data-booking-print="detail"]) { page: auto; }
+
+  .entrip-report-brand {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1.2pt solid #14577a;
+    padding-bottom: 2mm;
+    margin-bottom: 4mm;
+    color: #345263;
+    font-size: 9pt;
+    break-after: avoid-page;
+  }
+  .entrip-report-brand strong {
+    color: #14577a;
+    font: 700 12pt/1.1 Arial, sans-serif;
+    letter-spacing: .08em;
+  }
+  .entrip-workspace-pane :is(h1,h2,h3,caption) { break-after: avoid-page; }
+  .entrip-workspace-pane thead { display: table-header-group; }
+  .entrip-workspace-pane tr { break-inside: avoid-page; }
+  .entrip-workspace-pane :is(img,svg) { max-width: 100%; }
+}

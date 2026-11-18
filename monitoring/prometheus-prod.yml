@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 30s
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+  - job_name: entrip-api-v2
+    metrics_path: /api/v2/metrics/prometheus
+    static_configs:
+      - targets: ['api-v2:4002']

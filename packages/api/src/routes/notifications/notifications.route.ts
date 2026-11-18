@@ -4,7 +4,6 @@ import { validateBody, validateQuery } from '../../middlewares/validate.middlewa
 import { cacheMiddleware, invalidateCacheMiddleware } from '../../middlewares/cache.middleware';
 import { authMiddleware } from '../../middlewares/auth.middleware';
 import { extractCompanyCode, validateCompanyAccess } from '../../middlewares/multitenancy.middleware';
-import { apiRateLimit } from '../../middlewares/rateLimit.middleware';
 import { NotificationListQueryDto } from './dtos/NotificationListQuery.dto';
 import { NotificationReadAllDto } from './dtos/NotificationReadAll.dto';
 import { NotificationPreferenceUpdateDto } from './dtos/NotificationPreferenceUpdate.dto';
@@ -49,7 +48,6 @@ router.get(
 // PATCH /api/v2/notifications/read-all (must be before /:id/read route)
 router.patch(
   '/read-all',
-  apiRateLimit, // Rate limit for bulk operations
   validateBody(NotificationReadAllDto),
   invalidateCacheMiddleware(['notifications']),
   notificationsController.markAllAsRead

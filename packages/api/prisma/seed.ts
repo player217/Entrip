@@ -91,7 +91,13 @@ async function truncateAll() {
 async function main() {
   console.log('?? Seeding v2 database...');
 
-  await truncateAll();
+  if (process.env.NODE_ENV === 'production') throw new Error('Demo seeding is disabled in production.');
+  const existingUsers = await prisma.user.count();
+  if (existingUsers && process.env.RESET_DEMO_DATA !== 'true') {
+    console.log('Existing users found; preserving data. Demo seed skipped.');
+    return;
+  }
+  if (process.env.RESET_DEMO_DATA === 'true') await truncateAll();
 
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
   const userIdByEmail = new Map<string, string>();
@@ -209,7 +215,7 @@ async function main() {
         ratePerNight: 200_000,
         totalAmount: 600_000,
         currency: 'KRW',
-        breakfast: 'true',
+        breakfast: true,
         companyCode: anchor.companyCode,
       },
     });

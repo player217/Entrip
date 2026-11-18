@@ -52,7 +52,7 @@ const resolveMode = (): Mode => {
   const env = (process.env.NEXT_PUBLIC_BOOKING_API_MODE
     || process.env.BOOKING_API_MODE
     || process.env.NEXT_PUBLIC_BOOKING_API_TARGET
-    || '').toLowerCase();
+    || 'v2').toLowerCase();
   return env.includes('v2') ? 'v2' : 'v1';
 };
 
@@ -128,6 +128,8 @@ const normalizeBooking = (raw: any, mode: Mode, meta?: { etag?: string }): Booki
 
   const booking: Booking = {
     id: dto.id,
+    type: raw?.type, contact: raw?.contact, email: raw?.email, representative: raw?.representative,
+    flightInfo: raw?.flightInfo, hotelInfo: raw?.hotelInfo, vehicleInfo: raw?.vehicleInfo, insuranceInfo: raw?.insuranceInfo,
     bookingNumber: dto.bookingNumber,
     teamName: dto.teamName,
     customerName: dto.customerName ?? dto.teamName,
@@ -263,7 +265,8 @@ const mapFiltersToV1Params = (params: LegacyListParams): Record<string, any> | u
 };
 
 const mapLegacyProductTypeToV2 = (value: any): string => {
-  if (!value) return 'workshop';
+  if (!value) return 'FIT';
+  if (['PACKAGE','FIT','GROUP','BUSINESS','INCENTIVE'].includes(String(value).toUpperCase())) return String(value).toUpperCase();
   const lower = String(value).toLowerCase();
   if (V2_ALLOWED_TYPES.has(lower)) return lower;
   const map: Record<string, string> = {
@@ -328,6 +331,7 @@ const sanitizeV2Payload = (payload: Record<string, any>) => {
   if (payload.coordinator !== undefined) result.coordinator = String(payload.coordinator);
   if (payload.revenue !== undefined) result.revenue = Number(payload.revenue) || 0;
   if (payload.notes !== undefined) result.notes = payload.notes;
+  for (const field of ['customerName','contact','email','representative','depositAmount','currency','status','flightInfo','hotelInfo','vehicleInfo','insuranceInfo']) { if (payload[field] !== undefined) result[field] = payload[field]; }
   return result;
 };
 
@@ -341,22 +345,25 @@ const mapLegacyCreateToV2 = (payload: PartialBookingPayload): Record<string, any
   const startDate = toDateOnly(payload.departureDate ?? payload.startDate);
   const endDate = toDateOnly(payload.returnDate ?? payload.endDate ?? startDate, startDate);
   const totalPax = toNumber(
-    payload.totalCount
+    payload.totalPax ?? payload.paxCount ?? payload.numberOfPeople ?? payload.totalCount
       ?? ((payload.adultCount ?? 0) + (payload.childCount ?? 0) + (payload.infantCount ?? 0)),
     1,
   ) ?? 1;
 
   const legacy: Record<string, any> = {
     teamName,
-    type: mapLegacyProductTypeToV2(payload.productType ?? payload.bookingType),
-    origin: payload.customerCompany || DEFAULT_ORIGIN,
+    type: mapLegacyProductTypeToV2(payload.type ?? payload.productType ?? payload.bookingType),
+    origin: payload.origin || payload.customerCompany || DEFAULT_ORIGIN,
     destination,
     startDate,
     endDate,
     totalPax,
-    coordinator: payload.managerName || DEFAULT_COORDINATOR,
-    revenue: toNumber(payload.totalPrice, 0) ?? 0,
-    notes: payload.memo ?? undefined,
+    coordinator: payload.coordinator || payload.managerName || DEFAULT_COORDINATOR,
+    revenue: toNumber(payload.revenue ?? payload.totalPrice, 0) ?? 0,
+    notes: payload.notes ?? payload.memo ?? undefined,
+    customerName: payload.customerName, contact: payload.contact ?? payload.customerPhone, email: payload.email ?? payload.customerEmail,
+    depositAmount: payload.depositAmount ?? payload.deposit, currency: payload.currency ?? 'KRW', status: payload.status,
+    flightInfo: payload.flightInfo, hotelInfo: payload.hotelInfo, vehicleInfo: payload.vehicleInfo, insuranceInfo: payload.insuranceInfo,
   };
 
   return sanitizeV2Payload(legacy);
@@ -368,6 +375,7 @@ const mapLegacyUpdateToV2 = (payload: PartialBookingPayload): Record<string, any
   }
 
   const mapped: Record<string, any> = {};
+  for (const field of ['type','origin','totalPax','coordinator','revenue','notes']) { if (payload[field] !== undefined) mapped[field] = payload[field]; }
 
   if (Object.prototype.hasOwnProperty.call(payload, 'teamName')) {
     mapped.teamName = payload.teamName;
@@ -409,6 +417,10 @@ const mapLegacyUpdateToV2 = (payload: PartialBookingPayload): Record<string, any
     mapped.notes = payload.memo;
   }
 
+  for (const field of ['customerName','contact','email','representative','depositAmount','currency','status','flightInfo','hotelInfo','vehicleInfo','insuranceInfo']) { if (payload[field] !== undefined) mapped[field] = payload[field]; }
+  if (payload.customerPhone !== undefined) mapped.contact = payload.customerPhone;
+  if (payload.customerEmail !== undefined) mapped.email = payload.customerEmail;
+  if (payload.deposit !== undefined) mapped.depositAmount = payload.deposit;
   return sanitizeV2Payload(mapped);
 };
 
@@ -509,19 +521,27 @@ const modernImplementation = {
   async getMonthlyBookings(year: number, month: number): Promise<Booking[]> {
     const list = await this.getBookings({
       page: 1,
-      pageSize: MONTHLY_FETCH_LIMIT,
+      pageSize: Math.min(100, Math.max(1, MONTHLY_FETCH_LIMIT)),
       sortBy: 'startDate',
       sortOrder: 'asc',
       month: `${year}-${String(month).padStart(2, '0')}`,
     });
 
+    const all = [...list.bookings];
+    for (let page = 2; all.length < list.total; page += 1) {
+      const next = await this.getBookings({ page, pageSize: Math.min(100, Math.max(1, MONTHLY_FETCH_LIMIT)), sortBy: 'startDate', sortOrder: 'asc', month: `${year}-${String(month).padStart(2, '0')}` });
+      const seen = new Set(all.map(item => item.id));
+      const fresh = next.bookings.filter(item => !seen.has(item.id));
+      if (!fresh.length) throw new Error('Incomplete monthly booking response');
+      all.push(...fresh);
+    }
     const start = new Date(Date.UTC(year, month - 1, 1));
     const end = new Date(Date.UTC(year, month, 0, 23, 59, 59));
 
-    return list.bookings.filter((booking) => {
+    return all.filter((booking) => {
       const date = new Date(booking.startDate);
       if (Number.isNaN(date.getTime())) return false;
-      return date >= start && date <= end;
+      return date <= end && new Date(booking.endDate) >= start;
     });
   },
 };

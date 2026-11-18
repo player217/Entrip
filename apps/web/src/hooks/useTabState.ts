@@ -1,126 +1,49 @@
-'use client'
+'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react'
-import { useWorkspaceStore } from '@entrip/shared/client'
+import { useCallback, useEffect, useState } from 'react';
+import { useWorkspaceStore } from '@entrip/shared/client';
+import { useWorkspaceTabKey } from '@/components/workspace/WorkspaceTabContext';
 
-/**
- * 탭별 상태를 관리하는 Hook
- * 각 탭이 독립적인 상태를 유지할 수 있도록 지원
- */
-export function useTabState<T = any>(initialState?: T) {
-  const { activeTabKey, tabs, updateTabState } = useWorkspaceStore()
-  const [localState, setLocalState] = useState<T | undefined>(initialState)
-  const previousTabKey = useRef(activeTabKey)
-  
-  // 현재 활성 탭 찾기
-  const activeTab = tabs.find(t => t.key === activeTabKey)
-  
-  // 탭 전환 시 상태 복원
-  useEffect(() => {
-    if (activeTabKey !== previousTabKey.current) {
-      // 이전 탭의 상태 저장
-      if (previousTabKey.current) {
-        updateTabState(previousTabKey.current, { 
-          componentState: localState 
-        })
-      }
-      
-      // 새 탭의 상태 복원
-      if (activeTab?.state) {
-        setLocalState(activeTab.state as T)
-      } else {
-        setLocalState(initialState)
-      }
-      
-      previousTabKey.current = activeTabKey
-    }
-  }, [activeTabKey, activeTab?.state]) // localState 제거하여 무한 루프 방지
-  
-  // 상태 업데이트 함수
-  const setState = useCallback((newState: T | ((prev: T | undefined) => T)) => {
-    setLocalState(prev => {
-      const nextState = typeof newState === 'function' 
-        ? (newState as Function)(prev) 
-        : newState
-      
-      // 즉시 탭 상태에도 저장
-      if (activeTabKey) {
-        updateTabState(activeTabKey, { 
-          componentState: nextState 
-        })
-      }
-      
-      return nextState
-    })
-  }, [activeTabKey, updateTabState])
-  
-  return [localState, setState] as const
+/** A mounted pane always writes to its own tab, including while another tab is active. */
+export function useTabState<T>(initialState: T, stateKey = 'componentState') {
+  const contextKey = useWorkspaceTabKey();
+  const activeKey = useWorkspaceStore(state => state.activeTabKey);
+  const tabKey = contextKey ?? activeKey;
+  const saved = useWorkspaceStore(state => state.tabs.find(tab => tab.key === tabKey)?.state?.[stateKey]);
+  const [fallback, setFallback] = useState(initialState);
+  const value = saved === undefined ? initialState : saved as T;
+  const setState = useCallback((next: T | ((previous: T) => T)) => {
+    const store = useWorkspaceStore.getState();
+    const previous = store.tabs.find(tab => tab.key === tabKey)?.state?.[stateKey];
+    const resolved = typeof next === 'function'
+      ? (next as (previous: T) => T)(previous === undefined ? initialState : previous as T)
+      : next;
+    if (tabKey) store.updateTabState(tabKey, { [stateKey]: resolved });
+    else setFallback(resolved);
+  }, [initialState, stateKey, tabKey]);
+  return [tabKey ? value : fallback, setState] as const;
 }
 
-/**
- * 탭별 스크롤 위치를 관리하는 Hook
- */
 export function useTabScroll(elementRef: React.RefObject<HTMLElement>) {
-  const { activeTabKey, tabs, updateTabState } = useWorkspaceStore()
-  const previousTabKey = useRef(activeTabKey)
-  
-  const activeTab = tabs.find(t => t.key === activeTabKey)
-  
+  const contextKey = useWorkspaceTabKey();
+  const activeKey = useWorkspaceStore(state => state.activeTabKey);
+  const tabKey = contextKey ?? activeKey;
   useEffect(() => {
-    if (!elementRef.current) return
-    
-    const element = elementRef.current
-    
-    // 탭 전환 시 스크롤 위치 복원
-    if (activeTabKey !== previousTabKey.current) {
-      if (activeTab?.scrollPosition !== undefined) {
-        element.scrollTop = activeTab.scrollPosition
-      } else {
-        element.scrollTop = 0
-      }
-      previousTabKey.current = activeTabKey
-    }
-    
-    // 스크롤 이벤트 핸들러
-    const handleScroll = () => {
-      if (activeTabKey) {
-        updateTabState(activeTabKey, { 
-          scrollPosition: element.scrollTop 
-        })
-      }
-    }
-    
-    element.addEventListener('scroll', handleScroll, { passive: true })
-    
-    return () => {
-      element.removeEventListener('scroll', handleScroll)
-    }
-  }, [activeTabKey, activeTab, updateTabState, elementRef])
+    const element = elementRef.current;
+    if (!element || !tabKey) return;
+    const saved = useWorkspaceStore.getState().tabs.find(tab => tab.key === tabKey)?.state?.scrollPosition;
+    element.scrollTop = typeof saved === 'number' ? saved : 0;
+    const onScroll = () => useWorkspaceStore.getState().updateTabState(tabKey, { scrollPosition: element.scrollTop });
+    element.addEventListener('scroll', onScroll, { passive: true });
+    return () => element.removeEventListener('scroll', onScroll);
+  }, [elementRef, tabKey]);
 }
 
-/**
- * 탭별 폼 데이터를 관리하는 Hook
- */
-export function useTabForm<T extends Record<string, any>>(
-  initialValues: T
-) {
-  const [formData, setFormData] = useTabState(initialValues)
-  
-  const updateField = useCallback((field: keyof T, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    } as T))
-  }, [setFormData])
-  
-  const resetForm = useCallback(() => {
-    setFormData(initialValues)
-  }, [setFormData, initialValues])
-  
-  return {
-    formData,
-    updateField,
-    resetForm,
-    setFormData
-  }
+export function useTabForm<T extends Record<string, unknown>>(initialValues: T) {
+  const [formData, setFormData] = useTabState(initialValues);
+  const updateField = useCallback((field: keyof T, value: T[keyof T]) => {
+    setFormData(previous => ({ ...previous, [field]: value }));
+  }, [setFormData]);
+  const resetForm = useCallback(() => setFormData(initialValues), [initialValues, setFormData]);
+  return { formData, updateField, resetForm, setFormData };
 }

@@ -10,8 +10,8 @@ const shouldUseBearer = AUTH_STRATEGY === 'bearer' || AUTH_STRATEGY === 'token'
 
 // API 베이스 URL 설정 (서버는 내부 DNS, 클라이언트는 localhost 프록시)
 const API_BASE_URL = isServer
-  ? (process.env.INTERNAL_API_URL || 'http://api:4000/api')
-  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api')
+  ? `${(process.env.INTERNAL_API_V2_URL || process.env.API_V2_URL || 'http://localhost:4002').replace(/\/+$/, '').replace(/\/api\/v2$/, '')}/api/v2`
+  : '/api'
 
 // Axios 인스턴스 생성
 export const apiClient: AxiosInstance = axios.create({
@@ -26,6 +26,9 @@ export const apiClient: AxiosInstance = axios.create({
 // 요청 인터셉터: 인증 전략에 따라 헤더/쿠키 처리
 apiClient.interceptors.request.use(
   (config) => {
+    // Callers may pass either /bookings or the complete /api/v2/bookings path.
+    if (config.url?.startsWith('/api/')) config.url = config.url.replace(/^\/api(?:\/v2)?/, '');
+    if (isServer && config.url?.startsWith('/v2/')) config.url = config.url.slice(3);
     // config.headers는 이미 AxiosHeaders 인스턴스이므로 초기화 불필요
 
     if (shouldUseBearer && typeof window !== 'undefined') {

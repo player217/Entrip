@@ -6,6 +6,7 @@ import { authRateLimit } from '../../middlewares/rateLimit.middleware';
 import { RegisterDto } from './dtos/Register.dto';
 import { LoginDto } from './dtos/Login.dto';
 import { z } from 'zod';
+import { appConfig } from '../../config';
 
 const router: Router = Router();
 
@@ -16,7 +17,9 @@ const UpdatePasswordDto = z.object({
 });
 
 // Public routes (with stricter rate limiting)
-router.post('/register', authRateLimit, validateBody(RegisterDto), authController.register);
+if (!appConfig.browser.lanHttp) {
+  router.post('/register', authRateLimit, validateBody(RegisterDto), authController.register);
+}
 router.post('/login', authRateLimit, validateBody(LoginDto), authController.login);
 router.post('/refresh', authController.refreshToken);
 router.post('/logout', authController.logout);

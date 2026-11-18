@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "transport": "Browser HTTP LAN origin mapped to loopback",
+  "checks": [
+    "Provisioned administrator creates employee through settings; independent employee signs in on the same LAN origin",
+    "Both browser sessions see the stored reservation; cookie-only reload preserves employee access",
+    "Browser WebSockets connect through the LAN gateway; administrator and employee exchange messages before the polling interval"
+  ],
+  "pageErrors": [],
+  "bookingCleanupStatus": 204,
+  "employeeCleanupStatus": 204,
+  "bootstrap": "6 migrations deployed to a new disposable PostgreSQL database; repeated bootstrap with a different password preserved the original administrator and exactly one user.",
+  "server": "Production compiled API and Next web app, nginx 1.26.3 using deploy/lan/gateway.conf, only the gateway port changed from 80 to 3300 for testing.",
+  "browser": "Two independent Chromium 139 contexts; host resolver mapped the test URL 192.168.50.18 to 127.0.0.1. Browser reported insecure HTTP context and successfully decoded both header logo images.",
+  "outOfScope": [
+    "Starting the full Docker Desktop stack on a physical Windows PC and traversing its Windows Firewall from a second physical device."
+  ],
+  "hostedRunnerVerification": {
+    "commit": "7e6eaa9287e0c7972f9e3f60fc62353122f8c2fa",
+    "url": "https://github.com/player217/Entrip/actions/runs/44218610925",
+    "windows": "PASS: Windows PowerShell parses both scripts. run.bat help runs from an unrelated working directory with a Korean, space-containing project path.",
+    "linux": "PASS: Docker Compose builds the full stack, migrates a fresh PostgreSQL volume and serves the login page and health endpoint over the non-loopback runner IP. Recreating containers preserves the administrator ID. Two browser sessions share a reservation and exchange realtime messages."
+  },
+  "windowsDistribution": {
+    "path": "downloads/Entrip_Windows_LAN.zip",
+    "bytes": 1064250,
+    "files": 478,
+    "sha256": "ed359bda33343d6b36afc1b452d0bd84a1f1c388fdefef4207ebab08c28d6f08",
+    "verification": "Fresh extraction; CRC and source bytes compared; frozen-lock install and full production build passed from the package, with login and sidecar health checks."
+  },
+  "regression": {
+    "client": {
+      "suites": 42,
+      "testsPassed": 378
+    },
+    "api": {
+      "suites": 18,
+      "testsPassed": 92
+    }
+  }
+}

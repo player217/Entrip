@@ -1,0 +1,160 @@
+@media print {
+  .operations-report {
+    min-width: 0;
+    padding: 0 !important;
+    font-size: 10pt;
+    line-height: 1.45;
+    color: #182d43;
+  }
+  .operations-report button, .operations-report form { display: none !important; }
+  .operations-report :is(h2, h3, h4) { break-after: avoid-page; }
+  .operations-report .operations-print-scope {
+    margin: 2mm 0 4mm;
+    padding: 2mm 3mm;
+    color: #1c4667;
+    border-left: 2pt solid #467ba3;
+    background: #f1f5f8;
+    font-size: 9pt;
+  }
+
+  .operations-report :is(.operations-data-table, .chart-print-data) {
+    width: 100% !important;
+    min-width: 0 !important;
+    border-collapse: collapse;
+    font-size: 9pt;
+    white-space: normal;
+  }
+  .operations-report :is(.operations-data-table, .chart-print-data) :is(th,td) {
+    padding: 1.8mm 2mm;
+    min-width: 0 !important;
+    max-width: none;
+    position: static;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+    border: 0;
+    border-bottom: .5pt solid #c5d1db;
+    text-align: left;
+  }
+  .operations-report thead { display: table-header-group; }
+  .operations-report thead th { background: #e8eff4; font-weight: 600; }
+  .operations-report tr { break-inside: avoid-page; }
+  .operations-report [role="region"], .account-ledger { overflow: visible !important; height: auto; max-height: none; }
+
+  .operations-kpis {
+    display: grid !important;
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    gap: 2mm !important;
+    margin: 3mm 0 !important;
+  }
+  .operations-kpis > div { grid-column: auto !important; padding: 2.3mm 3mm !important; break-inside: avoid-page; }
+  .operations-kpis p { margin: 0; white-space: normal; overflow-wrap: anywhere; }
+  .operations-kpis p.tabular-nums, .dashboard-report .operations-kpis p.font-semibold { font-size: 13pt; }
+
+  /* Exact chart values and proportional bars that paginate independently of the SVG viewport. */
+  .operations-charts { display: block !important; margin-top: 3mm; }
+  .operations-charts .operations-chart { margin: 2mm 0 4mm; padding: 0; box-shadow: none; break-inside: auto; }
+  .operations-chart .pt-4 { padding-top: 1.4mm; }
+  .operations-chart .chart-plot, .operations-chart .chart-print-data caption { display: none !important; }
+  .operations-report .chart-print-data {
+    position: static !important;
+    display: table !important;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    table-layout: fixed;
+  }
+  .operations-report .chart-print-data th:first-child { width: 42%; }
+  .operations-report .chart-print-data tbody th { font-weight: normal; }
+  .operations-report .chart-print-data td { position: relative; text-align: right; font-variant-numeric: tabular-nums; }
+  .operations-report .chart-print-data td > span:last-child { position: relative; }
+  .operations-report .chart-print-bar {
+    position: absolute;
+    display: block;
+    inset: 15% auto 15% 0;
+    background: #d8e7ef;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .dashboard-report .dashboard-sections { display: block; }
+  .dashboard-report .dashboard-sections > *, .dashboard-report > .mb-8 > .shadow-sm {
+    padding: 3mm 0;
+    border: 0;
+    border-top: .7pt solid #a6b7c5;
+    box-shadow: none;
+    border-radius: 0;
+    margin-bottom: 2mm;
+  }
+  .dashboard-report :is(.mb-8, .mb-6, .mb-4) { margin-bottom: 2mm; }
+  .dashboard-report .space-y-6 > * + * { margin-top: 2mm; }
+  .dashboard-report .rounded-lg.p-3, .dashboard-report [id] > .rounded, .dashboard-report .bg-yellow-50.p-4 {
+    padding: 1.6mm 2mm;
+    break-inside: avoid-page;
+  }
+  .dashboard-report .dashboard-sections section > .rounded,
+  .dashboard-report [id] > .rounded-lg {
+    page-break-inside: avoid;
+    break-inside: avoid-page !important;
+  }
+  .dashboard-report .grid[id] { display: block; }
+  .dashboard-report .grid[id] > .rounded-lg + .rounded-lg { margin-top: 2mm; }
+  .dashboard-report .dashboard-preview-count { font-size: 8pt; color: #425a6c; margin: 1mm 0; }
+
+  .operations-report[data-print-draft="true"] > :not(.finance-draft-print):not(:first-child) { display: none !important; }
+  .operations-report[data-print-draft="true"] > :first-child p { display: none; }
+  .entrip-workspace-pane[data-print-route]:has(.operations-report[data-print-draft="true"]) { page: auto; }
+  .finance-draft-print dl { margin-top: 3mm; }
+  .finance-draft-print dl > div { display: grid; grid-template-columns: 33mm minmax(0,1fr); border-bottom: .5pt solid #ccd5dd; padding: 2mm; }
+  .finance-draft-print dt { font-weight: 600; }
+  .finance-draft-print dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .account-balance-table { table-layout: fixed; }
+  .account-balance-heading { margin: 3mm 0 1mm; font-size: 12pt; font-weight: 600; }
+  .account-balance-table th:nth-child(1) { width: 25%; }
+  .account-balance-table th:nth-child(2) { width: 35%; }
+  .operations-report .account-balance-table :is(th,td):last-child { text-align: right; }
+  .account-ledger { padding: 0; border: 0; }
+  .account-ledger > .p-4 { padding: 0; }
+  .account-ledger table { table-layout: fixed; }
+  .account-ledger table thead th:nth-child(1) { width: 28%; }
+  .account-ledger table thead th:nth-child(2) { width: 19%; }
+  .account-ledger table thead th:nth-child(3) { width: 18%; }
+  .account-ledger table thead th:nth-child(4) { width: 9%; }
+  .account-ledger table thead th:nth-child(5) { width: 17%; }
+  .account-ledger .operations-data-table :is(td,th):nth-child(5) { text-align: right; }
+
+  .approval-item { padding: 3mm !important; break-inside: avoid-page; }
+  .approval-item h2 { margin-top: 1mm; }
+  .approval-item > p, .approval-item ol { margin-top: 2mm; }
+  .approval-item li { overflow-wrap: anywhere; }
+  .stats-report section { margin-top: 4mm; }
+  .stats-report section h2 { font-size: 12pt; font-weight: 600; }
+  .stats-report .operations-data-table { table-layout: fixed; }
+  .stats-report .operations-data-table th:nth-child(1) { width: 22%; }
+  .stats-report .operations-data-table th:nth-child(2), .stats-report .operations-data-table th:nth-child(3) { width: 10%; }
+  .stats-report .operations-data-table :is(th,td):not(:first-child) { text-align: right; }
+  .container:has(> .flight-report) { max-width: none; padding: 0; margin: 0; }
+  .flight-report .flight-print-table { table-layout: fixed; }
+  .flight-report .flight-print-table :is(th,td) {
+    padding: 1.6mm 1mm;
+    font-size: 8.5pt;
+    text-align: center;
+    border-right: .4pt solid #d9e2e8;
+  }
+  .flight-report .flight-print-table thead th:first-child { width: 12%; }
+  .flight-report .flight-print-table tbody th { text-align: left; }
+  .flight-report .flight-print-table th small { display: block; color: #586c79; font-weight: 400; }
+  .flight-report .flight-slot {
+    margin: 0;
+    padding: 1mm 0;
+    background: none;
+    line-height: 1.35;
+    break-inside: avoid-page;
+  }
+  .flight-report .flight-slot + .flight-slot { margin-top: 1mm; border-top: .4pt solid #d9e2e8; }
+  .flight-report .flight-slot p { margin: 0; white-space: nowrap; }
+  .flight-report .flight-slot .text-xs { font-size: 8pt; }
+}

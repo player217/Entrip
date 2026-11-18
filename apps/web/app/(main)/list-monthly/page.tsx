@@ -1,8 +1,3 @@
 'use client';
-
-import MonthlyListPage from '@/features/calendar/MonthlyListPage';
-
-export default function ListMonthlyPage() {
-  return <MonthlyListPage />;
-}
-
+import { BookingWorkspace } from '@/features/bookings/BookingWorkspace';
+export default function BookingPage() { return <BookingWorkspace view="month-list" />; }

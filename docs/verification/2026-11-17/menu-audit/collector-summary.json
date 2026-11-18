@@ -1,0 +1,1003 @@
+{
+  "schema": "entrip.visual-menu-collection/1",
+  "startedAt": "2026-11-16T23:59:34.365Z",
+  "completedAt": "2026-11-17T00:00:01.007Z",
+  "status": "COLLECTION_COMPLETE_REQUIRES_HUMAN_REVIEW",
+  "visualAssessment": "NOT_REVIEWED",
+  "summary": {
+    "capturedMenus": 36,
+    "screenshotCount": 43,
+    "geometryReviewCandidates": 28,
+    "pageErrorCount": 0
+  },
+  "failures": [],
+  "pageErrors": [],
+  "viewportMenuResults": [
+    {
+      "id": "dashboard",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": []
+    },
+    {
+      "id": "month-calendar",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 494.34,
+            "y": 185,
+            "left": 494.34,
+            "top": 185,
+            "right": 1306,
+            "bottom": 218.5,
+            "width": 811.66,
+            "height": 33.5
+          },
+          "visibleWidth": 811.66
+        }
+      ]
+    },
+    {
+      "id": "week-calendar",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 531.98,
+            "y": 185,
+            "left": 531.98,
+            "top": 185,
+            "right": 1306,
+            "bottom": 218.5,
+            "width": 774.02,
+            "height": 33.5
+          },
+          "visibleWidth": 774.02
+        }
+      ]
+    },
+    {
+      "id": "month-list",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 494.34,
+            "y": 185,
+            "left": 494.34,
+            "top": 185,
+            "right": 1306,
+            "bottom": 218.5,
+            "width": 811.66,
+            "height": 33.5
+          },
+          "visibleWidth": 811.66
+        }
+      ]
+    },
+    {
+      "id": "week-list",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 531.98,
+            "y": 185,
+            "left": 531.98,
+            "top": 185,
+            "right": 1306,
+            "bottom": 218.5,
+            "width": 774.02,
+            "height": 33.5
+          },
+          "visibleWidth": 774.02
+        }
+      ]
+    },
+    {
+      "id": "stats",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": []
+    },
+    {
+      "id": "flights",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": []
+    },
+    {
+      "id": "approval",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": []
+    },
+    {
+      "id": "accounts",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": []
+    },
+    {
+      "id": "messenger",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": []
+    },
+    {
+      "id": "mail",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": []
+    },
+    {
+      "id": "settings",
+      "width": 1440,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 1440,
+      "searchInputs": []
+    },
+    {
+      "id": "dashboard",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 800,
+      "searchInputs": []
+    },
+    {
+      "id": "month-calendar",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 800,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 494.34,
+            "y": 185,
+            "left": 494.34,
+            "top": 185,
+            "right": 666,
+            "bottom": 218.5,
+            "width": 171.66,
+            "height": 33.5
+          },
+          "visibleWidth": 171.66
+        }
+      ]
+    },
+    {
+      "id": "week-calendar",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 800,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 531.98,
+            "y": 185,
+            "left": 531.98,
+            "top": 185,
+            "right": 671.98,
+            "bottom": 218.5,
+            "width": 140,
+            "height": 33.5
+          },
+          "visibleWidth": 140
+        }
+      ]
+    },
+    {
+      "id": "month-list",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 800,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 494.34,
+            "y": 185,
+            "left": 494.34,
+            "top": 185,
+            "right": 666,
+            "bottom": 218.5,
+            "width": 171.66,
+            "height": 33.5
+          },
+          "visibleWidth": 171.66
+        }
+      ]
+    },
+    {
+      "id": "week-list",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 800,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 531.98,
+            "y": 185,
+            "left": 531.98,
+            "top": 185,
+            "right": 671.98,
+            "bottom": 218.5,
+            "width": 140,
+            "height": 33.5
+          },
+          "visibleWidth": 140
+        }
+      ]
+    },
+    {
+      "id": "stats",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 800,
+      "searchInputs": []
+    },
+    {
+      "id": "flights",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 800,
+      "searchInputs": []
+    },
+    {
+      "id": "approval",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 800,
+      "searchInputs": []
+    },
+    {
+      "id": "accounts",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 800,
+      "searchInputs": []
+    },
+    {
+      "id": "messenger",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 800,
+      "searchInputs": []
+    },
+    {
+      "id": "mail",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 800,
+      "searchInputs": []
+    },
+    {
+      "id": "settings",
+      "width": 800,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "편집",
+          "tag": "button",
+          "bounds": {
+            "x": 816.67,
+            "y": 318,
+            "left": 816.67,
+            "top": 318,
+            "right": 838.67,
+            "bottom": 335.5,
+            "width": 22,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "비활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 849.17,
+            "y": 318,
+            "left": 849.17,
+            "top": 318,
+            "right": 893.17,
+            "bottom": 335.5,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "편집",
+          "tag": "button",
+          "bounds": {
+            "x": 816.67,
+            "y": 357.5,
+            "left": 816.67,
+            "top": 357.5,
+            "right": 838.67,
+            "bottom": 375,
+            "width": 22,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "비활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 849.17,
+            "y": 357.5,
+            "left": 849.17,
+            "top": 357.5,
+            "right": 893.17,
+            "bottom": 375,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "편집",
+          "tag": "button",
+          "bounds": {
+            "x": 816.67,
+            "y": 397,
+            "left": 816.67,
+            "top": 397,
+            "right": 838.67,
+            "bottom": 414.5,
+            "width": 22,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "비활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 849.17,
+            "y": 397,
+            "left": 849.17,
+            "top": 397,
+            "right": 893.17,
+            "bottom": 414.5,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "편집",
+          "tag": "button",
+          "bounds": {
+            "x": 816.67,
+            "y": 436.5,
+            "left": 816.67,
+            "top": 436.5,
+            "right": 838.67,
+            "bottom": 454,
+            "width": 22,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "비활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 849.17,
+            "y": 436.5,
+            "left": 849.17,
+            "top": 436.5,
+            "right": 893.17,
+            "bottom": 454,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "편집",
+          "tag": "button",
+          "bounds": {
+            "x": 816.67,
+            "y": 476,
+            "left": 816.67,
+            "top": 476,
+            "right": 838.67,
+            "bottom": 493.5,
+            "width": 22,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "비활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 849.17,
+            "y": 476,
+            "left": 849.17,
+            "top": 476,
+            "right": 893.17,
+            "bottom": 493.5,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "재활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 816.67,
+            "y": 524.25,
+            "left": 816.67,
+            "top": 524.25,
+            "right": 860.67,
+            "bottom": 541.75,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "재활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 816.67,
+            "y": 581.25,
+            "left": 816.67,
+            "top": 581.25,
+            "right": 860.67,
+            "bottom": 598.75,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        }
+      ],
+      "documentWidth": 800,
+      "searchInputs": []
+    },
+    {
+      "id": "dashboard",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 390,
+      "searchInputs": []
+    },
+    {
+      "id": "month-calendar",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [
+        {
+          "kind": "HORIZONTAL_CONTROL_CLIPPING",
+          "label": "예약 검색",
+          "tag": "input",
+          "bounds": {
+            "x": 273.84,
+            "y": 174.5,
+            "left": 273.84,
+            "top": 174.5,
+            "right": 413.84,
+            "bottom": 208,
+            "width": 140,
+            "height": 33.5
+          },
+          "visibleWidth": 116.16,
+          "inActivePane": true
+        }
+      ],
+      "documentWidth": 390,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 273.84,
+            "y": 174.5,
+            "left": 273.84,
+            "top": 174.5,
+            "right": 413.84,
+            "bottom": 208,
+            "width": 140,
+            "height": 33.5
+          },
+          "visibleWidth": 116.16
+        }
+      ]
+    },
+    {
+      "id": "week-calendar",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [
+        {
+          "kind": "HORIZONTAL_CONTROL_CLIPPING",
+          "label": "예약 검색",
+          "tag": "input",
+          "bounds": {
+            "x": 311.48,
+            "y": 174.5,
+            "left": 311.48,
+            "top": 174.5,
+            "right": 451.48,
+            "bottom": 208,
+            "width": 140,
+            "height": 33.5
+          },
+          "visibleWidth": 78.52,
+          "inActivePane": true
+        }
+      ],
+      "documentWidth": 390,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 311.48,
+            "y": 174.5,
+            "left": 311.48,
+            "top": 174.5,
+            "right": 451.48,
+            "bottom": 208,
+            "width": 140,
+            "height": 33.5
+          },
+          "visibleWidth": 78.52
+        }
+      ]
+    },
+    {
+      "id": "month-list",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [
+        {
+          "kind": "HORIZONTAL_CONTROL_CLIPPING",
+          "label": "예약 검색",
+          "tag": "input",
+          "bounds": {
+            "x": 273.84,
+            "y": 174.5,
+            "left": 273.84,
+            "top": 174.5,
+            "right": 413.84,
+            "bottom": 208,
+            "width": 140,
+            "height": 33.5
+          },
+          "visibleWidth": 116.16,
+          "inActivePane": true
+        }
+      ],
+      "documentWidth": 390,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 273.84,
+            "y": 174.5,
+            "left": 273.84,
+            "top": 174.5,
+            "right": 413.84,
+            "bottom": 208,
+            "width": 140,
+            "height": 33.5
+          },
+          "visibleWidth": 116.16
+        }
+      ]
+    },
+    {
+      "id": "week-list",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [
+        {
+          "kind": "HORIZONTAL_CONTROL_CLIPPING",
+          "label": "예약 검색",
+          "tag": "input",
+          "bounds": {
+            "x": 311.48,
+            "y": 174.5,
+            "left": 311.48,
+            "top": 174.5,
+            "right": 451.48,
+            "bottom": 208,
+            "width": 140,
+            "height": 33.5
+          },
+          "visibleWidth": 78.52,
+          "inActivePane": true
+        }
+      ],
+      "documentWidth": 390,
+      "searchInputs": [
+        {
+          "label": "예약 검색",
+          "bounds": {
+            "x": 311.48,
+            "y": 174.5,
+            "left": 311.48,
+            "top": 174.5,
+            "right": 451.48,
+            "bottom": 208,
+            "width": 140,
+            "height": 33.5
+          },
+          "visibleWidth": 78.52
+        }
+      ]
+    },
+    {
+      "id": "stats",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 390,
+      "searchInputs": []
+    },
+    {
+      "id": "flights",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 390,
+      "searchInputs": []
+    },
+    {
+      "id": "approval",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 390,
+      "searchInputs": []
+    },
+    {
+      "id": "accounts",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 390,
+      "searchInputs": []
+    },
+    {
+      "id": "messenger",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 390,
+      "searchInputs": []
+    },
+    {
+      "id": "mail",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [],
+      "documentWidth": 390,
+      "searchInputs": []
+    },
+    {
+      "id": "settings",
+      "width": 390,
+      "collectionStatus": "CAPTURED_REQUIRES_REVIEW",
+      "routeMatches": true,
+      "clippingCandidates": [
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "편집",
+          "tag": "button",
+          "bounds": {
+            "x": 589.17,
+            "y": 300.5,
+            "left": 589.17,
+            "top": 300.5,
+            "right": 611.17,
+            "bottom": 318,
+            "width": 22,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "비활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 621.67,
+            "y": 300.5,
+            "left": 621.67,
+            "top": 300.5,
+            "right": 665.67,
+            "bottom": 318,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "편집",
+          "tag": "button",
+          "bounds": {
+            "x": 589.17,
+            "y": 340,
+            "left": 589.17,
+            "top": 340,
+            "right": 611.17,
+            "bottom": 357.5,
+            "width": 22,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "비활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 621.67,
+            "y": 340,
+            "left": 621.67,
+            "top": 340,
+            "right": 665.67,
+            "bottom": 357.5,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "편집",
+          "tag": "button",
+          "bounds": {
+            "x": 589.17,
+            "y": 379.5,
+            "left": 589.17,
+            "top": 379.5,
+            "right": 611.17,
+            "bottom": 397,
+            "width": 22,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "비활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 621.67,
+            "y": 379.5,
+            "left": 621.67,
+            "top": 379.5,
+            "right": 665.67,
+            "bottom": 397,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "편집",
+          "tag": "button",
+          "bounds": {
+            "x": 589.17,
+            "y": 419,
+            "left": 589.17,
+            "top": 419,
+            "right": 611.17,
+            "bottom": 436.5,
+            "width": 22,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "비활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 621.67,
+            "y": 419,
+            "left": 621.67,
+            "top": 419,
+            "right": 665.67,
+            "bottom": 436.5,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "편집",
+          "tag": "button",
+          "bounds": {
+            "x": 589.17,
+            "y": 458.5,
+            "left": 589.17,
+            "top": 458.5,
+            "right": 611.17,
+            "bottom": 476,
+            "width": 22,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "비활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 621.67,
+            "y": 458.5,
+            "left": 621.67,
+            "top": 458.5,
+            "right": 665.67,
+            "bottom": 476,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "재활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 589.17,
+            "y": 506.75,
+            "left": 589.17,
+            "top": 506.75,
+            "right": 633.17,
+            "bottom": 524.25,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        },
+        {
+          "kind": "HORIZONTAL_ACTION_CLIPPING",
+          "label": "재활성화",
+          "tag": "button",
+          "bounds": {
+            "x": 589.17,
+            "y": 563.75,
+            "left": 589.17,
+            "top": 563.75,
+            "right": 633.17,
+            "bottom": 581.25,
+            "width": 44,
+            "height": 17.5
+          },
+          "visibleWidth": 0,
+          "inActivePane": true
+        }
+      ],
+      "documentWidth": 390,
+      "searchInputs": []
+    }
+  ]
+}

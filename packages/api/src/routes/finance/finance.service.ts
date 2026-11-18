@@ -1,4 +1,5 @@
-import { FinanceRecord, FinanceType, FinanceStatus } from '@prisma/client';
+import { containsText, lockRow } from '../../lib/db-dialect';
+import { FinanceRecord, Prisma, FinanceStatus, FinanceType } from '@prisma/client';
 import { BaseService } from '../../services/base.service';
 import prisma from '../../lib/prisma';
 import { ApiError } from '../../middlewares/error.middleware';
@@ -9,386 +10,250 @@ import { FinanceApproveInput } from './dtos/FinanceApprove.dto';
 
 export class FinanceService extends BaseService<FinanceRecord> {
   constructor() {
-    super(prisma.financeRecord);
+    super('financeRecord');
   }
-
-  /**
-   * List finance records with advanced filtering
-   */
-  async listFinanceRecords(
-    companyCode: string,
-    query: FinanceQueryInput
-  ) {
-    const {
-      page = 1,
-      limit = 20,
-      type,
-      category,
-      dateFrom,
-      dateTo,
-      minAmount,
-      maxAmount,
-      keyword,
-      status,
-      accountId,
-      projectId,
-    } = query;
-
-    const whereClause: any = {
+  async listFinanceRecords(companyCode: string, query: FinanceQueryInput) {
+    const { page = 1, limit = 20 } = query;
+    const where: Prisma.FinanceRecordWhereInput = {
       companyCode,
       deletedAt: null,
-    };
-
-    // Apply filters
-    if (type) {
-      whereClause.type = type as FinanceType;
-    }
-
-    if (category) {
-      whereClause.category = {
-        contains: category,
-        mode: 'insensitive',
-      };
-    }
-
-    if (status) {
-      whereClause.status = status as FinanceStatus;
-    }
-
-    if (accountId) {
-      whereClause.accountId = accountId;
-    }
-
-    if (projectId) {
-      whereClause.projectId = projectId;
-    }
-
-    // Date range filter
-    if (dateFrom || dateTo) {
-      whereClause.occurredAt = {};
-      if (dateFrom) {
-        whereClause.occurredAt.gte = new Date(dateFrom);
-      }
-      if (dateTo) {
-        whereClause.occurredAt.lte = new Date(dateTo);
-      }
-    }
-
-    // Amount range filter
-    if (minAmount !== undefined || maxAmount !== undefined) {
-      whereClause.amount = {};
-      if (minAmount !== undefined) {
-        whereClause.amount.gte = minAmount;
-      }
-      if (maxAmount !== undefined) {
-        whereClause.amount.lte = maxAmount;
-      }
-    }
-
-    // Keyword search
-    if (keyword) {
-      whereClause.OR = [
-        {
-          category: {
-            contains: keyword,
-            mode: 'insensitive',
-          },
-        },
-        {
-          description: {
-            contains: keyword,
-            mode: 'insensitive',
-          },
-        },
-      ];
-    }
-
-    // Calculate pagination
-    const skip = (page - 1) * limit;
-    const take = limit;
-
-    const [data, total] = await Promise.all([
-      this.model.findMany({
-        where: whereClause,
-        skip,
-        take,
-        orderBy: {
-          occurredAt: 'desc',
-        },
-        include: {
-          account: {
-            select: {
-              id: true,
-              accountName: true,
-              accountNumber: true,
-            },
-          },
+      ...(query.type && { type: query.type.toUpperCase() as FinanceType }),
+      ...(query.status && { status: query.status.toUpperCase() as FinanceStatus }),
+      ...(query.accountId && { accountId: query.accountId }),
+      ...(query.projectId && { projectId: query.projectId }),
+      ...(query.category && { category: containsText(query.category) }),
+      ...((query.dateFrom || query.dateTo) && {
+        occurredAt: {
+          ...(query.dateFrom && { gte: new Date(query.dateFrom) }),
+          ...(query.dateTo && { lte: new Date(query.dateTo) }),
         },
       }),
-      this.model.count({ where: whereClause }),
+      ...((query.minAmount !== undefined || query.maxAmount !== undefined) && {
+        amount: {
+          ...(query.minAmount !== undefined && { gte: query.minAmount }),
+          ...(query.maxAmount !== undefined && { lte: query.maxAmount }),
+        },
+      }),
+      ...(query.keyword && {
+        OR: [
+          { category: containsText(query.keyword) },
+          { description: containsText(query.keyword) },
+        ],
+      }),
+    };
+    const [data, total] = await Promise.all([
+      prisma.financeRecord.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }],
+        include: { account: true },
+      }),
+      prisma.financeRecord.count({ where }),
     ]);
-
-    return {
-      data,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    };
+    return { data, pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
   }
-
-  /**
-   * Create a finance record with company code
-   */
-  async createFinanceRecord(
+  private async validateLinks(
+    tx: Prisma.TransactionClient,
     companyCode: string,
-    userId: string,
-    input: FinanceCreateInput
-  ): Promise<FinanceRecord> {
-    const recordData: any = {
-      type: input.type as FinanceType,
-      category: input.category,
-      amount: input.amount,
-      currency: input.currency || 'KRW',
-      exchangeRate: input.exchangeRate || 1,
-      occurredAt: new Date(input.occurredAt),
-      description: input.description,
-      status: FinanceStatus.PENDING,
-      companyCode,
-      createdById: userId,
-    };
-
-    // Link to account if provided
+    input: { accountId?: string | null; projectId?: string | null; currency: string }
+  ) {
     if (input.accountId) {
-      const account = await prisma.account.findFirst({
-        where: {
-          id: input.accountId,
-          companyCode,
-          deletedAt: null,
-        },
+      await lockRow(tx, 'BankAccount', input.accountId);
+      const account = await tx.bankAccount.findFirst({
+        where: { id: input.accountId, companyCode, deletedAt: null },
       });
-
-      if (!account) {
-        throw new ApiError(404, 'Account not found or access denied');
-      }
-
-      recordData.accountId = input.accountId;
+      if (!account) throw new ApiError(404, '계좌를 찾을 수 없습니다.');
+      if (account.currency !== input.currency)
+        throw new ApiError(400, '거래 통화는 계좌 통화와 같아야 합니다.');
     }
-
-    // Link to project (booking) if provided
-    if (input.projectId) {
-      const booking = await prisma.booking.findFirst({
-        where: {
-          id: input.projectId,
+    if (
+      input.projectId &&
+      !(await tx.booking.findFirst({
+        where: { id: input.projectId, companyCode, deletedAt: null },
+      }))
+    )
+      throw new ApiError(404, '예약을 찾을 수 없습니다.');
+  }
+  async createFinanceRecord(companyCode: string, userId: string, input: FinanceCreateInput) {
+    return prisma.$transaction(async (tx) => {
+      await this.validateLinks(tx, companyCode, input);
+      return tx.financeRecord.create({
+        data: {
+          ...input,
+          type: input.type.toUpperCase() as FinanceType,
+          occurredAt: new Date(input.occurredAt),
           companyCode,
-          deletedAt: null,
+          createdBy: userId,
+          status: 'PENDING',
         },
+        include: { account: true },
       });
-
-      if (!booking) {
-        throw new ApiError(404, 'Project not found or access denied');
-      }
-
-      recordData.projectId = input.projectId;
-    }
-
-    return this.model.create({
-      data: recordData,
-      include: {
-        account: true,
-      },
     });
   }
-
-  /**
-   * Update finance record with company validation
-   */
   async updateFinanceRecord(
     id: string,
     companyCode: string,
-    input: FinanceUpdateInput
-  ): Promise<FinanceRecord> {
-    // First validate the record exists and belongs to company
-    const record = await this.findById(id, companyCode);
-
-    // Can't update approved or rejected records
-    if (record.status !== FinanceStatus.PENDING) {
-      throw new ApiError(400, `Cannot update ${record.status} records`);
-    }
-
-    const updateData: any = {};
-
-    if (input.type) {
-      updateData.type = input.type as FinanceType;
-    }
-    if (input.category) {
-      updateData.category = input.category;
-    }
-    if (input.amount !== undefined) {
-      updateData.amount = input.amount;
-    }
-    if (input.currency) {
-      updateData.currency = input.currency;
-    }
-    if (input.exchangeRate !== undefined) {
-      updateData.exchangeRate = input.exchangeRate;
-    }
-    if (input.occurredAt) {
-      updateData.occurredAt = new Date(input.occurredAt);
-    }
-    if (input.description !== undefined) {
-      updateData.description = input.description;
-    }
-
-    updateData.updatedAt = new Date();
-
-    return this.model.update({
-      where: { id },
-      data: updateData,
-      include: {
-        account: true,
-      },
+    input: FinanceUpdateInput,
+    userId?: string
+  ) {
+    return prisma.$transaction(async (tx) => {
+      await lockRow(tx, 'FinanceRecord', id);
+      const record = await tx.financeRecord.findFirst({
+        where: { id, companyCode, deletedAt: null },
+      });
+      if (!record) throw new ApiError(404, '거래를 찾을 수 없습니다.');
+      if (record.status !== 'PENDING')
+        throw new ApiError(409, '대기 중인 거래만 수정할 수 있습니다.');
+      const { expectedUpdatedAt, status, type, occurredAt, ...fields } = input;
+      if (expectedUpdatedAt && record.updatedAt.getTime() !== Date.parse(expectedUpdatedAt))
+        throw new ApiError(412, '다른 사용자가 거래를 수정했습니다. 입력 내용을 확인한 후 취소하고 새로고침해 다시 수정해 주세요.');
+      if (
+        await tx.approval.count({
+          where: {
+            companyCode,
+            targetType: 'PAYMENT',
+            targetId: id,
+            status: { in: ['PENDING', 'APPROVED'] },
+            deletedAt: null,
+          },
+        })
+      )
+        throw new ApiError(409, '결재 요청을 먼저 취소해 주세요.');
+      await this.validateLinks(tx, companyCode, {
+        accountId: input.accountId === undefined ? record.accountId : input.accountId,
+        projectId: input.projectId === undefined ? record.projectId : input.projectId,
+        currency: input.currency || record.currency,
+      });
+      if (status !== undefined && status !== 'pending')
+        throw new ApiError(400, '승인 및 반려는 결재 기능을 이용해 주세요.');
+      return tx.financeRecord.update({
+        where: { id },
+        data: {
+          ...fields,
+          ...(type && { type: type.toUpperCase() as FinanceType }),
+          ...(occurredAt && { occurredAt: new Date(occurredAt) }),
+          updatedBy: userId,
+          updatedAt: new Date(Math.max(Date.now(), record.updatedAt.getTime() + 1)),
+        },
+        include: { account: true },
+      });
     });
   }
-
-  /**
-   * Approve or reject a finance record
-   */
   async approveFinanceRecord(
     id: string,
     companyCode: string,
     userId: string,
     input: FinanceApproveInput
-  ): Promise<FinanceRecord> {
-    // First validate the record exists and belongs to company
-    const record = await this.findById(id, companyCode);
-
-    // Can only approve/reject pending records
-    if (record.status !== FinanceStatus.PENDING) {
-      throw new ApiError(400, `Cannot update status. Current status is ${record.status}`);
-    }
-
-    const updateData: any = {
-      status: input.status === 'approved' ? FinanceStatus.APPROVED : FinanceStatus.REJECTED,
-      remarks: input.remarks,
-      updatedAt: new Date(),
-    };
-
-    if (input.status === 'approved') {
-      updateData.approvedById = userId;
-      updateData.approvedAt = new Date();
-    } else {
-      updateData.rejectedById = userId;
-      updateData.rejectedAt = new Date();
-    }
-
-    return this.model.update({
-      where: { id },
-      data: updateData,
-      include: {
-        account: true,
-      },
+  ) {
+    return prisma.$transaction(async (tx) => {
+      await lockRow(tx, 'FinanceRecord', id);
+      const record = await tx.financeRecord.findFirst({
+        where: { id, companyCode, deletedAt: null },
+      });
+      if (!record) throw new ApiError(404, '거래를 찾을 수 없습니다.');
+      if (record.createdBy === userId)
+        throw new ApiError(403, '본인이 등록한 거래는 승인할 수 없습니다.');
+      if (record.status !== 'PENDING') throw new ApiError(409, '이미 처리된 거래입니다.');
+      if (
+        await tx.approval.count({
+          where: {
+            companyCode,
+            targetType: 'PAYMENT',
+            targetId: id,
+            status: 'PENDING',
+            deletedAt: null,
+          },
+        })
+      )
+        throw new ApiError(409, '진행 중인 결재선에서 처리해 주세요.');
+      return tx.financeRecord.update({
+        where: { id },
+        data: {
+          status: input.status === 'approved' ? 'APPROVED' : 'REJECTED',
+          remarks: input.remarks,
+          ...(input.status === 'approved'
+            ? { approvedBy: userId, approvedAt: new Date() }
+            : { rejectedBy: userId, rejectedAt: new Date() }),
+        },
+        include: { account: true },
+      });
     });
   }
-
-  /**
-   * Get financial statistics by month
-   */
-  async getStatsByMonth(
-    companyCode: string,
-    year: number,
-    month?: number
-  ) {
-    const startDate = month
-      ? new Date(year, month - 1, 1)
-      : new Date(year, 0, 1);
-
-    const endDate = month
-      ? new Date(year, month, 0, 23, 59, 59, 999)
-      : new Date(year, 11, 31, 23, 59, 59, 999);
-
-    const records = await this.model.findMany({
+  async delete(id: string, companyCode: string) {
+    await prisma.$transaction(async (tx) => {
+      await lockRow(tx, 'FinanceRecord', id);
+      const record = await tx.financeRecord.findFirst({
+        where: { id, companyCode, deletedAt: null },
+      });
+      if (!record) throw new ApiError(404, '거래를 찾을 수 없습니다.');
+      if (record.status !== 'PENDING')
+        throw new ApiError(409, '처리된 거래의 이력은 삭제할 수 없습니다.');
+      if (
+        await tx.approval.count({
+          where: {
+            companyCode,
+            targetType: 'PAYMENT',
+            targetId: id,
+            status: 'PENDING',
+            deletedAt: null,
+          },
+        })
+      )
+        throw new ApiError(409, '결재 요청을 먼저 취소해 주세요.');
+      await tx.financeRecord.update({ where: { id }, data: { deletedAt: new Date() } });
+    });
+  }
+  async getStatsByMonth(companyCode: string, year: number, month?: number) {
+    const records = await prisma.financeRecord.findMany({
       where: {
         companyCode,
         deletedAt: null,
-        status: {
-          in: [FinanceStatus.PENDING, FinanceStatus.APPROVED],
-        },
+        status: 'APPROVED',
         occurredAt: {
-          gte: startDate,
-          lte: endDate,
+          gte: new Date(Date.UTC(year, month ? month - 1 : 0, 1)),
+          lt: new Date(Date.UTC(month ? year : year + 1, month || 0, 1)),
         },
       },
     });
-
-    let totalIncome = 0;
-    let totalExpense = 0;
-    const byCategory: Record<string, { income: number; expense: number }> = {};
-
-    records.forEach((record: FinanceRecord) => {
-      const amount = Number(record.amount) * Number(record.exchangeRate);
-
-      if (record.type === FinanceType.INCOME) {
-        totalIncome += amount;
-      } else {
-        totalExpense += amount;
-      }
-
-      if (!byCategory[record.category]) {
-        byCategory[record.category] = { income: 0, expense: 0 };
-      }
-
-      if (record.type === FinanceType.INCOME) {
-        byCategory[record.category].income += amount;
-      } else {
-        byCategory[record.category].expense += amount;
-      }
-    });
-
-    return {
-      income: totalIncome,
-      expense: totalExpense,
-      balance: totalIncome - totalExpense,
-      byCategory,
-      period: {
-        year,
-        month: month || 'all',
-      },
-    };
-  }
-
-  /**
-   * Get finance record statistics
-   */
-  async getStats(companyCode: string) {
-    const [total, pending, approved, rejected] = await Promise.all([
-      this.count(companyCode),
-      this.count(companyCode, { status: FinanceStatus.PENDING }),
-      this.count(companyCode, { status: FinanceStatus.APPROVED }),
-      this.count(companyCode, { status: FinanceStatus.REJECTED }),
-    ]);
-
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
-
-    const monthlyStats = await this.getStatsByMonth(
-      companyCode,
-      currentYear,
-      currentMonth
+    const totals: Record<string, { income: Prisma.Decimal; expense: Prisma.Decimal }> = {};
+    for (const record of records) {
+      const bucket = (totals[record.currency] ||= {
+        income: new Prisma.Decimal(0),
+        expense: new Prisma.Decimal(0),
+      });
+      const type = record.type === 'INCOME' ? 'income' : 'expense';
+      bucket[type] = bucket[type].plus(record.amount);
+    }
+    const byCurrency = Object.fromEntries(
+      Object.entries(totals).map(([currency, amounts]) => [
+        currency,
+        {
+          income: amounts.income.toNumber(),
+          expense: amounts.expense.toNumber(),
+          balance: amounts.income.minus(amounts.expense).toNumber(),
+        },
+      ])
     );
-
+    return { byCurrency, period: { year, month: month || 'all' }, basis: 'APPROVED' };
+  }
+  async getStats(companyCode: string) {
+    const statuses = await prisma.financeRecord.groupBy({
+      by: ['status'],
+      where: { companyCode, deletedAt: null },
+      _count: true,
+    });
     return {
-      total,
-      byStatus: {
-        pending,
-        approved,
-        rejected,
-      },
-      currentMonth: monthlyStats,
+      total: statuses.reduce((sum, item) => sum + item._count, 0),
+      byStatus: Object.fromEntries(
+        statuses.map((item) => [item.status.toLowerCase(), item._count])
+      ),
+      currentMonth: await this.getStatsByMonth(
+        companyCode,
+        new Date().getFullYear(),
+        new Date().getMonth() + 1
+      ),
     };
   }
 }
-
 export const financeService = new FinanceService();

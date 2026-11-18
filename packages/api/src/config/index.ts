@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { browserAccessPolicy } from './browser-access';
 import { z } from 'zod';
 
 // Load environment variables
@@ -7,8 +8,8 @@ dotenv.config();
 // Define the configuration schema with validation
 const configSchema = z.object({
   // Server Configuration
-  // Align default internal port with docker-compose.dev.yml (4000)
-  port: z.coerce.number().min(1).max(65535).default(4000),
+  // Direct v2 development uses 4002; containers can explicitly override PORT.
+  port: z.coerce.number().min(1).max(65535).default(4002),
   nodeEnv: z.enum(['development', 'production', 'test']).default('development'),
   apiVersion: z.string().default('v2'),
 
@@ -64,6 +65,7 @@ try {
 
 // Export typed configuration
 export const appConfig = {
+  browser: browserAccessPolicy(config.nodeEnv, config.clientUrl, process.env.ENTRIP_LAN_HTTP === 'true', process.env.ENTRIP_LAN_ORIGINS),
   server: {
     port: config.port,
     nodeEnv: config.nodeEnv,

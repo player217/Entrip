@@ -1,0 +1,994 @@
+[
+  {
+    "file": "01-login-desktop.webp",
+    "originalPngSha256": "2dfb88c1314916d13909e937a09f10e47621ebc1318510adaaa071b1beb62fa6",
+    "webpSha256": "3335d633fdb3e2874f671702b3e8e6c695621470d4c4fe304a9551503d9bcd5c",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "02-dashboard-desktop.webp",
+    "originalPngSha256": "858b33952c7cae248de85b548bcbd9e11b02a7340f49f9ff39a6f7ed300d3445",
+    "webpSha256": "cf2c2aa00716ac441996995055dff162b7c6b66fd7bcffdcdf5905e5941dddba",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "03-month-calendar.webp",
+    "originalPngSha256": "1766a6252de83e08eaa137b09b663505605d6e085be9f8bbd5aea8d73f2a4607",
+    "webpSha256": "d9ebe88e2e08413576126dea1b4e03e5b74a93a8b4a70e8e4d3b20e51c9e69b2",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "04-week-calendar.webp",
+    "originalPngSha256": "db8a9b9aef8c2717790c910db9538e3d774b91146e6136c8ef53958894232d58",
+    "webpSha256": "e99c3ed9a76f22e3a3736140b0ada89fa32103347e6d095ab1661f39f5ebb042",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "05-month-list.webp",
+    "originalPngSha256": "80e914ec27e9a9147da2195b9c6e7a18ec8de36a2316ecbacb844bcb767e41ed",
+    "webpSha256": "849b6c4c3948e35f60129ab0b2cd81f5b9d9cca498e27a8693917fb6d5f262f4",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "06-week-list.webp",
+    "originalPngSha256": "c0e67aa97938cdaaaa91b11f0b8887da99b084469ba4da150b2a8a2a791b1522",
+    "webpSha256": "f80c3319d97fcaef63226c15c3c7db7a934b8d2a392ef0163427f87a77b38aaf",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "07-stats.webp",
+    "originalPngSha256": "2c0f5804205b92f4533b262a5cbeeae8b3912af20c99ddd013ffdeac561d1b0a",
+    "webpSha256": "b4a3c612cb1dd6928e660fca20991044bff4c3b0d67364e2b93b0a2041447d60",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "08-flights-initial.webp",
+    "originalPngSha256": "b842bda3212022fa98f65036d34fb20d64a4cec2c800bbd3259cc5ff992a12cc",
+    "webpSha256": "2250d0929df1cdd63f71084f3bc39f3b71e30cd483e7ab53088008c34200c7ba",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "09-approval.webp",
+    "originalPngSha256": "d027affcf96e7c22c83fa40d4b4efb5aedbe8e19c54a3b13b4982945a1b414f1",
+    "webpSha256": "9d5a0d94d812334f7b89e1020322360642e6bcc3826805f4e74caac442fdfc0f",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "10-accounts.webp",
+    "originalPngSha256": "c915fd31873a9d8d83a07f757bb204c01be905df557d619b8a63a34aa4629c7a",
+    "webpSha256": "9875ad19a7a67e49874e67e4a58b6fdfccfe3876855c1506ef425b9ff976be8c",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "11-messenger.webp",
+    "originalPngSha256": "1230b882c840e0a2d26b9f1fdc5833883f38bb821afc2e79110f4709f9b1d70b",
+    "webpSha256": "343be3e1dc51a6c1818652b2df16cd411b5893c318ce263b46e2da9b1bbaba2a",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "12-mail.webp",
+    "originalPngSha256": "13f158fd371d15713902864817211b7ff936b7c668dd99840b04fc752eea4213",
+    "webpSha256": "3b3094a9139b387a3980f4bb0d93db951cf59163817838837245b885fbbd4b48",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "13-settings.webp",
+    "originalPngSha256": "ebdebb430781f9e41815f6b1c5631300910ee3c74c7356f513d673873d0e0ae8",
+    "webpSha256": "ef704afbbfb4b63a21723b35d1be688d2761349f7ffd21669aa267cc0e51dd42",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "14-employee-add.webp",
+    "originalPngSha256": "7411bdcf4fa1a2b018e74b9f8ff6f6bfca75f1c58f8239e6addf4398e1508205",
+    "webpSha256": "98a5a9dd750b3e704eaa5be2a8d3e6725f8bf715d55b58b6287d6fbae9cd113c",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "15-employee-required.webp",
+    "originalPngSha256": "51b1af388c8c96151106b3de5e2010d5bfbba1491fb9ce39c41337eb6dd6b620",
+    "webpSha256": "aecc7b87c5a453699d1b68f1ef4858d2f77a5ade9f57be027742ed0750001591",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "16-employee-edit-self.webp",
+    "originalPngSha256": "3a3a0cae1817898cbe3603685f9dd27c94b0ecff4751b105e5b2b4b1c1104acc",
+    "webpSha256": "4ad4409540b19b181f7249b9ece9187a0f68308ec9439df2a663f30a778b62ae",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "17-employees-empty-search.webp",
+    "originalPngSha256": "cc2d84084d4d14dc12944281d2647e87f6b46eeae44f247d2a0c798b6a4f4260",
+    "webpSha256": "4a90f0d301a164a7f9bfa96d2e6eef3e0e6510b403bfc6f6463a28839a914e2d",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "18-employees-active-filter.webp",
+    "originalPngSha256": "eb17aa457b653363c10a32c14943a7b4d02c844e5350fa6baf604cbd429c0179",
+    "webpSha256": "92541569919656f76e8d06b3e7e1aa9a86ada17b56c2a97076de0903c145bf4a",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "19-user-help.webp",
+    "originalPngSha256": "cbea8721463b8f5b7bca00d7bfc585e479b9292674813dbc9cb7406764203b5e",
+    "webpSha256": "90918c63d9d2dd753175b5fc1eaffee93c3b326012ad44a4434264b3f15c4764",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "20-profile-destination.webp",
+    "originalPngSha256": "0f9d56819bdaf876ae990edc147abe26e3e85476a3c4a83e9d5a726799b9e611",
+    "webpSha256": "9edcbad2a7ecaf4a8b58bfd6c6467476b41a6c32ef403fb89ef64cd5332a9e86",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "21-sidebar-collapsed.webp",
+    "originalPngSha256": "25b7649bf1fed893291d85fd76fde91e3f8f24e4f46d85a72a61f654a83b69ad",
+    "webpSha256": "699d3ac065e12134596dd69825801884dcbe1ba6afc0622d9ccd3526e8c61db0",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "22-new-workspace.webp",
+    "originalPngSha256": "ece28813c01bfeca460971d4e79f40ef431abed790e0414ff1e8d49e00bdd6f5",
+    "webpSha256": "74e9ed3ef18e05c44467e89890a22e2c71ec82ec8f5eca64ee57c52cb4c6363f",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "23-dashboard-more-noop.webp",
+    "originalPngSha256": "3b25e7185255c25d091957295afa98d3ff29b1f7143ef957d3f900df3e538321",
+    "webpSha256": "83135c59ed637ae96d1dfd2da3de5858be6ae0181c035f3ea540ae160b0b7622",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "24-dashboard-bottom.webp",
+    "originalPngSha256": "9f3476ec590b7206523961a06cf95d11ea55dd4de4d4657281090e920ad3c8b5",
+    "webpSha256": "f5003157c4748358a2f1f9983b1256204b398c5c6e5974098617843377651609",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "25-stats-quarter.webp",
+    "originalPngSha256": "5f29f250c5d9fc65b971224caa0fb1df481103ccd31644042a21b70d4023f812",
+    "webpSha256": "b436d7bc87a373e29781b3a49e2d4285b8a5022bfd428dd7e31892fb843a99ad",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "26-stats-year.webp",
+    "originalPngSha256": "e855c1d1e8e203bcfbe555cb9c5d50925449e5c550d8280ae466100917c873cd",
+    "webpSha256": "ad5e35028339b09916f6419990d377f6fe4d44c97ccb180a6795ae0c1fbe7323",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "27-stats-table-bottom.webp",
+    "originalPngSha256": "c41e9c6df5318c07263e4dd6d935cb4ba89281331392585ecfcbe635aa7c9358",
+    "webpSha256": "93ae831fdd8359d72e51f09db34fae6940fb5612cf749a2a164d7e0e254dc00e",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "28-flights-PUS.webp",
+    "originalPngSha256": "aee95270f07ab7802a10f1514640b6336be9c0d9bb33fa1dd3bbe331a61accb2",
+    "webpSha256": "3e69c606f1167849cbe9c5967c62924ecc6d050e15e0e54a0ad693dc19677148",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "29-flights-retry.webp",
+    "originalPngSha256": "5585c1fc74dc142a2bd6f4a0691ce7fb1909c0f65fb5fcf946218ee5c1c47b3c",
+    "webpSha256": "fa36ff48022f85e23eea42488a54c962492c5bef6ac7422243f189d4d1a49332",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "30-flow.webp",
+    "originalPngSha256": "90587e9fc9ab3116654dad8a325a4a9be71755981b51e0bdb66d48b3744780c0",
+    "webpSha256": "557ecdeb8ac11e011ab53a1b1c29c1bf3ec81b5335fe45da16cc719ca5dc95bf",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "31-calendar-alias.webp",
+    "originalPngSha256": "2ca447082e311dd2520bbf925a8034434a2a6e476fe503e67f8dc9848622eb36",
+    "webpSha256": "87483a1cae4f28d5adc66a449d2480dc79ff3b27697693e603d40af2778ed22c",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "32-week-alias.webp",
+    "originalPngSha256": "72ca45e7a2783473bec3474d1f526be5662beb8b78716fc6048a55708f81a7ca",
+    "webpSha256": "d29fc5a69fee05343c2adbe94bb010f43806da3d2abd080de1a168efd3b34245",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "33-legacy-dashboard.webp",
+    "originalPngSha256": "6e7662cf93d638df61cb5eb4ab015141390e6ac597811350cf9b757b98cf3946",
+    "webpSha256": "3d9a9779d8fe285bb4ac62b3c40459bb004d10c54a59dc489806a77a96315ead",
+    "width": 1440,
+    "height": 1902,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "34-legacy-reservations.webp",
+    "originalPngSha256": "81235a5b4a1ac7c052ffe76a2158e5a98fc212634c31649fc34ce0bbad5c6dcd",
+    "webpSha256": "712df04686303df2ea1e2d2dec158acd1aaf3047155da92ca3ee0fa4f2fc19d9",
+    "width": 1440,
+    "height": 1113,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "35-icon-test.webp",
+    "originalPngSha256": "510acf9704e8bc5464f5f553f4aff08926053f615119fc0bd183068a7dab4b26",
+    "webpSha256": "4be5107e38ee1ebd1fdf1fd41117f2136a6865d93915669cf75af734243d4638",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "36-workspace-direct.webp",
+    "originalPngSha256": "ef01f4235bf68f74aac5e2236b55e0c9a4f51a96be423b4ba3d9a2679d6efef6",
+    "webpSha256": "104a98b0222734668d4fc41db9bb2142a03cfd72ad91505f47d3cf463020793f",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "37-booking-search-empty.webp",
+    "originalPngSha256": "97bfa4bbafc2573907d1b60eaafcf96ef02ad8e5d4accff35a2dcc453767edfc",
+    "webpSha256": "d32143f5500dc6a1ab988e9221cf5cd39d524c3c0db82fd4cc654ada547c2e4f",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "38-filter-CANCELLED.webp",
+    "originalPngSha256": "5c8adf8eeb05305cadb4a9ab4cabbd3f05b4215cfc7ddfd931ec8318487672a9",
+    "webpSha256": "d5d74bb63210568751176fc822ff1e980db7a9cbcdfe3dfc014ca2e68cd4d226",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "38-filter-IN_PROGRESS.webp",
+    "originalPngSha256": "b3a42881dda7ae868184a06203c4da5a931ebf33070213998c2b60f223ff4798",
+    "webpSha256": "a7ab88737c446f8902976d66427ca51ef043b5c932a561e96314ea57cee33928",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "39-booking-previous-empty.webp",
+    "originalPngSha256": "b5f3a7fe0ddfcd7994254b214d6c62a7e7d4270433e3716feafa83308a37c197",
+    "webpSha256": "b36effb9ff7a360edc77ff316f713750a73942bbfac65d88a60eba705bcc1d7c",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "40-booking-required.webp",
+    "originalPngSha256": "739dfc3893a11f22bb20566b1e4a83d77dab7c6f67bd9696f0dec7713f999205",
+    "webpSha256": "ad2150fa9863cdf1026aed3bf5fb729b1d432267b31a0211002a4e3894cb8da2",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "41-booking-detail-기타.webp",
+    "originalPngSha256": "952f0586288cf89102244e0b8f44f4e61e43c6743f9f5ce233588190c8eeb0bc",
+    "webpSha256": "ab44d65d4c2820c372df6dfd92f09b09e7c62394d7002fea60e9263f68a4b3b7",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "41-booking-detail-차량.webp",
+    "originalPngSha256": "4d93b0bf026c2ed4ccf8cbeca664c13ff85de07bc47bc175f0e9a698b7bea6e6",
+    "webpSha256": "e28a5fbe8d3cca7953a2e4bf361f66c9f43d11ec72812e86be0fa49498539e62",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "41-booking-detail-항공.webp",
+    "originalPngSha256": "006a55f2139e521d0c4c632746ba1aee023383c310ec362e1c10f45e36858d3d",
+    "webpSha256": "604b847825b948ba4396913b105850c7737d1a4ce2b439ca1cfb922f02d0326e",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "41-booking-detail-호텔.webp",
+    "originalPngSha256": "51edaec27138ddcb6d5f636c19252a266b3d8de76c421366145aebb5e8737586",
+    "webpSha256": "af95217585cc1f74e8f0e4db905a78b59efe4a95d66500c50206b448990b2584",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "42-booking-history.webp",
+    "originalPngSha256": "54ae183ca812bb5ac1989ab62cfbdc7d26f51ee983b6c0f839ad100482b0072f",
+    "webpSha256": "49b3314f94c6527d0e1091e694a15ec4de080e61ebf54f9ea933d172aa0b4685",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "43-booking-print-all-services.webp",
+    "originalPngSha256": "56a64e56452fb5499d1578f222c26566f086e00e44c7bcd259921921cbaab69c",
+    "webpSha256": "eadee7309ff7f50eeb769c1d430a880b1168c37a57016797a166f7754a113593",
+    "width": 900,
+    "height": 1228,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "44-booking-mobile-dirty.webp",
+    "originalPngSha256": "8222bb517cdbb0aed0365aca9ed3462531e6474d3916257881eff062667b9668",
+    "webpSha256": "c002e74bec75a7a72e5140f95433210888349fbf19c2a60f10644d0ec902b58f",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "45-booking-mobile-detail.webp",
+    "originalPngSha256": "cc6e8ffa57a1893289df6eeb369028a71380afa03a980cee64643b9be2be1b1d",
+    "webpSha256": "d22cab06dc3a44a85417eb5e7d0a79c26a2c022e3be048a97728baf0a3f20536",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "46-booking-dirty-close-cancel.webp",
+    "originalPngSha256": "7dbbb20492d367950e5135d27ab8b7bd6d209fb9d63e58c1677ea012d39af134",
+    "webpSha256": "5647ec16b12f1eccc7229309c31b7dd741c96b8239e5c08402c386d58e39b876",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "47-account-form-desktop.webp",
+    "originalPngSha256": "6606f33e0f4ac643c3e4e56abc9ee16cb616c19b5389a41fd178f9ce9b45d2b8",
+    "webpSha256": "346dda7be5953673d14451a409d82bd4aadaa71111ecfb85b9efa515a11b0a12",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "48-account-form-mobile.webp",
+    "originalPngSha256": "e7c66fe05cabc5a7694ae580ddf39f69c496fe2f9a6d01574dc2e43515761e18",
+    "webpSha256": "9ae2c0f4e8c9cb9604218e0803c849a90a5240418366143da9fc5d7b015b5936",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "49-ledger-form-desktop.webp",
+    "originalPngSha256": "a1585975358f384521dc19f9a163094d8a0603d1edf12e8925599330d01b1c93",
+    "webpSha256": "696ec98161ed51977068570a647ba8b8d61190ae328a7b82ca447b074c657789",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "50-ledger-form-mobile.webp",
+    "originalPngSha256": "fb2802accd9e39ad800810e8ab473c19ae27f294c6457ea1e55bc5c50d7b8dc3",
+    "webpSha256": "1e2a3a78278290af45245a0367fbf46796b989dc5b4dfd11e481da7489d0170a",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "51-approval-empty-filter.webp",
+    "originalPngSha256": "f9e865dc2b880159018031cd4eded65c7fbffbca9f9b36da486132073d965789",
+    "webpSha256": "6276e1550488358f5be3091bee506c5e037f4a03f633071bdd901bf8968bfb96",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "52-approval-form-desktop.webp",
+    "originalPngSha256": "9e1640f6d8e4bc19a3f487d132f1f1017576a6a781a08d541e69a54f47a13c4f",
+    "webpSha256": "aa861d9d74170dad19d070a305001005f516f961053ee67cbf440c5cdd2c5fed",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "53-approval-form-mobile.webp",
+    "originalPngSha256": "660dbccf8a65e4f10c1a77875e97583a8c89ad9f4114ac1a4c9167b5a95a13d9",
+    "webpSha256": "8385690f5637008ba43f8b26972a1ef7e250e16691c9ea592afc4fec17d64a32",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "54-approval-pending-mobile.webp",
+    "originalPngSha256": "ce17d28593ed19b2da14c745c73238b906ba61c35e4fa648d0365733c270e953",
+    "webpSha256": "e9c5cce287779b992d0c432483fc02b2e75d85c8a1bb30eeb8cf005215c4e92d",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "55-approval-manager-action.webp",
+    "originalPngSha256": "e7c9523fc40216f54893669befb7cdbc7801b46983cea2f3499ba85e1e5936d3",
+    "webpSha256": "5cacf51f06f5b1b387b444676210b98409e1ddc7abc6a3e515d3416006078432",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "56-approval-manager-mobile.webp",
+    "originalPngSha256": "088cec31fed2b0da043947032017842b84f3e834da0dad13c4d1db47030a4c4b",
+    "webpSha256": "b39a3528b100fc721624384dbc0d39d9445632b3966c392b900c5bf77cfa8f67",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "57-approval-rejected-mobile.webp",
+    "originalPngSha256": "b4223f939d012d73487450905cb5634951d5e4a307e3423ecb20f50f0db48137",
+    "webpSha256": "ee43545f219b0f2cd495f99dc5f9a560bd33ea2688ab7c3b39b9e69bfdb8566e",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "58-ledger-rejected-mobile.webp",
+    "originalPngSha256": "dcdc9f4c70367d9de1fdaf7d6b0aaaa3269f7d5aa3b761a62b0806d4677c33bf",
+    "webpSha256": "39c39df03e9569d8f6eda71ea67c26d4ad66523a136e9e0939138a461832b216",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "59-settings-user-readonly.webp",
+    "originalPngSha256": "27c73d9dd580e09d2ac96b57380718b87ca82901fb9631dbb3e4f9ab4bd99553",
+    "webpSha256": "1f08f67d303ef63972c6c6223a38438cf1db66758b787da39f9acebb5290a17b",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "60-accounts-user-readonly.webp",
+    "originalPngSha256": "53dd50f832b1456b02ffb927932038e485e1b65b9d377c884ff758a180025c9b",
+    "webpSha256": "56d7e98825c62c11814438a7827d0b8bb84a377e5c3a6c03fae9e5d0b5465c63",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "61-user-menu-nonadmin.webp",
+    "originalPngSha256": "925c8e79fd2b09d6ac4f2572b261119026e5b0e30c47b4de32460cab9b9fb198",
+    "webpSha256": "f218a74e7a75bb811a315ad3b6784626af51b65e32bb58702faf3fbfe06f5c5f",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "62-messenger-directory.webp",
+    "originalPngSha256": "0d9cec8baa885f11a5821da26d53e38a2d37a05b89d8d5644d5789b868da2436",
+    "webpSha256": "c08b88cd693a404c3d6cda20dda9c5a2082560ca65f8231fd7a7bdddca1c0144",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "63-messenger-empty-search.webp",
+    "originalPngSha256": "b783784cc7ca78c3bd9bef1393858b7e04ab74f5c00ea1bee955688ed16eef72",
+    "webpSha256": "b77cc977ce2cb33698754d3ec7f23deeef0d3e216c483be1613aabf5ea4503df",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "64-messenger-directory-mobile.webp",
+    "originalPngSha256": "6783a5ad7d6f1e4cf9696e83fb29adae7a0649c1dc53a49f4b94f29ecba12c6e",
+    "webpSha256": "311cfe2130a94adc02c2e50822271f94dc18032079abe1206b9c792374547801",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "65-messenger-multiline-draft.webp",
+    "originalPngSha256": "89ca664cc8a46d2898e8cea54dd396f8f590ad088390580f21bb4408e0ee9cdb",
+    "webpSha256": "77d6b76d51d0a519e8995e22fdbbcf935c4a1f49973a44969ae6b88597e926ee",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "66-messenger-long-message.webp",
+    "originalPngSha256": "1ffd6fe12c2621cdbac886398aaef9b860a5b62905601148c225f8a936c87ffb",
+    "webpSha256": "b7786028bc907d125e3a8949269f6a7760e6ea71d208d00101a450f92bfae8d8",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "67-messenger-edited.webp",
+    "originalPngSha256": "be8c25a7e67db0412dd3501211bb52ffdea5318c011775c8ed3d70f79cd7c0c1",
+    "webpSha256": "f35204e9a05e5123aba13b6878e26a7831c7aafd9d901fe158b15aecdb15263f",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "68-messenger-deleted.webp",
+    "originalPngSha256": "17ce79baae1c13bd80f4dc36f839cc34af4cad54847af1d938230298bd66ad8a",
+    "webpSha256": "3276d38921dbd4ebc825872e5dfa382252151cda211b092bc28c0de6f8423a68",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "69-messenger-invite-mobile.webp",
+    "originalPngSha256": "a92b5e97dd61f4666e2c6f997512950b02c3cf343552afc6c87501ea2ba188cc",
+    "webpSha256": "8f210283b190adb26758b7da884af8b93288c155096d028b05a14af5bb800128",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "70-messenger-group-mobile.webp",
+    "originalPngSha256": "712249e8edcf1a4389f26f87f759ae15fc8d0b2e1e46e44e43e50c32ad6d6dd6",
+    "webpSha256": "c3ea0de953a37b9c607c05b2123c7e13a952cb6576eb39081d8562cc48a8f49b",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "71-messenger-back-to-list.webp",
+    "originalPngSha256": "b7f4301055c743d1355d161fe3c78fbc57bd3df3ad56b4d0c397353c855ab941",
+    "webpSha256": "6e7b7128ae6e24bad2a85d415718d98c12c9c638d641d1eedf0ea1bfb96f163e",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "72-messenger-history-before.webp",
+    "originalPngSha256": "7dee27b4987daaae0071e50095ea65578e2758d4e6778dd854874ce8143f40e8",
+    "webpSha256": "06ecc7a1dd9ff0f6d7d5e443c818f2c0b5dadceb3dba04b7ddd0870d2847bd40",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "73-messenger-history-after.webp",
+    "originalPngSha256": "af423e5c7be1c1b5eeb8440391d8895122fdb25cbe5faf686625abeb13971091",
+    "webpSha256": "02e9f5150807a71aea0191f6f45fa36adae6747ca33538bca8494d55726fa2e9",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "74-flights-snapshot-desktop.webp",
+    "originalPngSha256": "c01f969b869e6f8d2f52d8c44a8b6c6b61fbe989ad47d708e9c1d3ff8df4b2f8",
+    "webpSha256": "19ee76f940c95978c7adeb5deba04bdcd4a57de64fe46713d9edcb98c31a8203",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "75-flights-snapshot-mobile-left.webp",
+    "originalPngSha256": "96b99ff25bbc66738dda565883da03c7f7f1dca471f7fbe51c9817b12fa63f7c",
+    "webpSha256": "66978f5509307e76e556a6c7fabd1ebda92597bc4c659e5d1379c0b18639f38b",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "76-flights-snapshot-mobile-right.webp",
+    "originalPngSha256": "6527f6cf552fb048248dc2279ef3e515b8426363dfd6869a868ec389a5a5ac15",
+    "webpSha256": "be8e3f40505a18c6d49ab5edbb5a137605f2f3eeef6331a0d4d68400984f97d9",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "77-flights-stale-after-error.webp",
+    "originalPngSha256": "99ea52dff5973d3189776d92cbf3adb1244b22eafc5aa268386e8a1bb9f4a749",
+    "webpSha256": "4f59d843d7d7f5fcb6232149f2069534d0cdff5073bc48c2f92e18c7b3bb233e",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "78-flights-empty-fixture.webp",
+    "originalPngSha256": "506293e5571a95027d2398546269f7f5f9b8d2edda07b2e9ffd03d91f685cf2b",
+    "webpSha256": "60831042894c1022c5eca7849afd0ebe193b832d949624781ee20253148ec1bc",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "79-employee-add-mobile.webp",
+    "originalPngSha256": "cf332f488d064ea6244baa5b3b7714bed2ba448d41bf117f2a82d04525667a0b",
+    "webpSha256": "4ee752a4eae52f9c08f9a1852bba25e4d4e27d007e91bdfbc6f705d416810e6e",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "80-employee-created.webp",
+    "originalPngSha256": "570cc41c84a9879c1581b9765b65641bb11bcf00b454ac9ef5bbdd4f83c312cb",
+    "webpSha256": "96b26ecbd103cb24b38a88a94cc1758a14ba010630bf8ab8fde8d3a0d57caceb",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "81-employee-edit-mobile.webp",
+    "originalPngSha256": "6dfbc874f4d09e0de53bc2091744026c41ed0b68b7214c414d9c4506245f03fb",
+    "webpSha256": "0fce0807bd936f3c5518bdc24cae3b4cfbd0d77e8c2b8051c479dfc6adb6d3c9",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "82-employee-disabled.webp",
+    "originalPngSha256": "09c8c331d67101c6aa8f3748a5560968b2281b70fc1b411a8eb7cfecc1913e3f",
+    "webpSha256": "9ea6d84cb3ae9f6600e3c00e20c760617ecb646f6c60c934584bd1bd2c58af98",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "83-employee-reactivated.webp",
+    "originalPngSha256": "932b2a11340ed4f2796da328de749b2089d05cf4e0bdc843abe347bc5cccd926",
+    "webpSha256": "71f2b9e6a5d8cc9bef0debc05fc552f129aeecec0cbc4cbe7b5efb8ef46dd733",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "84-settings-mobile-right.webp",
+    "originalPngSha256": "5a58fc2f5a4bcc76bfea28191fcbc847bf7ae35a88373d3101637fee35f92252",
+    "webpSha256": "48dc11aa87d111cfa39182170df6d2dcaa2beb82ca5f15269ce1d300f2459152",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "85-mobile-menu.webp",
+    "originalPngSha256": "d0413a040f23af971e43fe4fb8b0e533f281c7d23a29af608ad08988e05d0734",
+    "webpSha256": "b67a25dcac81ac99b98126229638d52eb52bb7e06d6868e84bbd7d51130e5787",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "86-login-mobile.webp",
+    "originalPngSha256": "653b30d31c3a2b5a8be67641cc5fd94c36310699d54e5dfc9f6fbd576d1e3cab",
+    "webpSha256": "18d76e11ac4856ef0df59495b78343ee3e5c533490eacd122ef8c91b244a96d7",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "87-login-error-mobile.webp",
+    "originalPngSha256": "18c71f66d831f308c8fbc6f3aee1ca8a2a26f07b9e9eb275c4f92561ed285d53",
+    "webpSha256": "d33f0edb7e47c49abe0ea6fc1fca6ee89b01e662c7285a00ef5d4fc40a07273e",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "88-sidebar-submenu-collapsed.webp",
+    "originalPngSha256": "ca0dca0839da5cc350e91ae3e7319b15da8148b0e8e97503a88bb1ef53eb7b0d",
+    "webpSha256": "fa60e13214cdbd264c669319d8280372b22e8ccd1fd7f25d46b345ccb852ec8d",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "89-tabs-reordered.webp",
+    "originalPngSha256": "67d9b46ef546a207caf9b86bf063f1de5c89434fd470b7a7f26b35c6ffa8ab23",
+    "webpSha256": "ac1dded4c37934b706fafa12de8a2ce23f761e4312c13bb9d6452bfbef9ba6d5",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "90-tabs-limit.webp",
+    "originalPngSha256": "cd43c629fd5e861b284cf696eebd95830ea8cde9e03d34b1b3441a312edbac97",
+    "webpSha256": "997c8a2337fc438b42a65754951d22174b4b1a618133311809a7262720da57c0",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "91-account-immutable-error.webp",
+    "originalPngSha256": "f38475555bb215bf57d4890f573e96994d0e38df679bab3b1c7f9918beb3f2c6",
+    "webpSha256": "e3552c21c43d7fa7004847dd1976bad34a1e397a70262f48f1063e06aab40577",
+    "width": 1440,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "92-ledger-mobile-right.webp",
+    "originalPngSha256": "7615fe5cbfdcd044b48248e6fe18b6ebce6d32b7b5fc4fe8da441d27d58f6899",
+    "webpSha256": "609fa5b1dec7374597ea99c504e2215076add08bd1e4fabf69bad7698c028360",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "93-booking-list-mobile-right.webp",
+    "originalPngSha256": "e36c5379807af84d5b8df6166f2199a43ff5a7c1c67a2f8917f62d9780a4234b",
+    "webpSha256": "5f9fff7d25c6b1404f935c9f2cad4c588424526edf9f837e01a962fa8976b923",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "94-booking-error-fixture.webp",
+    "originalPngSha256": "9a82ceea1e05c7e8039532c80f50127277279c59160642b9fa336868da56c98f",
+    "webpSha256": "cf3a7115debc93eb6239982505123c166c90efb05f60f881d71506497dfbc07a",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "95-booking-retry-recovered.webp",
+    "originalPngSha256": "60495f0f56b314e701a5ab57fa7b3ec202446923af0d0b06eb861046fad9719c",
+    "webpSha256": "ab8c98d498c707d18c69a9435805ee8da1ccaf92a46d3eb2786dd549dd10de1f",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "96-messenger-send-error-fixture.webp",
+    "originalPngSha256": "4a7bb7dfb999a1484a7cce98a1f6bd27a2bdfc53bfcbec522fbf5dc9835d076c",
+    "webpSha256": "bc4231474e7289a3d88d7126156364f1078f7d9bc14bc0da3a5f2495cb8eed40",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-accounts.webp",
+    "originalPngSha256": "6c46f8c68328e6b5765b4a4523e944899937098a011c0ab47134d3fc1863ea02",
+    "webpSha256": "4c3bfebdcb979827b3061108d55d252391150328f5a4aad47b15fa27790647c5",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-approval.webp",
+    "originalPngSha256": "67dfdf7b7664c2d72a5024f50d39b8cc3cc5a7f9985d268a86a78952e5342ca6",
+    "webpSha256": "cbbd8c33a2b7fec06df8583faf773143a5c745be878d161acb2d2a448a1820b1",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-dashboard.webp",
+    "originalPngSha256": "9046c68efa211ba3544fd59c60aaed153d64e003c3bcd2f1c325d0d9d08b2b16",
+    "webpSha256": "66585cda87973120d8c2a3d7011fcf8a48533b43ba9e83a5cf6af3ac1ee0c112",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-flights.webp",
+    "originalPngSha256": "2286dffde0e344299bff8e8632c06bddc91605006040d5b6e468e39ebdcbf7c8",
+    "webpSha256": "2fc7736714372a0e9ecffcb67c03392a1e5e68469ec2a4f0faa5fad7ba16dd89",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-mail.webp",
+    "originalPngSha256": "80f746144f828783f1abd239b7403e65c262f24252f28c7efd937266928a4a3f",
+    "webpSha256": "42107f055dde458be1f452e5f958343defdd18b5cd732ac889dc4d50de1abff2",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-messenger.webp",
+    "originalPngSha256": "88e5a4a9bf5504a743825f704e8c21fc1e4410834c7b1acd896cce6c6dbe82c2",
+    "webpSha256": "a0cab6bcec31775709a9e5eb1a11e39efd80298b15d0e7b6229b63de0cbd993d",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-month-calendar.webp",
+    "originalPngSha256": "9e6e4151e4e6dd1fa4b287bd1b644abffa498cea4f178d17d39e927fe9f2e3d3",
+    "webpSha256": "a6dc4a41070ef28a2692c42d23eacd482459901ee9f364953387049a5d564ba2",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-month-list.webp",
+    "originalPngSha256": "cc7a6284460e0ff44a021180dc1e5a8599dc70c2302890b37dd7714f21304dc7",
+    "webpSha256": "c7fa8264305d3bcf651e7c3082cabd7c61c37151fdbdcd2a039640cc75e88916",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-settings.webp",
+    "originalPngSha256": "c6b1a63b9a1a5e959a3d1288993bb990d11943312681398427c3c41f297a319e",
+    "webpSha256": "5b7264186d890980feb8ac71352dca460e21cc5e6f12f17ab04496ba3418e50d",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-stats.webp",
+    "originalPngSha256": "ac9623236d5bd1cd26395a12da275c9c7ce866ff4265ace4109e8e4830434f56",
+    "webpSha256": "a769482eb295b2e03b980fcb8098d8a27572e58d952620d40dab0b9d85017f91",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-week-calendar.webp",
+    "originalPngSha256": "7cd25aa6f795870039cca666dd2a16ae8b9de662e4eceae65db66a9164877e7c",
+    "webpSha256": "f8833dbf60c59a355ada7291a296ba8ae705927ffe4e25674da452ff02e32c33",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-390-week-list.webp",
+    "originalPngSha256": "96572e407fb87b45b44b31f7ee2350798ede463c534d3325d3f73685a788c690",
+    "webpSha256": "5a9e28af8811009ff265598a2d28ddaa7aca9facd71b97f6a104922eaa5126dc",
+    "width": 390,
+    "height": 844,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-accounts.webp",
+    "originalPngSha256": "93007cb108d90cabd56a3118b5c76df36d44c0d2393975e2b5c552ecb815dd28",
+    "webpSha256": "331754af6dae4cba1d4c12c2319f97f57362d686fcb10c88e3443aef258f35db",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-approval.webp",
+    "originalPngSha256": "e58d6c5076fbd966d52064e848ccfae8f6c3270706c50f3a17d9971d30c10924",
+    "webpSha256": "785f31dc2bbe0746e46d52753cb39e7e60bcafbe363c9777db46aa8598c928b8",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-dashboard.webp",
+    "originalPngSha256": "1a035b0b5a28aeeb6688473918cf93880cc2f66eb8a7a22de000f29e92578947",
+    "webpSha256": "38b42ef7497f3cdf40aa3d0337c66371891dbe6ad18b05521b622e7a60f4fd09",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-flights.webp",
+    "originalPngSha256": "513ac0e1e26b43965e6d46166891bc0779e540c5577c795026850e4c8f143b9d",
+    "webpSha256": "415d03c6f707b637b6c3d399bae33cdf6a378effe44b54fbbb75f3411f629e72",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-mail.webp",
+    "originalPngSha256": "af3207103ee474186db31c3dd6507c648952dfafb90d5b8dd93bd55095673015",
+    "webpSha256": "3d96d068ee4c8453d205c36189af28225e1749c3b20f024b916d88a084a0e4a6",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-messenger.webp",
+    "originalPngSha256": "b85b850d5d13cc65acaed47478211050f26d7d13d2903c97eed3215a7853c473",
+    "webpSha256": "53460092192a4612b1d5fe48da8a514cf512030419d644520b8ea8124953db25",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-month-calendar.webp",
+    "originalPngSha256": "6ba18f243646d83df44ad5273e13f1d79bc11979fd38dfef75d6a66311258aa8",
+    "webpSha256": "b9c8501d2efe2b3bf8efbd65966b46187f18ad03464e59311270e4a7ee403eaa",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-month-list.webp",
+    "originalPngSha256": "2cf8bc47ebf851bc2f2a2241c7a7fb0dcbe345fbeb291a9ea1d8642f23abc76a",
+    "webpSha256": "132a5be45078a671e2e81a2dcb839586790aa39b21bc920049276d95e723ed9a",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-settings.webp",
+    "originalPngSha256": "4157fd8f4952bf490d5d3f4d05de3921c6eee8db52d1f503a4ee80c9b44f6e81",
+    "webpSha256": "f3823b21deb574e37d2d2662712e805d20f22673ad1870c507d1930ee7e92703",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-stats.webp",
+    "originalPngSha256": "24ac84f1971d2e02e29d87da821dc73c60180b3e5ba596c657b351c839b71b0e",
+    "webpSha256": "40d7c062bd398daccc4af2bb1bd6f8059a07c9c53f507078e59ce811fee28d4e",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-week-calendar.webp",
+    "originalPngSha256": "50b1ae2dbe03e81e400f23d5403c73bdffee2ab8efcbc0e89e2247e5ac69d4c9",
+    "webpSha256": "76440e9173008a4f4b2a3a093d5baf9ba7a757d29ee231aa72d5eb0e4d6ef470",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  },
+  {
+    "file": "responsive-800-week-list.webp",
+    "originalPngSha256": "a085ad41ca0a632a26dfeeeb5cd4efc4d280321663c9c0a0865545823e5cf4d7",
+    "webpSha256": "a6f7682ea0286909edb4f9bee46acce50b5085632d0fd5690bacd8624602d6b0",
+    "width": 800,
+    "height": 1000,
+    "losslessPixelMatch": true
+  }
+]

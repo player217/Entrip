@@ -64,7 +64,8 @@ export class FinanceController {
    */
   create = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const { companyCode, userId } = req;
+      const { companyCode } = req;
+      const userId = req.user?.id;
       if (!companyCode || !userId) {
         return res.status(403).json({
           success: false,
@@ -101,7 +102,7 @@ export class FinanceController {
 
       const { id } = req.params;
       const input = req.body as FinanceUpdateInput;
-      const record = await financeService.updateFinanceRecord(id, companyCode, input);
+      const record = await financeService.updateFinanceRecord(id, companyCode, input, req.user?.id);
 
       res.json({
         success: true,
@@ -156,11 +157,7 @@ export class FinanceController {
 
       // Get both general stats and monthly stats
       if (month) {
-        const monthlyStats = await financeService.getStatsByMonth(
-          companyCode,
-          yearNum,
-          month
-        );
+        const monthlyStats = await financeService.getStatsByMonth(companyCode, yearNum, month);
 
         res.json({
           success: true,
@@ -184,7 +181,8 @@ export class FinanceController {
    */
   approve = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const { companyCode, userId } = req;
+      const { companyCode } = req;
+      const userId = req.user?.id;
       if (!companyCode || !userId) {
         return res.status(403).json({
           success: false,
@@ -196,12 +194,7 @@ export class FinanceController {
       const { id } = req.params;
       const input = req.body as FinanceApproveInput;
 
-      const updated = await financeService.approveFinanceRecord(
-        id,
-        companyCode,
-        userId,
-        input
-      );
+      const updated = await financeService.approveFinanceRecord(id, companyCode, userId, input);
 
       res.json({
         success: true,

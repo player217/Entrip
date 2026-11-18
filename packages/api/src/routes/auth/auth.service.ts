@@ -57,13 +57,16 @@ export class AuthService {
       const raw = (code || 'entrip').trim();
       const lc = raw.toLowerCase();
       // Map common aliases to canonical DB company codes
-      // ENTRIP uses canonical code 'ENTRIP_MAIN' in the database
-      if (lc === 'entrip' || lc === 'entrip_main' || lc === 'entrip-main') return 'ENTRIP_MAIN';
-      if (lc === 'startour' || lc === 'star') return 'star';
-      if (lc === 'happytravel' || lc === 'happy') return 'happy';
+      // Canonical company codes match the v2 seed and migration.
+      if (lc === 'entrip' || lc === 'entrip_main' || lc === 'entrip-main') return 'entrip';
+      if (lc === 'startour' || lc === 'star') return 'startour';
+      if (lc === 'happytravel' || lc === 'happy') return 'happytravel';
       if (lc === 'j1') return 'j1';
       return raw;
     };
+    if (input.role && input.role !== UserRole.USER) {
+      throw new ApiError(403, '관리자 및 매니저 계정은 회사 관리자가 등록해야 합니다.');
+    }
     const normalizedCompany = normalizeCompany(companyCode);
     // Check if user already exists in this company
     const existingUser = await prisma.user.findFirst({
@@ -113,9 +116,9 @@ export class AuthService {
       const raw = (code || 'entrip').trim();
       const lc = raw.toLowerCase();
       // Map common aliases to canonical DB company codes
-      if (lc === 'entrip' || lc === 'entrip_main' || lc === 'entrip-main') return 'ENTRIP_MAIN';
-      if (lc === 'startour' || lc === 'star') return 'star';
-      if (lc === 'happytravel' || lc === 'happy') return 'happy';
+      if (lc === 'entrip' || lc === 'entrip_main' || lc === 'entrip-main') return 'entrip';
+      if (lc === 'startour' || lc === 'star') return 'startour';
+      if (lc === 'happytravel' || lc === 'happy') return 'happytravel';
       if (lc === 'j1') return 'j1';
       return raw;
     };
@@ -204,7 +207,7 @@ export class AuthService {
         throw new ApiError(401, 'User not found or inactive');
       }
 
-      return payload;
+      return { ...payload, id: user.id, email: user.email, name: user.name, role: user.role, companyCode: user.companyCode };
 
     } catch (error) {
       // Error handling is already done in JWTService

@@ -7,16 +7,17 @@
  * - Adds If-Match handling for v2 write operations
  */
 
-import { useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 import type { Booking } from '@entrip/shared';
 import { BookingStatus, BookingType } from '@entrip/shared';
 import apiClient from '../lib/api-client';
-import { initializeSocket } from '../lib/socket';
+import { useAuthStore } from '../lib/auth-store';
+import { useCompanyRefresh } from './useCompanyRefresh';
 
 const ENV_MODE = (process.env.NEXT_PUBLIC_BOOKING_API_MODE
   || process.env.NEXT_PUBLIC_BOOKING_API_TARGET
-  || '').toLowerCase();
+  || 'v2').toLowerCase();
 
 const isV2Enabled = () => ENV_MODE.includes('v2') || ENV_MODE.includes('phase3');
 const BOOKINGS_BASE_PATH = isV2Enabled() ? '/api/v2/bookings' : '/api/bookings';
@@ -71,12 +72,14 @@ const mapType = (value: any): BookingType | undefined => {
 };
 
 const coerceBooking = (raw: any): Booking => {
-  const start = toIsoString(raw?.startDate ?? raw?.departureDate) ?? new Date().toISOString();
+  const start = toIsoString(raw?.startDate ?? raw?.departureDate) ?? '';
   const end = toIsoString(raw?.endDate ?? raw?.returnDate) ?? start;
   const totalPrice = toNumber(raw?.totalPrice ?? raw?.revenue ?? raw?.price, 0) ?? 0;
 
   return {
     id: raw?.id ?? '',
+    type: raw?.type, contact: raw?.contact, email: raw?.email, representative: raw?.representative,
+    flightInfo: raw?.flightInfo, hotelInfo: raw?.hotelInfo, vehicleInfo: raw?.vehicleInfo, insuranceInfo: raw?.insuranceInfo,
     bookingNumber: raw?.bookingNumber ?? raw?.code ?? '',
     customerName: raw?.customerName ?? raw?.client ?? raw?.teamName ?? '미정',
     teamName: raw?.teamName ?? raw?.customerName ?? '미정',
@@ -101,7 +104,7 @@ const coerceBooking = (raw: any): Booking => {
     updatedBy: raw?.updatedBy ?? undefined,
     companyCode: raw?.companyCode ?? '',
     purpose: raw?.purpose ?? undefined,
-    managerName: raw?.managerName ?? raw?.manager ?? undefined,
+    managerName: raw?.managerName ?? raw?.manager ?? raw?.coordinator ?? undefined,
     managerContact: raw?.managerContact ?? raw?.contact ?? undefined,
     costPrice: toNumber(raw?.costPrice, undefined),
     numberOfPeople: toNumber(raw?.numberOfPeople, undefined),
@@ -119,7 +122,7 @@ const coerceBooking = (raw: any): Booking => {
 const normaliseListResponse = (payload: any) => {
   const dataBlock = payload?.data ?? payload?.bookings ?? payload;
   const bookingsSource = Array.isArray(dataBlock?.bookings) ? dataBlock.bookings : Array.isArray(dataBlock) ? dataBlock : [];
-  const bookings = bookingsSource.map(coerceBooking);
+  const bookings: Booking[] = bookingsSource.map(coerceBooking);
 
   const pagination = payload?.pagination ?? payload?.meta ?? dataBlock?.pagination;
   const page = pagination?.page ?? payload?.page ?? 1;
@@ -155,8 +158,11 @@ const buildV2CreatePayload = (payload: Partial<Booking>) => {
   const end = toDateOnly(payload.endDate ?? payload.returnDate) ?? start;
 
   return {
+    customerName: payload.customerName, contact: payload.contact, email: payload.email, representative: payload.representative,
+    depositAmount: payload.depositAmount, currency: payload.currency, status: payload.status,
+    flightInfo: payload.flightInfo, hotelInfo: payload.hotelInfo, vehicleInfo: payload.vehicleInfo, insuranceInfo: payload.insuranceInfo,
     teamName: payload.teamName ?? payload.customerName ?? 'Untitled Team',
-    type: (payload.bookingType ?? BookingType.PACKAGE).toString().toLowerCase(),
+    type: (payload.bookingType ?? BookingType.PACKAGE).toString(),
     origin: payload.origin ?? payload.coordinator ?? 'Seoul',
     destination: payload.destination ?? '미정',
     startDate: start,
@@ -172,7 +178,7 @@ const buildV2UpdatePayload = (payload: Partial<Booking>) => {
   const extended = payload as Partial<Booking> & { memo?: string };
   const body: Record<string, unknown> = {};
   if (payload.teamName !== undefined) body.teamName = payload.teamName;
-  if (payload.bookingType !== undefined) body.type = payload.bookingType.toString().toLowerCase();
+  if (payload.bookingType !== undefined) body.type = payload.bookingType.toString();
   if (payload.origin !== undefined) body.origin = payload.origin;
   if (payload.destination !== undefined) body.destination = payload.destination;
   if (payload.startDate || payload.departureDate) body.startDate = toDateOnly(payload.startDate ?? payload.departureDate);
@@ -190,8 +196,9 @@ const buildV2UpdatePayload = (payload: Partial<Booking>) => {
     body.notes = payload.notes ?? extended.memo;
   }
   if (payload.status !== undefined) {
-    body.status = payload.status.toLowerCase();
+    body.status = payload.status;
   }
+  for (const field of ['customerName','contact','email','representative','depositAmount','currency','flightInfo','hotelInfo','vehicleInfo','insuranceInfo'] as const) { if (payload[field] !== undefined) body[field] = payload[field]; }
   return body;
 };
 
@@ -203,42 +210,33 @@ const resolveIfMatch = (booking?: Partial<Booking>, explicit?: string | number) 
 };
 
 export function useBookings(month?: string) {
+  const user = useAuthStore(state => state.user);
   const query = useMemo(() => {
-    const params = new URLSearchParams();
-    if (month) params.append('month', month);
-    params.append('take', '1000');
-    const qs = params.toString();
-    return `${BOOKINGS_BASE_PATH}${qs ? `?${qs}` : ''}`;
+    const params = new URLSearchParams({ limit: '100', orderBy: 'startDate', order: 'asc' });
+    if (month && /^\d{4}-\d{2}$/.test(month)) {
+      params.set('startDate', `${month}-01`);
+      const [year, monthNumber] = month.split('-').map(Number);
+      params.set('endDate', new Date(Date.UTC(year!, monthNumber!, 0)).toISOString().slice(0, 10));
+    }
+    return `${BOOKINGS_BASE_PATH}?${params}`;
   }, [month]);
+  const key = user ? [query, user.companyCode, user.id] as const : null;
+  const { data, error, isLoading, mutate } = useSWR(key, async ([url]) => {
+    const first = normaliseListResponse(await fetcher(url));
+    const bookings = [...first.bookings];
+    const seen = new Set(bookings.map(item => item.id));
+    for (let page = 2; bookings.length < first.pagination.total; page += 1) {
+      const next = normaliseListResponse(await fetcher(`${url}&page=${page}`));
+      const fresh = next.bookings.filter(item => !seen.has(item.id));
+      if (!fresh.length) throw new Error('예약 전체 목록을 불러오지 못했습니다. 새로고침해주세요.');
+      fresh.forEach(item => seen.add(item.id));
+      bookings.push(...fresh);
+    }
+    return { ...first, bookings };
+  }, { revalidateOnFocus: false, dedupingInterval: 10_000 });
 
-  const { data, error, isLoading, mutate } = useSWR(query, async (url) => normaliseListResponse(await fetcher(url)), {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 60_000,
-  });
-
-  useEffect(() => {
-    const socket = initializeSocket();
-    if (!socket) return;
-
-    const handleBookingUpdate = () => {
-      mutate();
-    };
-
-    socket.on('booking:create', handleBookingUpdate);
-    socket.on('booking:update', handleBookingUpdate);
-    socket.on('booking:delete', handleBookingUpdate);
-    socket.on('booking:bulk-create', handleBookingUpdate);
-    socket.on('booking:bulk-delete', handleBookingUpdate);
-
-    return () => {
-      socket.off('booking:create', handleBookingUpdate);
-      socket.off('booking:update', handleBookingUpdate);
-      socket.off('booking:delete', handleBookingUpdate);
-      socket.off('booking:bulk-create', handleBookingUpdate);
-      socket.off('booking:bulk-delete', handleBookingUpdate);
-    };
-  }, [mutate]);
+  const refresh = useCallback(() => mutate(), [mutate]);
+  useCompanyRefresh(['bookings'], refresh);
 
   return {
     bookings: data?.bookings ?? [],
@@ -311,5 +309,5 @@ export async function deleteBooking(id: string, options?: { ifMatch?: string | n
   return response.data;
 }
 
-export const bookingApiMode = ENV_MODE || 'v1';
+export const bookingApiMode = ENV_MODE || 'v2';
 export const bookingApiBasePath = BOOKINGS_BASE_PATH;

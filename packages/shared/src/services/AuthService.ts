@@ -43,11 +43,12 @@ export class AuthService {
    */
   async login(credentials: LoginRequest): Promise<{ success: boolean; user?: User; error?: string }> {
     try {
-      const response = await this.apiClient.post('/api/auth/login', credentials, {
+      const response = await this.apiClient.post('/api/auth/login', { ...credentials, email: credentials.username }, {
         withCredentials: true, // Essential for cookie handling
       });
 
-      const data: LoginResponse = response.data;
+      const data = response.data;
+      data.user = data.data?.user ?? data.user;
 
       if (data.success && data.user) {
         // DO NOT store token in localStorage - only use HttpOnly cookie
@@ -80,13 +81,14 @@ export class AuthService {
    * Verify current authentication status
    * Uses HttpOnly cookie for verification
    */
-  async verify(): Promise<{ isAuthenticated: boolean; user?: User }> {
+  async verify(): Promise<{ isAuthenticated: boolean; user?: User; unavailable?: boolean }> {
     try {
       const response = await this.apiClient.get('/api/auth/verify', {
         withCredentials: true, // Essential for cookie handling
       });
 
       const data = response.data;
+      data.user = data.data?.user ?? data.user;
 
       if (data.success && data.user) {
         this.onAuthChange?.(data.user);
@@ -100,12 +102,15 @@ export class AuthService {
           isAuthenticated: false,
         };
       }
-    } catch (error) {
-      console.error('Auth verification failed:', error);
-      this.onAuthChange?.(null);
-      return {
-        isAuthenticated: false,
-      };
+    } catch (error: unknown) {
+      const failure = error as { status?: number; response?: { status?: number } };
+      const status = failure.response?.status ?? failure.status;
+      if (status === 401 || status === 403) {
+        this.onAuthChange?.(null);
+        return { isAuthenticated: false };
+      }
+      this.onError?.('인증 서버 연결을 다시 확인해주세요.');
+      return { isAuthenticated: false, unavailable: true };
     }
   }
 
@@ -157,8 +162,8 @@ export class AuthService {
       const refreshed = await this.refreshToken();
       if (!refreshed) {
         // If refresh fails, verify authentication status
-        const { isAuthenticated } = await this.verify();
-        if (!isAuthenticated) {
+        const { isAuthenticated, unavailable } = await this.verify();
+        if (!isAuthenticated && !unavailable) {
           this.logout();
         }
       }

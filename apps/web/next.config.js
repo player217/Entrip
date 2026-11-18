@@ -1,4 +1,16 @@
 const path = require('path');
+const websocketOrigins = [];
+const lanHttp = process.env.NEXT_PUBLIC_ENTRIP_LAN === 'true';
+if (process.env.NEXT_PUBLIC_WS_URL) {
+  const url = new URL(process.env.NEXT_PUBLIC_WS_URL);
+  if (!['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol)) throw new Error('Invalid NEXT_PUBLIC_WS_URL protocol');
+  websocketOrigins.push(url.origin);
+  url.protocol = url.protocol === 'https:' || url.protocol === 'wss:' ? 'wss:' : 'ws:';
+  websocketOrigins.push(url.origin);
+} else if (process.env.NODE_ENV !== 'production') {
+  websocketOrigins.push('http://localhost:4002', 'ws://localhost:4002', 'http://127.0.0.1:4002', 'ws://127.0.0.1:4002');
+}
+
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -7,8 +19,8 @@ const nextConfig = {
   
   // Environment-conditional type checking
   eslint: {
-    // Temporarily ignore ESLint during builds - need to fix unused vars
-    ignoreDuringBuilds: true,
+    // Keep production builds honest about lint errors.
+    ignoreDuringBuilds: false,
   },
   
   // Environment-conditional TypeScript error handling
@@ -86,7 +98,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'", // Allow inline styles for components
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' http://localhost:4001 ws://localhost:4001 https://api.iconify.design https://api.simplesvg.com https://api.unisvg.com https://cdn.jsdelivr.net", // Allow Iconify API services for dynamic icon loading
+              `connect-src 'self' ${websocketOrigins.join(' ')}`,
               "frame-ancestors 'none'", // Prevent clickjacking
               "base-uri 'self'",
               "form-action 'self'",
@@ -95,7 +107,7 @@ const nextConfig = {
           },
           
           // HSTS - Force HTTPS in production
-          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          ...(!lanHttp ? [{ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' }] : []),
           
           // Prevent MIME type sniffing
           { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -121,7 +133,7 @@ const nextConfig = {
       {
         source: '/api/:path*',
         headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
+          ...(!lanHttp ? [{ key: 'Access-Control-Allow-Credentials', value: 'true' },
           // D2.2: Restrict to specific origins instead of wildcard
           { key: 'Access-Control-Allow-Origin', value: process.env.NODE_ENV === 'production' 
               ? 'https://your-production-domain.com'  // Replace with actual production domain
@@ -129,7 +141,7 @@ const nextConfig = {
           },
           { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT,OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Accept, Accept-Version, Authorization, Content-Length, Content-MD5, Content-Type, Date, X-Requested-With, X-Request-ID' },
-          { key: 'Access-Control-Max-Age', value: '86400' }, // 24 hours preflight cache
+          { key: 'Access-Control-Max-Age', value: '86400' }] : []),
           
           // Additional security headers for API
           { key: 'X-API-Version', value: process.env.NEXT_PUBLIC_APP_VERSION || '0.0.0' },
@@ -141,14 +153,7 @@ const nextConfig = {
   
   // API Proxy Routes
   async rewrites() {
-    return [
-      // v2 API routes should be handled by app/api/v2/[...path]/route.ts
-      // Only rewrite v1 API routes to legacy server
-      {
-        source: '/api/((?!v2).*)', // Negative lookahead: match all except v2
-        destination: 'http://localhost:4001/api/$1',
-      },
-    ];
+    return [];
   },
 
   // Redirects

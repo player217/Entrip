@@ -1,28 +1,33 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { Header } from './Header'
-import { Sidebar } from './Sidebar'
-import { ContentShell } from './ContentShell'
-import { clsx } from 'clsx'
+import React, { useEffect, useState } from 'react';
+import { useWorkspaceStore } from '@entrip/shared/client';
+import { Header } from './Header';
+import { Sidebar } from './Sidebar';
+import { TabContentManager } from './TabContentManager';
+import { WorkspaceTabs } from '@/components/workspace/WorkspaceTabs';
 
 interface AppFrameProps {
-  children: React.ReactNode
-  useTabSystem?: boolean // 탭 시스템 사용 여부 (현재 미사용)
-  user?: any // 사용자 정보
+  children: React.ReactNode;
+  useTabSystem?: boolean;
+  user?: { id: string; companyCode: string };
 }
 
-export default function AppFrame({ children, useTabSystem = false, user }: AppFrameProps) {
-  
-  return (
-    <div className="grid grid-rows-[70px_1fr] h-screen min-w-0 overflow-hidden">
-      <Header className="row-start-1 row-end-2 z-50" useTabSystem={useTabSystem} />
-      <div className="row-start-2 flex min-h-0">
-        <Sidebar />
-        <ContentShell>
-          {children}
-        </ContentShell>
-      </div>
+export default function AppFrame({ children, user }: AppFrameProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const ownerId = useWorkspaceStore(state => state.ownerId);
+  const bindOwner = useWorkspaceStore(state => state.bindOwner);
+  const expectedOwner = user ? `${user.companyCode}:${user.id}` : null;
+  useEffect(() => { bindOwner(expectedOwner); }, [bindOwner, expectedOwner]);
+  const ready = expectedOwner !== null && ownerId === expectedOwner;
+  return <div className="entrip-app-frame grid h-[100dvh] min-w-0 grid-rows-[70px_1fr] overflow-hidden bg-[#016B9F]">
+    <Header className="entrip-no-print z-50" useTabSystem onMenuToggle={() => setMobileMenuOpen(value => !value)} menuOpen={mobileMenuOpen} />
+    <div className="entrip-shell-row relative flex min-h-0 min-w-0">
+      {mobileMenuOpen && <button className="entrip-no-print absolute inset-0 z-30 bg-black/30 md:hidden" aria-label="메뉴 닫기" onClick={() => setMobileMenuOpen(false)} />}
+      <Sidebar className="entrip-no-print" mobileOpen={mobileMenuOpen} onNavigate={() => setMobileMenuOpen(false)} />
+      <main className="entrip-shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-tl-2xl bg-white">
+        {ready && <><WorkspaceTabs /><div className="entrip-shell-content min-h-0 min-w-0 flex-1"><TabContentManager>{children}</TabContentManager></div></>}
+      </main>
     </div>
-  )
+  </div>;
 }
