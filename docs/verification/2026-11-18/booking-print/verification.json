@@ -1,0 +1,437 @@
+{
+  "verifiedOn": "2026-11-18",
+  "status": "PASS",
+  "data": "isolated PostgreSQL, synthetic users and reservations, bundled flight snapshot",
+  "scope": "Browser PDF output on A4. Hardware printers and an external live airline feed were outside this test.",
+  "pdfs": {
+    "totalDocuments": 42,
+    "totalPages": 61,
+    "main": {
+      "documents": 27,
+      "pages": 39
+    },
+    "additionalMenus": {
+      "documents": 14,
+      "pages": 20
+    },
+    "legacy": {
+      "documents": 1,
+      "pages": 2
+    }
+  },
+  "mainDocumentChecks": {
+    "expectedValuesMatched": 740,
+    "documents": [
+      {
+        "id": "account-draft",
+        "route": "/accounts",
+        "pages": 1,
+        "checkedValues": 5,
+        "source": "Visible screen and selected controls"
+      },
+      {
+        "id": "accounts",
+        "route": "/accounts",
+        "pages": 1,
+        "checkedValues": 16,
+        "source": "Visible screen and selected controls"
+      },
+      {
+        "id": "approval",
+        "route": "/approval",
+        "pages": 1,
+        "checkedValues": 5,
+        "source": "Visible screen and selected controls"
+      },
+      {
+        "id": "approval-draft",
+        "route": "/approval",
+        "pages": 1,
+        "checkedValues": 3,
+        "source": "Visible screen and selected controls"
+      },
+      {
+        "id": "booking-long",
+        "route": "/list-monthly",
+        "pages": 3,
+        "checkedValues": 205,
+        "source": "38 saved hotel rows plus three service types; every item, date, quantity, currency, unit and extended amount"
+      },
+      {
+        "id": "booking-native-print",
+        "route": "/list-monthly",
+        "pages": 1,
+        "checkedValues": 9,
+        "source": "Native browser print media with open unsaved editor"
+      },
+      {
+        "id": "booking-saved",
+        "route": "/list-monthly",
+        "pages": 1,
+        "checkedValues": 61,
+        "source": "Saved booking detail API, compared with form values; application print preview"
+      },
+      {
+        "id": "booking-unsaved",
+        "route": "/list-monthly",
+        "pages": 1,
+        "checkedValues": 9,
+        "source": "Current unsaved UI fields"
+      },
+      {
+        "id": "calendar-dense",
+        "route": "/calendar-monthly",
+        "pages": 4,
+        "checkedValues": 133,
+        "source": "Unfiltered monthly calendar; all API ledger rows, selected-day overflow count and exact cross-references compared with PDF"
+      },
+      {
+        "id": "calendar-performance",
+        "route": "/calendar-performance",
+        "pages": 1,
+        "checkedValues": 5,
+        "source": "Search and confirmed status applied to visible date period; matching booking API data and displayed total"
+      },
+      {
+        "id": "chat",
+        "route": "/chat",
+        "pages": 1,
+        "checkedValues": 3,
+        "source": "Visible screen and selected controls"
+      },
+      {
+        "id": "dashboard",
+        "route": "/",
+        "pages": 3,
+        "checkedValues": 31,
+        "source": "Visible KPI and section values; exact label/value pairs for both charts"
+      },
+      {
+        "id": "employee-draft",
+        "route": "/settings",
+        "pages": 1,
+        "checkedValues": 3,
+        "source": "Open unsaved employee with explicit password exclusion"
+      },
+      {
+        "id": "flights",
+        "route": "/flight-schedule",
+        "pages": 1,
+        "checkedValues": 27,
+        "source": "Actual flight service; compared displayed source timestamp and every physical airline × weekday PDF cell with its lookup-screen times and flight numbers"
+      },
+      {
+        "id": "flow",
+        "route": "/flow",
+        "pages": 1,
+        "checkedValues": 2,
+        "source": "Visible screen and selected controls"
+      },
+      {
+        "id": "inactive-tab",
+        "route": "/mail",
+        "pages": 1,
+        "checkedValues": 1,
+        "source": "Visible screen and selected controls"
+      },
+      {
+        "id": "list-pagination",
+        "route": "/list-monthly",
+        "pages": 3,
+        "checkedValues": 92,
+        "source": "32 distinct filtered stored booking rows; every team, date, and amount independently matched"
+      },
+      {
+        "id": "login",
+        "route": "blank",
+        "pages": 1,
+        "checkedValues": 2,
+        "source": "Native browser print with deliberately populated login controls"
+      },
+      {
+        "id": "mail",
+        "route": "/mail",
+        "pages": 1,
+        "checkedValues": 2,
+        "source": "Visible screen and selected controls"
+      },
+      {
+        "id": "month-calendar",
+        "route": "/calendar-monthly",
+        "pages": 1,
+        "checkedValues": 5,
+        "source": "Search and confirmed status applied to visible date period; matching booking API data and displayed total"
+      },
+      {
+        "id": "month-list",
+        "route": "/list-monthly",
+        "pages": 1,
+        "checkedValues": 9,
+        "source": "Search and confirmed status applied to visible date period; matching booking API data and displayed total"
+      },
+      {
+        "id": "settings",
+        "route": "/settings",
+        "pages": 1,
+        "checkedValues": 10,
+        "source": "Visible screen and selected controls"
+      },
+      {
+        "id": "stats",
+        "route": "/stats",
+        "pages": 4,
+        "checkedValues": 83,
+        "source": "Visible screen and selected controls"
+      },
+      {
+        "id": "transaction-draft",
+        "route": "/accounts",
+        "pages": 1,
+        "checkedValues": 4,
+        "source": "Visible screen and selected controls"
+      },
+      {
+        "id": "week-calendar",
+        "route": "/calendar-weekly",
+        "pages": 1,
+        "checkedValues": 5,
+        "source": "Search and confirmed status applied to visible date period; matching booking API data and displayed total"
+      },
+      {
+        "id": "week-list",
+        "route": "/list-weekly",
+        "pages": 1,
+        "checkedValues": 9,
+        "source": "Search and confirmed status applied to visible date period; matching booking API data and displayed total"
+      },
+      {
+        "id": "workspace",
+        "route": "/workspace",
+        "pages": 1,
+        "checkedValues": 1,
+        "source": "Visible screen and selected controls"
+      }
+    ]
+  },
+  "reservationLedger": [
+    {
+      "document": "booking-saved",
+      "rowValuesMatchOriginal": 4,
+      "columnOrder": [
+        "항목",
+        "수량",
+        "단가",
+        "합계"
+      ],
+      "salesDepositBalanceMatch": true
+    },
+    {
+      "document": "booking-long",
+      "rowValuesMatchOriginal": 41,
+      "columnOrder": [
+        "항목",
+        "수량",
+        "단가",
+        "합계"
+      ],
+      "salesDepositBalanceMatch": true
+    }
+  ],
+  "legacyRoundTrip": {
+    "status": "PASS",
+    "pdfChecks": 35,
+    "missing": [],
+    "pageErrors": [],
+    "exchangeRate": {
+      "storedBookingEditorValue": "9.175",
+      "bookingPDFValue": "9.175",
+      "exactMatch": true
+    },
+    "renderedPages": [
+      {
+        "page": 1,
+        "format": "A4 portrait",
+        "words": 312,
+        "textOutsidePaper": 0
+      },
+      {
+        "page": 2,
+        "format": "A4 portrait",
+        "words": 76,
+        "textOutsidePaper": 0
+      }
+    ],
+    "checks": [
+      "Legacy nested outbound and inbound mapped to two distinct editable rows",
+      "Edited team classification and arrival time persisted; raw untouched hotel JSON and legacy booking reference/fare remark retained",
+      "One Flight, Hotel, Vehicle and Settlement relation each before and after save; exactly 3 linked supply rows printed",
+      "Currency, exchange rate, memo and unpriced historic service state compared to actual stored values",
+      "Actual preview Print button invoked window.print"
+    ]
+  },
+  "flightCellPositionChecks": [
+    {
+      "route": "PUS–KIX",
+      "weekdayCells": 35,
+      "airlines": 5,
+      "flights": 6
+    },
+    {
+      "route": "PUS–ULN",
+      "weekdayCells": 7,
+      "airlines": 1,
+      "flights": 1
+    }
+  ],
+  "messagingStaffAndIntegrations": [
+    {
+      "id": "01-chat-list",
+      "pages": 1,
+      "valuesMatched": 3,
+      "pass": true
+    },
+    {
+      "id": "02-chat-history-50",
+      "pages": 4,
+      "valuesMatched": 56,
+      "pass": true
+    },
+    {
+      "id": "03-chat-history-58",
+      "pages": 4,
+      "valuesMatched": 59,
+      "pass": true
+    },
+    {
+      "id": "04-invite",
+      "pages": 1,
+      "valuesMatched": 5,
+      "pass": true
+    },
+    {
+      "id": "05-directory",
+      "pages": 1,
+      "valuesMatched": 4,
+      "pass": true
+    },
+    {
+      "id": "06-employee-list",
+      "pages": 1,
+      "valuesMatched": 4,
+      "pass": true
+    },
+    {
+      "id": "07-employee-draft",
+      "pages": 1,
+      "valuesMatched": 5,
+      "pass": true
+    },
+    {
+      "id": "08-mail",
+      "pages": 1,
+      "valuesMatched": 3,
+      "pass": true
+    },
+    {
+      "id": "09-flow",
+      "pages": 1,
+      "valuesMatched": 4,
+      "pass": true
+    }
+  ],
+  "additionalFinancialForms": [
+    {
+      "id": "accounts-open-draft",
+      "expectedValues": 6,
+      "excludedValues": 3
+    },
+    {
+      "id": "finance-open-draft",
+      "expectedValues": 5,
+      "excludedValues": 2
+    },
+    {
+      "id": "approval-open-draft",
+      "expectedValues": 6,
+      "excludedValues": 3
+    }
+  ],
+  "bookingEditor": {
+    "selectedCalendarDate": "2026-11-18",
+    "views": [
+      {
+        "viewport": [
+          1440,
+          900
+        ],
+        "dialogSize": [
+          1186,
+          667.125
+        ],
+        "columns": "417.375px 712.016px",
+        "horizontalOverflow": false,
+        "actions": [
+          "취소",
+          "예약 저장",
+          "인쇄"
+        ]
+      },
+      {
+        "viewport": [
+          800,
+          1000
+        ],
+        "dialogSize": [
+          546,
+          851
+        ],
+        "columns": "516px",
+        "horizontalOverflow": false,
+        "actions": [
+          "취소",
+          "예약 저장",
+          "인쇄"
+        ]
+      },
+      {
+        "viewport": [
+          390,
+          844
+        ],
+        "dialogSize": [
+          367,
+          716
+        ],
+        "columns": "346.812px",
+        "horizontalOverflow": false,
+        "actions": [
+          "취소",
+          "예약 저장",
+          "인쇄"
+        ]
+      }
+    ]
+  },
+  "distribution": {
+    "distribution": "Entrip_Windows_LAN_Print_20261118.zip",
+    "sha256": "252c11ec3c7c0312abb6bfda1aad4213fc2636ea2a8b1c4346bb6791c374bd4d",
+    "bytes": 1088221,
+    "files": 487,
+    "sourceFilesIdentical": 486,
+    "packageExtractBuild": "PASS",
+    "tests": {
+      "api": {
+        "suites": 18,
+        "passed": 93
+      },
+      "client": {
+        "suites": 43,
+        "passed": 386
+      }
+    }
+  },
+  "savedExample": {
+    "pages": 1,
+    "sha256": "49b6c38dcb74ac4363100548c609df3222dd568a1acf0e5bd747952092e7c832"
+  }
+}
