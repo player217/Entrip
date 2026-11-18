@@ -43,7 +43,7 @@ jobs:
             if ($errors.Count) { throw ($errors | Out-String) }
           }
           $zip = Join-Path $project 'downloads/Entrip_Windows_LAN.zip'
-          $project = Join-Path $env:RUNNER_TEMP 'Entrip 배포 패키지'
+          $project = Join-Path $env:RUNNER_TEMP ($env:PROJECT_FOLDER + ' package')
           Expand-Archive -LiteralPath $zip -DestinationPath $project
           Set-Location $env:RUNNER_TEMP
           $usage = & (Join-Path $project 'run.bat') help
