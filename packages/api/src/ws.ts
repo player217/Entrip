@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
+import type { RequestHandler } from 'express';
 import { authService, AuthTokenPayload } from './routes/auth/auth.service';
 import { logger } from './lib/logger';
 import { appConfig } from './config';
@@ -7,6 +8,22 @@ import prisma from './lib/prisma';
 import { messageService } from './services/message.service';
 
 let io: Server;
+
+// Clients re-read the view through its normal authenticated HTTP endpoint.
+// No booking details, employee records or financial values travel in this event.
+export function notifyCompanyWrites(topic: 'bookings' | 'finance' | 'users'): RequestHandler {
+  return (req, res, next) => {
+    const company = req.companyCode;
+    if (company && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+      res.once('finish', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          io?.to(`company:${company}`).emit('company:changed', topic);
+        }
+      });
+    }
+    next();
+  };
+}
 
 export const initializeWebSocket = (server: HttpServer): Server => {
   io = new Server(server, {

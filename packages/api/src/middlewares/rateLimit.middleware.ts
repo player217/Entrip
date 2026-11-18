@@ -6,6 +6,7 @@ interface RateLimitEntry {
   count: number;
   resetTime: number;
   lastRequest: number;
+  penaltyApplied?: boolean;
   violations: number; // Track repeated violations
   burstCount: number; // Track burst requests
   burstResetTime: number; // Burst window reset time
@@ -94,7 +95,7 @@ class RateLimiter {
 
     if (!entry || now > entry.resetTime) {
       // Create new entry or reset expired entry
-      const violations = entry?.violations || 0; // Preserve violations across resets
+      const violations = entry?.penaltyApplied ? 0 : entry?.violations || 0;
       entry = {
         count: 0,
         resetTime: now + windowMs,
@@ -104,6 +105,8 @@ class RateLimiter {
         burstResetTime: now + (config.burstWindowMs || 1000),
       };
     }
+
+    if (entry.penaltyApplied) return { allowed: false, remaining: 0, resetTime: entry.resetTime };
 
     // Reset burst counter if burst window expired
     if (now > entry.burstResetTime) {
@@ -141,6 +144,7 @@ class RateLimiter {
       if (config.enableProgressivePenalty) {
         const penaltyMultiplier = Math.min(entry.violations, 10); // Cap at 10x
         entry.resetTime = now + (windowMs * penaltyMultiplier);
+        entry.penaltyApplied = true;
         this.store.set(key, entry);
 
         logger.warn('Rate limit extended penalty applied', {
@@ -342,7 +346,7 @@ export const authRateLimit = (req: Request, res: Response, next: NextFunction) =
   return _authRateLimitInner(req, res, next);
 };
 
-const anonymousApiRateLimit = createRateLimit({
+const anonymousLimits = {
   windowMs: 60 * 1000, // 1 minute
   maxRequests: appConfig.server.isProduction ? 30 : 60, // Stricter in production
   message: 'API rate limit exceeded. Please slow down your requests.',
@@ -350,6 +354,11 @@ const anonymousApiRateLimit = createRateLimit({
   enableDDoSProtection: true,
   burstLimit: appConfig.server.isProduction ? 15 : 20,
   maxViolations: appConfig.server.isProduction ? 3 : 5,
+};
+const anonymousApiRateLimit = createRateLimit(anonymousLimits);
+export const publicFxRateLimit = createRateLimit({
+  ...anonymousLimits,
+  keyGenerator: req => `${req.ip || req.socket.remoteAddress || 'unknown'}:public-fx`,
 });
 
 // New: Ultra-strict rate limiter for critical endpoints

@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { mutate } from 'swr';
 import { logger } from '@entrip/shared';
 
 let socket: Socket | null = null;
@@ -23,7 +24,12 @@ export const initializeSocket = (): Socket | undefined => {
     logger.info('[Socket]', 'Connected to server with cookie authentication');
   });
   
-  socket.on('disconnect', () => {
+  socket.on('disconnect', reason => {
+    if (reason === 'io server disconnect') {
+      // The server drops active connections on a role change or deactivation.
+      void mutate('/api/v2/auth/me');
+      socket?.connect();
+    }
     logger.info('[Socket]', 'Disconnected from server');
   });
   

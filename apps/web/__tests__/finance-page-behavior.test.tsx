@@ -26,7 +26,7 @@ jest.mock('@/components/finance/api', () => ({
 const account = {
   id: 'bank-1', accountName: '운영 계좌', bankName: '검증 은행', accountNumber: '123',
   holderName: '여행사', currency: 'KRW', openingBalance: '100', balance: '100',
-  hasTransactions: true,
+  hasTransactions: true, updatedAt: '2026-11-18T00:00:00.000Z',
 };
 
 function mockAccounts(hasTransactions = true) {
@@ -56,7 +56,7 @@ test('locks currency and opening balance from server history even when the ledge
     method: 'PUT',
     body: JSON.stringify({
       accountName: '수정된 운영 계좌', bankName: '검증 은행', accountNumber: '123',
-      holderName: '여행사', currency: 'KRW', openingBalance: 100,
+      holderName: '여행사', currency: 'KRW', openingBalance: 100, expectedUpdatedAt: account.updatedAt,
     }),
   }));
   expect(screen.getByRole('button', { name: '이전' })).toBeDisabled();
@@ -68,7 +68,7 @@ test('restored drafts cannot overwrite locked values after account history loads
   mockSavedState = {
     showBankAccount: true,
     bankAccountDraft: {
-      editingId: account.id, accountName: '복원된 이름', bankName: account.bankName,
+      editingId: account.id, expectedUpdatedAt: account.updatedAt, accountName: '복원된 이름', bankName: account.bankName,
       accountNumber: account.accountNumber, holderName: account.holderName,
       currency: 'USD', openingBalance: '999',
     },

@@ -9,7 +9,7 @@ interface MessengerState {
   messages: Record<string, ChatMessage[]>; hasOlderMessages: Record<string, boolean>; olderMessageCursors: Record<string, string>; historyMessageIds: Record<string, string[]>; loadingOlderMessages: Record<string, boolean>; typingUsers: Record<string, string[]>; onlineUsers: Set<string>;
   currentUser: MessengerUser | null; directory: MessengerUser[]; isDirectoryLoading: boolean; isLoading: boolean; error: string | null;
   initialize: (user: MessengerUser) => void; connect: (token?: string) => void; disconnect: () => void;
-  loadConversations: () => Promise<void>; loadDirectory: () => Promise<void>; selectConversation: (id: string) => Promise<void>;
+  loadConversations: () => Promise<void>; loadDirectory: (signal?: AbortSignal) => Promise<void>; selectConversation: (id: string) => Promise<void>;
   sendMessage: (content: string, type?: string, attachments?: unknown[]) => Promise<void>;
   editMessage: (id: string, content: string) => Promise<void>; deleteMessage: (id: string) => Promise<void>;
   toggleReaction: (id: string, emoji: string) => Promise<void>; markAsRead: (id: string) => Promise<void>;
@@ -17,8 +17,8 @@ interface MessengerState {
   setTyping: (typing: boolean, conversationId?: string) => void; updatePresence: (status: string) => Promise<void>; loadMoreMessages: (cursor?: string) => Promise<void>;
 }
 
-export async function messengerRequest<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
-  const response = await fetch(`/api/v2/${path}`, { method, credentials: 'include', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+export async function messengerRequest<T>(path: string, method = 'GET', body?: unknown, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(`/api/v2/${path}`, { method, signal, credentials: 'include', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(typeof data.message === 'string' ? data.message : `요청 실패 (${response.status})`);
   return data as T;
@@ -26,6 +26,8 @@ export async function messengerRequest<T>(path: string, method = 'GET', body?: u
 const errorText = (error: unknown) => error instanceof Error ? error.message : '요청에 실패했습니다.';
 const merge = (a: ChatMessage[], b: ChatMessage[]) => [...new Map([...a, ...b].map(message => [message.id, message])).values()].sort((x, y) => x.createdAt.localeCompare(y.createdAt) || x.id.localeCompare(y.id));
 let session = 0;
+let directoryRequest = 0;
+let conversationRequest = 0;
 let refreshTimer: ReturnType<typeof setInterval> | undefined;
 const typingTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 const MESSAGE_PAGE_SIZE = 50;
@@ -68,14 +70,24 @@ export const useMessengerStore = create<MessengerState>((set, get) => ({
     const host = process.env.NEXT_PUBLIC_WS_URL || (process.env.NODE_ENV === 'development' ? `${window.location.protocol}//${window.location.hostname}:4002` : window.location.origin);
     const socket = io(host, { withCredentials: true, transports: ['websocket', 'polling'], reconnection: true });
     set({ socket });
-    socket.on('connect', () => { if (ticket !== session) return; set({ isConnected: true }); void get().loadConversations(); });
-    socket.on('disconnect', () => { if (ticket === session) set({ isConnected: false }); });
+    socket.on('connect', () => {
+      if (ticket !== session) return;
+      set({ isConnected: true });
+      void get().loadConversations();
+      const active = get().activeConversationId;
+      if (active) socket.emit('conversation:join', active);
+    });
+    socket.on('disconnect', reason => {
+      if (ticket !== session) return;
+      set({ isConnected: false });
+      if (reason === 'io server disconnect') socket.connect();
+    });
     socket.on('connect_error', () => { if (ticket === session) set({ isConnected: false }); });
-    const receive = ({ conversationId, message }: { conversationId: string; message: ChatMessage }) => {
+    const receive = async ({ conversationId, message }: { conversationId: string; message: ChatMessage }) => {
       if (ticket !== session || !message?.id) return;
       set(state => ({ messages: { ...state.messages, [conversationId]: merge(state.messages[conversationId] || [], [message]) } }));
-      if (get().activeConversationId === conversationId) void get().markAsRead(conversationId);
-      void get().loadConversations();
+      if (get().activeConversationId === conversationId) await get().markAsRead(conversationId);
+      if (ticket === session) await get().loadConversations();
     };
     socket.on('message:new', receive); socket.on('message:updated', receive);
     socket.on('conversation:updated', () => { if (ticket === session) void get().loadConversations(); });
@@ -98,19 +110,39 @@ export const useMessengerStore = create<MessengerState>((set, get) => ({
     typingTimeouts.forEach(timer => clearTimeout(timer)); typingTimeouts.clear();
     set({ socket: null, isConnected: false, currentUser: null, conversations: [], messages: {}, hasOlderMessages: {}, olderMessageCursors: {}, historyMessageIds: {}, loadingOlderMessages: {}, directory: [], isDirectoryLoading: false, activeConversationId: null, error: null, isLoading: false, typingUsers: {}, onlineUsers: new Set() });
   },
-  loadDirectory: async () => {
-    const ticket = session; set({ isDirectoryLoading: true });
+  loadDirectory: async signal => {
+    const ticket = session;
+    const request = ++directoryRequest;
+    const current = () => ticket === session && request === directoryRequest && !signal?.aborted;
+    set({ isDirectoryLoading: true });
     try {
-      let page = 1; let pages = 1; const users: MessengerUser[] = [];
-      do { const result = await messengerRequest<{ data: MessengerUser[]; totalPages: number }>(`users?isActive=true&limit=100&page=${page}`); users.push(...result.data); pages = result.totalPages; page++; } while (page <= pages);
-      if (ticket === session) set({ directory: users });
-    } catch (error) { if (ticket === session) set({ error: errorText(error) }); }
-    finally { if (ticket === session) set({ isDirectoryLoading: false }); }
+      let page = 1;
+      const users: MessengerUser[] = [];
+      while (current()) {
+        const result = await messengerRequest<{ data: MessengerUser[]; totalPages: number }>(
+          `users?isActive=true&limit=100&page=${page}`, 'GET', undefined, signal
+        );
+        users.push(...result.data);
+        if (page >= result.totalPages) break;
+        page++;
+      }
+      if (current()) set({ directory: users });
+    } catch (error) {
+      if (current()) set({ error: errorText(error) });
+    } finally {
+      if (ticket === session && request === directoryRequest) set({ isDirectoryLoading: false });
+    }
   },
   loadConversations: async () => {
     const ticket = session;
-    try { const conversations = await messengerRequest<ChatConversation[]>('messages/conversations'); if (ticket === session) set({ conversations }); }
-    catch (error) { if (ticket === session) set({ error: errorText(error) }); }
+    const request = ++conversationRequest;
+    const current = () => ticket === session && request === conversationRequest;
+    try {
+      const conversations = await messengerRequest<ChatConversation[]>('messages/conversations');
+      if (current()) set({ conversations });
+    } catch (error) {
+      if (current()) set({ error: errorText(error) });
+    }
   },
   selectConversation: async id => {
     const ticket = session;

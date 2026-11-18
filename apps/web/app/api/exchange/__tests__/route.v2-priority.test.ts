@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { GET } from '../route';
+let GET: typeof import('../route').GET;
 
 describe('/api/exchange v2 priority contract', () => {
   const originalFetch = global.fetch;
@@ -9,6 +9,8 @@ describe('/api/exchange v2 priority contract', () => {
   const originalFxFree = process.env.INTERNAL_FX_FREE_URL;
 
   beforeEach(() => {
+    jest.resetModules();
+    GET = require('../route').GET;
     process.env.INTERNAL_API_V2_URL = 'http://api-v2-test:4000';
     process.env.INTERNAL_FX_FREE_URL = 'http://fx-free-test:4010';
   });
@@ -44,6 +46,14 @@ describe('/api/exchange v2 priority contract', () => {
     );
     expect(body[0].cur_unit).toBe('CNH');
     expect(body[0].yy_efee_r).toBeNull();
+  });
+
+  it('shares one upstream response across simultaneous and subsequent page loads', async () => {
+    global.fetch = jest.fn().mockResolvedValue(new Response(JSON.stringify([{ cur_unit: 'USD', deal_bas_r: '1,320' }]))) as any;
+    const [first, second] = await Promise.all([GET(), GET()]);
+    expect(await first.json()).toEqual(await second.json());
+    expect((await GET()).headers.get('cache-control')).toMatch(/^public, max-age=\d+$/);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to fx-free when v2 source fails', async () => {

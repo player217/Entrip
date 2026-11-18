@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { mutate } from 'swr';
 import type { LoginRequest, AuthState } from '@entrip/shared';
 import { queryClient } from './queryClient';
+import { disconnectSocket } from './socket';
 import { useWorkspaceStore } from '@entrip/shared/stores/workspaceStore';
 
 interface AuthStore extends AuthState {
@@ -15,6 +16,7 @@ interface AuthStore extends AuthState {
 }
 
 function clearSessionData() {
+  disconnectSocket();
   void mutate(() => true, undefined, { revalidate: false });
   queryClient.clear();
   useWorkspaceStore.getState().bindOwner(null);

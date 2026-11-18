@@ -23,6 +23,7 @@ export function errorMessage(error: unknown) {
 }
 export interface BankAccount {
   id: string;
+  updatedAt: string;
   accountName: string;
   bankName: string;
   accountNumber: string;
@@ -34,6 +35,7 @@ export interface BankAccount {
 }
 export interface FinanceRecord {
   id: string;
+  updatedAt: string;
   type: 'INCOME' | 'EXPENSE';
   category: string;
   amount: string;

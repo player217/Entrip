@@ -18,6 +18,7 @@ export function BookingEditor({ session, onChange, onClose, onSave, onReload, on
   const formId = useId();
   const focusRow = useRef<string | null>(null);
   const dirty = JSON.stringify(draft) !== session.baseline;
+  const deleted = session.remoteChange === 'deleted';
   const items = detailSections.flatMap(({ key }) => draft[key]);
   const savedUnnamed = useMemo(() => {
     const baseline = JSON.parse(session.baseline) as BookingDraft;
@@ -44,7 +45,7 @@ export function BookingEditor({ session, onChange, onClose, onSave, onReload, on
   };
   const print = () => {
     const popup = window.open('', '_blank', 'width=900,height=800');
-    if (popup) { popup.document.write(bookingPrintHtml(draft, session.record?.bookingNumber, { dirty, record: session.record })); popup.document.close(); popup.focus(); } else { window.print(); }
+    if (popup) { popup.document.write(bookingPrintHtml(draft, session.record?.bookingNumber, { dirty, deleted, record: session.record })); popup.document.close(); popup.focus(); } else { window.print(); }
   };
   return <div className="booking-editor-stage entrip-no-print"><section role="dialog" aria-modal="false" aria-label={session.record ? '예약 수정' : '새 예약 등록'} className="booking-editor-panel flex min-h-0 flex-col overflow-hidden rounded-xl border border-blue-200 shadow-xl"
     onKeyDown={event => { if (event.key === 'Escape' && !busy && !event.nativeEvent.isComposing) { event.stopPropagation(); onClose(); } }}>
@@ -52,12 +53,15 @@ export function BookingEditor({ session, onChange, onClose, onSave, onReload, on
       <div className="mr-auto min-w-0"><h2 className="text-lg font-semibold text-slate-900">예약 정보</h2><p className="break-all text-xs text-slate-500">{session.record?.bookingNumber ?? '새 예약 등록'}{dirty ? ' · 저장하지 않은 변경 사항' : ''}</p></div>
       <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
         <button type="button" onClick={onClose} disabled={busy} className="rounded border px-3 py-1.5 text-sm">취소</button>
-        <button type="submit" form={formId} disabled={busy || (!!session.record && !dirty)} className="rounded bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? '저장 중...' : '예약 저장'}</button>
+        <button type="submit" form={formId} disabled={busy || deleted || (!!session.record && !dirty)} className="rounded bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? '저장 중...' : '예약 저장'}</button>
         <button type="button" onClick={print} className="rounded border px-3 py-1.5 text-sm">인쇄</button>
       </div>
     </header>
-    <form id={formId} className="flex min-h-0 flex-1 flex-col" onSubmit={event => { event.preventDefault(); if (!busy) onSave(); }}>
-      <div className="min-h-0 flex-1 overflow-auto">
+    <form id={formId} className="flex min-h-0 flex-1 flex-col" onSubmit={event => { event.preventDefault(); if (!busy && !deleted) onSave(); }}>
+      <fieldset disabled={busy} className="m-0 min-h-0 min-w-0 flex-1 overflow-auto border-0 p-0">
+        {session.remoteChange && <p role="status" className="m-4 rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          {deleted ? '다른 직원이 이 예약을 삭제했습니다. 작성 중인 내용은 이 창에서 확인할 수 있습니다.' : '다른 직원이 이 예약을 수정했습니다. 작성 중인 내용은 보존했습니다. ‘다시 불러오기’로 최신 내용을 확인하세요.'}
+        </p>}
         {error && <p role="alert" className="m-4 rounded bg-red-50 p-3 text-sm text-red-700">{error}</p>}
         {showHistory && <div ref={historyPanel} className="m-4 rounded border border-slate-200 p-3">
           <h3 className="mb-2 font-medium">저장된 변경 이력</h3>
@@ -141,11 +145,11 @@ export function BookingEditor({ session, onChange, onClose, onSave, onReload, on
             {linked.length > 0 && <section><h4 className="mb-2 border-b pb-2 font-medium text-blue-800">연결된 수배</h4>{linked.map(row => <details key={row.id} className="mb-2 rounded border p-2 text-sm"><summary className="cursor-pointer">{row.label} · {row.title}</summary><dl className="mt-2 grid grid-cols-2 gap-2">{row.facts.map(fact => <div key={fact.label}><dt className="text-xs text-slate-500">{fact.label}</dt><dd className="whitespace-pre-wrap break-words">{fact.value}</dd></div>)}</dl></details>)}</section>}
           </div>
         </div>
-      </div>
+      </fieldset>
       {session.record && <footer className="flex flex-wrap items-center justify-between gap-1 border-t bg-slate-50 px-3 py-1.5 text-xs">
         <div className="flex gap-2"><button type="button" onClick={() => setShowHistory(!showHistory)} aria-expanded={showHistory} className="rounded px-2 py-1.5 text-blue-700">변경 이력</button>
-        <button type="button" onClick={onReload} disabled={busy} className="rounded px-2 py-1.5">다시 불러오기</button></div>
-        <button type="button" onClick={onDelete} disabled={busy} className="rounded px-2 py-1.5 text-red-600">예약 삭제</button>
+        <button type="button" onClick={onReload} disabled={busy || deleted} className="rounded px-2 py-1.5">다시 불러오기</button></div>
+        <button type="button" onClick={onDelete} disabled={busy || deleted} className="rounded px-2 py-1.5 text-red-600">예약 삭제</button>
       </footer>}
     </form>
   </section></div>;

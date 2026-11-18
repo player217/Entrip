@@ -76,7 +76,7 @@ router.post(
 router.put(
   '/:id',
   requireRole([UserRole.ADMIN, UserRole.MANAGER]),
-  validateBody(accountBody),
+  validateBody(accountBody.extend({ expectedUpdatedAt: z.string().datetime().optional() })),
   async (req: AuthRequest, res, next) => {
     try {
       const data = await prisma.$transaction(async (tx) => {
@@ -85,16 +85,22 @@ router.put(
           where: { id: req.params.id, companyCode: req.user!.companyCode, deletedAt: null },
         });
         if (!account) throw new ApiError(404, '계좌를 찾을 수 없습니다.');
+        const { expectedUpdatedAt, ...fields } = req.body;
+        if (expectedUpdatedAt && account.updatedAt.getTime() !== Date.parse(expectedUpdatedAt))
+          throw new ApiError(412, '다른 사용자가 계좌를 수정했습니다. 입력 내용을 확인한 후 취소하고 새로고침해 다시 수정해 주세요.');
         const hasEntries = await tx.financeRecord.count({
           where: { accountId: account.id },
         });
         if (
           hasEntries &&
-          (account.currency !== req.body.currency ||
-            !account.openingBalance.equals(req.body.openingBalance))
+          (account.currency !== fields.currency ||
+            !account.openingBalance.equals(fields.openingBalance))
         )
           throw new ApiError(409, '거래가 등록된 계좌의 통화와 기초잔액은 변경할 수 없습니다.');
-        return tx.bankAccount.update({ where: { id: account.id }, data: req.body });
+        return tx.bankAccount.update({
+          where: { id: account.id },
+          data: { ...fields, updatedAt: new Date(Math.max(Date.now(), account.updatedAt.getTime() + 1)) },
+        });
       });
       res.json({ success: true, data });
     } catch (error) {

@@ -15,12 +15,12 @@ import { logger } from './lib/logger';
 import { errorHandler } from './middlewares/error.middleware';
 import { loggingMiddleware, errorLoggingMiddleware } from './middlewares/logging.middleware';
 import { optionalAuth } from './middlewares/auth.middleware';
-import { apiRateLimit } from './middlewares/rateLimit.middleware';
+import { apiRateLimit, publicFxRateLimit } from './middlewares/rateLimit.middleware';
 import { requestId } from './middlewares/requestId.middleware';
 import { ipValidation } from './middlewares/ipValidation.middleware';
 
 // WebSocket import
-import { initializeWebSocket } from './ws';
+import { initializeWebSocket, notifyCompanyWrites } from './ws';
 
 // Route imports
 import authRoutes from './routes/auth/auth.route';
@@ -163,7 +163,9 @@ app.get('/health', (req, res) => {
 // API Routes with v2 prefix for new API
 const apiV2 = express.Router();
 
-// Apply rate limiting to all API routes
+// The shared public rate feed has its own budget, including requests from the web proxy.
+apiV2.use('/fx', publicFxRateLimit, fxRoutes);
+
 apiV2.use(optionalAuth, apiRateLimit);
 
 app.use('/api/v2', apiV2);
@@ -171,19 +173,18 @@ app.use('/api/v2', apiV2);
 // Mount routes
 apiV2.use('/health', healthRoutes);
 apiV2.use('/auth', authRoutes);
-apiV2.use('/users', usersRoutes);
+apiV2.use('/users', notifyCompanyWrites('users'), usersRoutes);
 apiV2.use('/messages', messagesRoutes);
-apiV2.use('/bookings', bookingRoutes);
-apiV2.use('/calendar', calendarRoutes);
-apiV2.use('/accounts', accountsRoutes);
-apiV2.use('/finance', financeRoutes);
-apiV2.use('/bank-accounts', bankAccountsRoutes);
+apiV2.use('/bookings', notifyCompanyWrites('bookings'), bookingRoutes);
+apiV2.use('/calendar', notifyCompanyWrites('bookings'), calendarRoutes);
+apiV2.use('/accounts', notifyCompanyWrites('finance'), accountsRoutes);
+apiV2.use('/finance', notifyCompanyWrites('finance'), financeRoutes);
+apiV2.use('/bank-accounts', notifyCompanyWrites('finance'), bankAccountsRoutes);
 apiV2.use('/flights', flightRoutes);
-apiV2.use('/fx', fxRoutes);
-apiV2.use('/approvals', approvalsRoutes);
+apiV2.use('/approvals', notifyCompanyWrites('finance'), approvalsRoutes);
 apiV2.use('/metrics', metricsRoutes);
 apiV2.use('/notifications', notificationsRoutes);
-apiV2.use('/team-bookings', teamBookingsRoutes);
+apiV2.use('/team-bookings', notifyCompanyWrites('bookings'), teamBookingsRoutes);
 // apiV1.use('/payments', paymentRoutes);
 // apiV1.use('/messaging', messagingRoutes);
 // apiV1.use('/mail', mailRoutes);

@@ -3,12 +3,13 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 const require = createRequire(new URL('../../apps/web/package.json', import.meta.url));
-const { chromium } = require('@playwright/test');
+const { chromium, expect } = require('@playwright/test');
 const baseURL = process.env.BASE_URL || 'http://127.0.0.1:3000';
 const output = process.env.VERIFICATION_OUTPUT || path.resolve('docs/verification/2026-11-17');
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ headless: true, ...(process.env.BROWSER_EXECUTABLE_PATH ? { executablePath: process.env.BROWSER_EXECUTABLE_PATH } : {}), args: ['--no-sandbox', '--disable-dev-shm-usage'] });
-const context = await browser.newContext({ baseURL, viewport: { width: 1440, height: 1000 } });
+const storageState = process.env.QA_STATE_DIR && path.join(process.env.QA_STATE_DIR, 'admin.json');
+const context = await browser.newContext({ storageState, baseURL, viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
@@ -18,8 +19,14 @@ let createdId;
 const screenshot = async name => { const filename = `${name}.png`; await page.screenshot({ path: path.join(output, filename), fullPage: true }); report.screenshots.push(filename); };
 const waitForWrite = method => page.waitForResponse(response => response.url().includes('/api/v2/bookings') && response.request().method() === method && response.status() >= 200 && response.status() < 300);
 try {
-  const login = await context.request.post('/api/v2/auth/login', { data: { email: 'admin@entrip.com', password: 'pass1234', companyCode: 'entrip' } });
-  assert.equal(login.status(), 200, await login.text());
+  if (!storageState) {
+    const login = await context.request.post('/api/v2/auth/login', { data: {
+      email: process.env.ENTRIP_ADMIN_EMAIL || 'admin@entrip.com',
+      password: process.env.ENTRIP_ADMIN_PASSWORD || 'pass1234',
+      companyCode: process.env.ENTRIP_COMPANY_CODE || 'entrip',
+    } });
+    assert.equal(login.status(), 200, await login.text());
+  }
   await page.goto('/calendar-monthly');
   await page.getByRole('heading', { name: '월간 캘린더', exact: true }).waitFor();
   const day = await page.getByRole('button', { name: /^\d{4}-\d{2}-\d{2} 예약 등록$/ }).first().getAttribute('aria-label');
@@ -57,7 +64,7 @@ try {
   await editor.getByRole('button', { name: '예약 저장', exact: true }).click();
   createdId = (await (await createResponse).json()).data.id;
   editor = page.getByRole('dialog', { name: '예약 수정', exact: true });
-  await editor.getByText('변경 사항 없음', { exact: true }).waitFor();
+  await expect(editor.getByRole('button', { name: '예약 저장', exact: true })).toBeDisabled();
   let detail = await (await context.request.get(`/api/v2/bookings/${createdId}`)).json();
   assert.equal(detail.data.contact, '010-2345-6789');
   assert.equal(detail.data.status, 'CONFIRMED');
@@ -88,7 +95,7 @@ try {
   const updateResponse = waitForWrite('PUT');
   await editor.getByRole('button', { name: '예약 저장', exact: true }).click();
   await updateResponse;
-  await editor.getByText('변경 사항 없음', { exact: true }).waitFor();
+  await expect(editor.getByRole('button', { name: '예약 저장', exact: true })).toBeDisabled();
   detail = await (await context.request.get(`/api/v2/bookings/${createdId}`)).json();
   assert.equal(detail.data.contact, '010-9999-8888');
   assert.equal(detail.data.version, 2);
@@ -100,7 +107,7 @@ try {
   const mobileUpdate = waitForWrite('PUT');
   await editor.getByRole('button', { name: '예약 저장', exact: true }).click();
   await mobileUpdate;
-  await editor.getByText('변경 사항 없음', { exact: true }).waitFor();
+  await expect(editor.getByRole('button', { name: '예약 저장', exact: true })).toBeDisabled();
   const box = await editor.boundingBox();
   assert.ok(box && box.x >= -1 && box.x + box.width <= 391, JSON.stringify(box));
   await screenshot('booking-mobile');

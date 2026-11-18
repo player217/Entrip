@@ -7,13 +7,13 @@
  * - Adds If-Match handling for v2 write operations
  */
 
-import { useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 import type { Booking } from '@entrip/shared';
 import { BookingStatus, BookingType } from '@entrip/shared';
 import apiClient from '../lib/api-client';
 import { useAuthStore } from '../lib/auth-store';
-import { initializeSocket } from '../lib/socket';
+import { useCompanyRefresh } from './useCompanyRefresh';
 
 const ENV_MODE = (process.env.NEXT_PUBLIC_BOOKING_API_MODE
   || process.env.NEXT_PUBLIC_BOOKING_API_TARGET
@@ -235,28 +235,8 @@ export function useBookings(month?: string) {
     return { ...first, bookings };
   }, { revalidateOnFocus: false, dedupingInterval: 10_000 });
 
-  useEffect(() => {
-    const socket = initializeSocket();
-    if (!socket) return;
-
-    const handleBookingUpdate = () => {
-      mutate();
-    };
-
-    socket.on('booking:create', handleBookingUpdate);
-    socket.on('booking:update', handleBookingUpdate);
-    socket.on('booking:delete', handleBookingUpdate);
-    socket.on('booking:bulk-create', handleBookingUpdate);
-    socket.on('booking:bulk-delete', handleBookingUpdate);
-
-    return () => {
-      socket.off('booking:create', handleBookingUpdate);
-      socket.off('booking:update', handleBookingUpdate);
-      socket.off('booking:delete', handleBookingUpdate);
-      socket.off('booking:bulk-create', handleBookingUpdate);
-      socket.off('booking:bulk-delete', handleBookingUpdate);
-    };
-  }, [mutate]);
+  const refresh = useCallback(() => mutate(), [mutate]);
+  useCompanyRefresh(['bookings'], refresh);
 
   return {
     bookings: data?.bookings ?? [],

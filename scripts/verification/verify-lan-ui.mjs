@@ -86,7 +86,11 @@ try {
   const staff = await login(staffEmail, staffPassword);
   report.checks.push('Provisioned administrator creates employee through settings; independent employee signs in on the same LAN origin');
 
-  await admin.page.goto('/list-monthly');
+  await Promise.all([admin.page.goto('/list-monthly'), staff.page.goto('/list-monthly')]);
+  const employeeList = staff.page.getByTestId('booking-month-list');
+  const sharedRow = employeeList.getByRole('row').filter({ hasText: team });
+  await expect(employeeList.locator(':scope > footer')).toContainText(/예약 \d+건/);
+  await expect(sharedRow).toHaveCount(0);
   await admin.page.getByRole('button', { name: '+ 예약 등록', exact: true }).click();
   const editor = admin.page.getByRole('dialog', { name: '새 예약 등록', exact: true });
   await editor.getByLabel('팀명 *', { exact: true }).fill(team);
@@ -98,8 +102,8 @@ try {
   assert.ok(bookingResponse.ok(), `Create booking returned ${bookingResponse.status()}`);
   booking = (await bookingResponse.json()).data;
   assert.ok(booking.id && booking.version);
-  await staff.page.goto('/list-monthly');
-  await expect(staff.page.getByRole('row').filter({ hasText: team })).toBeVisible();
+  await expect(sharedRow).toBeVisible({ timeout: 10000 });
+  report.checks.push('The employee already on the monthly list sees the new reservation without navigation or manual refresh');
   await staff.page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
   await staff.page.reload();
   await expect(staff.page.getByRole('row').filter({ hasText: team })).toBeVisible();

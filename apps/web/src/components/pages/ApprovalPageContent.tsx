@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { FinanceDraftPrint } from '@/components/finance/FinanceDraftPrint';
 import { useAuthStore } from '@/lib/auth-store';
+import { useCompanyRefresh } from '@/hooks/useCompanyRefresh';
 import { useTabState } from '@/hooks/useTabState';
 import { useWorkspaceTabKey } from '@/components/workspace/WorkspaceTabContext';
 import { useWorkspaceStore } from '@entrip/shared/client';
@@ -102,6 +103,7 @@ export default function ApprovalPageContent() {
     },
     [page, status, queryKey, user?.id, user?.companyCode]
   );
+  useCompanyRefresh(['finance', 'users'], refresh);
   useEffect(() => {
     const controller = new AbortController();
     setError('');
@@ -155,7 +157,7 @@ export default function ApprovalPageContent() {
         </div>
       )}
       {notice && (
-        <p role="status" className="text-sm text-green-700">
+        <p role="status" className="entrip-no-print text-sm text-green-700">
           {notice}
         </p>
       )}

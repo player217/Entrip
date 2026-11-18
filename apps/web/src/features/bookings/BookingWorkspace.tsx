@@ -1,14 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useWorkspaceStore } from '@entrip/shared/client';
 import { useAuthStore } from '@/lib/auth-store';
 import { useTabState } from '@/hooks/useTabState';
+import { useCompanyRefresh } from '@/hooks/useCompanyRefresh';
 import { useWorkspaceTabKey } from '@/components/workspace/WorkspaceTabContext';
 import { BookingEditor } from './BookingEditor';
 import BookingWorkspacePrint from './BookingWorkspacePrint';
-import { bookingPayload, bookingRequest, bookingTypes, dateKey, localDate, makeDraft, statuses, statusStyles, type BookingRecord, type EditorSession } from './booking-model';
+import { bookingPayload, bookingRequest, BookingRequestError, bookingTypes, dateKey, localDate, makeDraft, statuses, statusStyles, type BookingRecord, type EditorSession } from './booking-model';
 
 export type BookingView = 'month' | 'week' | 'month-list' | 'week-list';
 const labels: Record<BookingView, string> = { month: '월간 캘린더', week: '주간 캘린더', 'month-list': '월간 목록', 'week-list': '주간 목록' };
@@ -26,6 +27,9 @@ export function BookingWorkspace({ view }: { view: BookingView }) {
   const [editor, setEditor] = useTabState<EditorSession | null>(blankSession, 'bookingEditor');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const editorAction = useRef(0);
+  const currentRecordId = useRef(editor?.record?.id);
+  currentRecordId.current = editor?.record?.id;
   const { mutate: mutateCache } = useSWRConfig();
   const weekly = view.startsWith('week');
   const listView = view.endsWith('list');
@@ -58,6 +62,34 @@ export function BookingWorkspace({ view }: { view: BookingView }) {
     }
     return result;
   }, { revalidateOnFocus: true, dedupingInterval: 5000 });
+  const refreshBookings = useCallback(async (signal: AbortSignal) => {
+    const requestedId = currentRecordId.current;
+    const action = editorAction.current;
+    const updateDetail = async () => {
+      if (!requestedId) return;
+      let record: BookingRecord | undefined;
+      try {
+        const detail = await bookingRequest<{ data: BookingRecord }>(`/${encodeURIComponent(requestedId)}`, { signal });
+        record = detail.data;
+      } catch (cause) {
+        if (!(cause instanceof BookingRequestError) || cause.status !== 404) throw cause;
+      }
+      if (signal.aborted || action !== editorAction.current) return;
+      setEditor(current => {
+        // A different booking may have opened or a newer save may have finished during this request.
+        if (!current?.record || current.record.id !== requestedId) return current;
+        if (record && (record.version < current.record.version || JSON.stringify(current.record) === JSON.stringify(record))) return current;
+        if (JSON.stringify(current.draft) !== current.baseline) {
+          return { ...current, remoteChange: record ? 'updated' : 'deleted' };
+        }
+        if (!record) return null;
+        const draft = makeDraft(record, selectedDay, user?.name ?? '');
+        return { record, draft, baseline: JSON.stringify(draft) };
+      });
+    };
+    await Promise.all([mutate(), updateDetail()]);
+  }, [mutate, selectedDay, setEditor, user?.name]);
+  useCompanyRefresh(['bookings'], refreshBookings);
   const dirty = Boolean(editor && JSON.stringify(editor.draft) !== editor.baseline);
   useEffect(() => { if (tabKey) useWorkspaceStore.getState().updateTabState(tabKey, { isDirty: dirty }); }, [dirty, tabKey]);
   useEffect(() => {
@@ -68,21 +100,25 @@ export function BookingWorkspace({ view }: { view: BookingView }) {
   }, [dirty]);
   const filtered = bookings.filter(booking => (!status || booking.status === status) && [booking.teamName, booking.customerName, booking.destination, booking.coordinator, booking.bookingNumber].some(value => String(value ?? '').toLowerCase().includes(search.toLowerCase())));
   const openNew = (day: string) => {
+    editorAction.current += 1;
     const draft = makeDraft(undefined, day, user?.name ?? '');
-    setError(''); setEditor({ draft, baseline: JSON.stringify(draft) });
+    setBusy(false); setError(''); setEditor({ draft, baseline: JSON.stringify(draft) });
   };
   const loadDetail = useCallback(async (id: string) => {
+    const action = ++editorAction.current;
     setBusy(true); setError('');
     try {
       const response = await bookingRequest<{ data: BookingRecord }>(`/${encodeURIComponent(id)}`);
+      if (action !== editorAction.current) return;
       const draft = makeDraft(response.data, selectedDay, user?.name ?? '');
       setEditor({ record: response.data, draft, baseline: JSON.stringify(draft) });
-    } catch (cause) { setError(cause instanceof Error ? cause.message : '예약을 불러오지 못했습니다.'); }
-    finally { setBusy(false); }
+    } catch (cause) { if (action === editorAction.current) setError(cause instanceof Error ? cause.message : '예약을 불러오지 못했습니다.'); }
+    finally { if (action === editorAction.current) setBusy(false); }
   }, [selectedDay, setEditor, user?.name]);
-  const close = () => { if (!dirty || window.confirm('저장하지 않은 변경 사항을 버리고 닫을까요?')) { setEditor(null); setError(''); } };
+  const close = () => { if (!dirty || window.confirm('저장하지 않은 변경 사항을 버리고 닫을까요?')) { editorAction.current += 1; setEditor(null); setError(''); setBusy(false); } };
   const save = async () => {
-    if (!editor) return;
+    if (!editor || editor.remoteChange === 'deleted') return;
+    const action = ++editorAction.current;
     setBusy(true); setError('');
     try {
       const result = await bookingRequest<{ data: BookingRecord }>(editor.record ? `/${encodeURIComponent(editor.record.id)}` : '', {
@@ -92,24 +128,25 @@ export function BookingWorkspace({ view }: { view: BookingView }) {
       // A successful write must never leave an old version in the editor if the follow-up read fails.
       const saved = result.data;
       const savedDraft = makeDraft(saved, selectedDay, user?.name ?? '');
-      setEditor({ record: saved, draft: savedDraft, baseline: JSON.stringify(savedDraft) });
+      if (action === editorAction.current) setEditor({ record: saved, draft: savedDraft, baseline: JSON.stringify(savedDraft) });
       const detail = await bookingRequest<{ data: BookingRecord }>(`/${encodeURIComponent(saved.id)}`).catch(() => ({ data: saved }));
       const draft = makeDraft(detail.data, selectedDay, user?.name ?? '');
-      setEditor({ record: detail.data, draft, baseline: JSON.stringify(draft) });
+      if (action === editorAction.current) setEditor(current => current?.record && current.record.version > detail.data.version ? current : { record: detail.data, draft, baseline: JSON.stringify(draft) });
       await mutate();
       await mutateCache(cacheKey => Array.isArray(cacheKey) && (cacheKey[0] === 'booking-workspace' || String(cacheKey[0]).includes('/bookings')), undefined, { revalidate: true });
-    } catch (cause) { setError(cause instanceof Error ? cause.message : '예약을 저장하지 못했습니다.'); }
-    finally { setBusy(false); }
+    } catch (cause) { if (action === editorAction.current) setError(cause instanceof Error ? cause.message : '예약을 저장하지 못했습니다.'); }
+    finally { if (action === editorAction.current) setBusy(false); }
   };
   const remove = async () => {
-    if (!editor?.record || !window.confirm('이 예약을 삭제할까요? 삭제된 예약은 목록에서 숨겨집니다.')) return;
+    if (!editor?.record || editor.remoteChange === 'deleted' || !window.confirm('이 예약을 삭제할까요? 삭제된 예약은 목록에서 숨겨집니다.')) return;
+    const action = ++editorAction.current;
     setBusy(true); setError('');
     try {
       await bookingRequest(`/${encodeURIComponent(editor.record.id)}`, { method: 'DELETE', headers: { 'If-Match': String(editor.record.version) } });
-      setEditor(null);
+      if (action === editorAction.current) setEditor(null);
       await mutateCache(cacheKey => Array.isArray(cacheKey) && (cacheKey[0] === 'booking-workspace' || String(cacheKey[0]).includes('/bookings')), undefined, { revalidate: true });
-    } catch (cause) { setError(cause instanceof Error ? cause.message : '예약 삭제 실패'); }
-    finally { setBusy(false); }
+    } catch (cause) { if (action === editorAction.current) setError(cause instanceof Error ? cause.message : '예약 삭제 실패'); }
+    finally { if (action === editorAction.current) setBusy(false); }
   };
   const navigate = (direction: number) => {
     if (weekly) setSelectedDay(shiftDay(selectedDay, direction * 7));
@@ -178,7 +215,7 @@ export function BookingWorkspace({ view }: { view: BookingView }) {
       </div>
     </div>}
     <footer className="flex flex-wrap gap-x-5 gap-y-1 border-t bg-slate-50 px-4 py-3 text-xs text-slate-600">{isLoading || loadError ? <span>{loadError ? '조회 실패 · 예약 건수와 합계를 확인할 수 없습니다.' : '예약 건수와 합계를 불러오는 중...'}</span> : <><span>예약 {filtered.length}건 · {passengers}명</span>{Object.entries(totals).map(([currency, amount]) => <span key={currency}>판매 {currency} {amount.toLocaleString()}</span>)}<span className="ml-auto">금액·인원은 취소 예약 제외</span></>}</footer>
-    {editor && <BookingEditor session={editor} onChange={draft => setEditor({ ...editor, draft })} onClose={close} onSave={() => void save()} onDelete={() => void remove()} onReload={() => { if (editor.record && (!dirty || window.confirm('작성 중인 내용을 버리고 최신 예약을 불러올까요?'))) void loadDetail(editor.record.id); }} busy={busy} error={error} />}
+    {editor && <BookingEditor session={editor} onChange={draft => setEditor(current => current ? { ...current, draft } : current)} onClose={close} onSave={() => void save()} onDelete={() => void remove()} onReload={() => { if (editor.record && (!dirty || window.confirm('작성 중인 내용을 버리고 최신 예약을 불러올까요?'))) void loadDetail(editor.record.id); }} busy={busy} error={error} />}
     <BookingWorkspacePrint title={labels[view]} period={period} selectedDay={selectedDay} calendarDays={listView ? undefined : calendarDays} search={search} status={status} records={filtered} totals={totals} passengers={passengers} loading={isLoading} loadError={Boolean(loadError)} editor={editor} />
   </div>;
 }

@@ -30,6 +30,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   } = useAuthStore();
 
   useEffect(() => {
+    let active = true;
     const initAuth = async () => {
       // Skip auth check for public routes
       if (PUBLIC_ROUTES.includes(pathname)) {
@@ -38,11 +39,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       try {
-        await checkAuth();
-        // Note: No redirects here - middleware handles all authentication redirects
+        const signedIn = await checkAuth();
+        if (active && !signedIn && !useAuthStore.getState().error) window.location.replace('/login');
       } catch (error) {
         console.error('Auth initialization error:', error);
-        // Note: No redirects here - middleware handles all authentication redirects
       } finally {
         setIsInitializing(false);
       }
@@ -54,7 +54,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } else {
       setIsInitializing(false);
     }
-  }, [pathname]);
+    return () => { active = false; };
+  }, [pathname, checkAuth]);
 
   useEffect(() => {
     const syncSession = (event: StorageEvent) => {

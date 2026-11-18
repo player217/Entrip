@@ -52,7 +52,7 @@ export default function BookingWorkspacePrint(props: Props) {
   const { title, period, selectedDay, calendarDays, search, status, records, totals, passengers, loading, loadError, editor } = props;
   if (editor) return <div className="entrip-print-only" data-booking-print="detail">
     <style>{styles + bookingSheetStyles}</style>
-    <div dangerouslySetInnerHTML={{ __html: bookingSheetBody(editor.draft, editor.record?.bookingNumber, { dirty: JSON.stringify(editor.draft) !== editor.baseline, record: editor.record }) }} />
+    <div dangerouslySetInnerHTML={{ __html: bookingSheetBody(editor.draft, editor.record?.bookingNumber, { dirty: JSON.stringify(editor.draft) !== editor.baseline, deleted: editor.remoteChange === 'deleted', record: editor.record }) }} />
   </div>;
   const bookingNumbers = new Map(records.map((row, index) => [row.id, index + 1]));
   const weeks: string[][] = [];

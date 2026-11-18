@@ -18,7 +18,7 @@ export type BookingDraft = {
   revenue: number; depositAmount: number; currency: Currency; status: string; notes: string;
   hotelInfo: DetailItem[]; flightInfo: DetailItem[]; vehicleInfo: DetailItem[]; insuranceInfo: DetailItem[];
 };
-export type EditorSession = { record?: BookingRecord; draft: BookingDraft; baseline: string };
+export type EditorSession = { record?: BookingRecord; draft: BookingDraft; baseline: string; remoteChange?: 'updated' | 'deleted' };
 export const detailSections: { key: DetailKey; label: string }[] = [
   { key: 'flightInfo', label: '항공' }, { key: 'hotelInfo', label: '호텔' }, { key: 'vehicleInfo', label: '차량' }, { key: 'insuranceInfo', label: '기타' },
 ];
@@ -114,9 +114,12 @@ export function escapeHtml(value: unknown) {
   return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]!));
 }
 export { bookingPrintHtml } from './booking-print';
+export class BookingRequestError extends Error {
+  constructor(public readonly status: number, message: string) { super(message); }
+}
 export async function bookingRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`/api/v2/bookings${path}`, { ...init, credentials: 'include', cache: 'no-store', headers: { 'Content-Type': 'application/json', ...init.headers } });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(response.status === 412 ? '다른 사용자가 이 예약을 변경했습니다. 작성 중인 내용은 유지됩니다. 최신 내용을 다시 불러와 확인하세요.' : result.message ?? `예약 요청에 실패했습니다 (${response.status}).`);
+  if (!response.ok) throw new BookingRequestError(response.status, response.status === 412 ? '다른 사용자가 이 예약을 변경했습니다. 작성 중인 내용은 유지됩니다. 최신 내용을 다시 불러와 확인하세요.' : result.message ?? `예약 요청에 실패했습니다 (${response.status}).`);
   return result as T;
 }

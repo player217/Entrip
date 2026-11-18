@@ -1,6 +1,7 @@
 'use client';
-import { FormEvent, useCallback, useEffect, useId, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
+import { useCompanyRefresh } from '@/hooks/useCompanyRefresh';
 import { messengerRequest } from '@/lib/messenger-store';
 import printStyles from './records-print.module.css';
 
@@ -21,19 +22,36 @@ export default function SettingsPageContent() {
   const [success, setSuccess] = useState('');
   const [editing, setEditing] = useState<Employee | 'new' | null>(null);
   const [form, setForm] = useState(initialForm);
-  const load = useCallback(async () => {
+  const latestLoad = useRef(0);
+  const load = useCallback(async (signal?: AbortSignal) => {
+    const request = ++latestLoad.current;
+    const current = () => request === latestLoad.current && !signal?.aborted;
     setLoading(true);
     try {
-      let page = 1, pages = 1; const rows: Employee[] = [];
-      do {
-        const result = await messengerRequest<{ data: Employee[]; totalPages: number }>(`users?isActive=${admin ? 'all' : 'true'}&page=${page}&limit=100`);
-        rows.push(...result.data); pages = result.totalPages; page++;
-      } while (page <= pages);
-      setEmployees(rows);
-    } catch (e) { setError(e instanceof Error ? e.message : '직원을 불러오지 못했습니다.'); }
-    finally { setLoading(false); }
-  }, [admin, user?.companyCode]);
-  useEffect(() => { setEmployees([]); setEditing(null); setError(''); setSuccess(''); void load(); }, [load]);
+      let page = 1;
+      const rows: Employee[] = [];
+      while (current()) {
+        const result = await messengerRequest<{ data: Employee[]; totalPages: number }>(
+          `users?isActive=${admin ? 'all' : 'true'}&page=${page}&limit=100`, 'GET', undefined, signal
+        );
+        rows.push(...result.data);
+        if (page >= result.totalPages) break;
+        page++;
+      }
+      if (current()) setEmployees(rows);
+    } catch (e) {
+      if (current()) setError(e instanceof Error ? e.message : '직원을 불러오지 못했습니다.');
+    } finally {
+      if (current()) setLoading(false);
+    }
+  }, [admin, user?.id, user?.companyCode]);
+  useCompanyRefresh(['users'], load);
+  useEffect(() => {
+    const controller = new AbortController();
+    setEmployees([]); setEditing(null); setError(''); setSuccess('');
+    void load(controller.signal);
+    return () => { controller.abort(); latestLoad.current++; };
+  }, [load]);
   const open = (employee?: Employee) => {
     setEditing(employee || 'new'); setError(''); setSuccess('');
     setForm(employee ? { name: employee.name, email: employee.email, department: employee.department || '', password: '', role: employee.role } : initialForm);

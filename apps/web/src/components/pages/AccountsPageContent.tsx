@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useId, useState } from 'react';
 import { FinanceDraftPrint } from '@/components/finance/FinanceDraftPrint';
 import { useAuthStore } from '@/lib/auth-store';
+import { useCompanyRefresh } from '@/hooks/useCompanyRefresh';
 import { useTabState } from '@/hooks/useTabState';
 import { useWorkspaceTabKey } from '@/components/workspace/WorkspaceTabContext';
 import { useWorkspaceStore } from '@entrip/shared/client';
@@ -19,6 +20,7 @@ import {
 
 const initialAccount = {
   editingId: '',
+  expectedUpdatedAt: '',
   accountName: '',
   bankName: '',
   accountNumber: '',
@@ -28,6 +30,7 @@ const initialAccount = {
 };
 const initialEntry = {
   editingId: '',
+  expectedUpdatedAt: '',
   accountId: '',
   type: 'expense',
   category: '',
@@ -92,6 +95,7 @@ export default function AccountsPageContent() {
     },
     [page, filter, queryKey, user?.id, user?.companyCode]
   );
+  useCompanyRefresh(['finance'], refresh);
   useEffect(() => {
     const controller = new AbortController();
     setError('');
@@ -172,7 +176,7 @@ export default function AccountsPageContent() {
         </div>
       )}
       {notice && (
-        <p role="status" className="text-sm text-green-700">
+        <p role="status" className="entrip-no-print text-sm text-green-700">
           {notice}
         </p>
       )}
@@ -214,6 +218,7 @@ export default function AccountsPageContent() {
                       currency: account.currency,
                       openingBalance: String(account.openingBalance),
                       editingId: account.id,
+                      expectedUpdatedAt: account.updatedAt,
                     });
                     setShowAccount(true);
                   }}
@@ -240,11 +245,14 @@ export default function AccountsPageContent() {
             event.preventDefault();
             if (accountDetailsPending) return;
             void run(async () => {
-              const { editingId, ...fields } = accountDraft;
+              const { editingId, expectedUpdatedAt, ...fields } = accountDraft;
+              if (editingId && !expectedUpdatedAt)
+                throw new Error('계좌 수정 시점을 확인할 수 없습니다. 입력 내용을 확인한 후 취소하고 다시 수정해 주세요.');
               await financeRequest(`bank-accounts${editingId ? `/${editingId}` : ''}`, {
                 method: editingId ? 'PUT' : 'POST',
                 body: JSON.stringify({
                   ...fields,
+                  ...(editingId && { expectedUpdatedAt }),
                   currency: accountValuesLocked && editingAccount
                     ? editingAccount.currency : fields.currency,
                   openingBalance: Number(accountValuesLocked && editingAccount
@@ -346,11 +354,14 @@ export default function AccountsPageContent() {
             void run(async () => {
               const account = accounts.find((item) => item.id === entryDraft.accountId);
               if (!account) throw new Error('계좌를 선택해 주세요.');
-              const { editingId, ...fields } = entryDraft;
+              const { editingId, expectedUpdatedAt, ...fields } = entryDraft;
+              if (editingId && !expectedUpdatedAt)
+                throw new Error('거래 수정 시점을 확인할 수 없습니다. 입력 내용을 확인한 후 취소하고 다시 수정해 주세요.');
               await financeRequest(`finance${editingId ? `/${editingId}` : ''}`, {
                 method: editingId ? 'PUT' : 'POST',
                 body: JSON.stringify({
                   ...fields,
+                  ...(editingId && { expectedUpdatedAt }),
                   amount: Number(fields.amount),
                   occurredAt: `${fields.occurredAt}T00:00:00.000Z`,
                   currency: account.currency,
@@ -510,6 +521,7 @@ export default function AccountsPageContent() {
                           onClick={() => {
                             setEntryDraft({
                               editingId: record.id,
+                              expectedUpdatedAt: record.updatedAt,
                               accountId: record.accountId || '',
                               type: record.type.toLowerCase(),
                               category: record.category,

@@ -1,7 +1,7 @@
 import { bookingTypes, detailSections, escapeHtml, statuses, type BookingDraft, type BookingRecord, type DetailKey, type DetailItem } from './booking-model';
 import { relatedServiceRows, retainedFacts, serviceFields, serviceStartLabels } from './booking-details';
 
-export type BookingPrintOptions = { dirty?: boolean; record?: BookingRecord };
+export type BookingPrintOptions = { dirty?: boolean; deleted?: boolean; record?: BookingRecord };
 const formatNumber = new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 2 });
 const formatExchangeRate = new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 8 });
 const text = (value: string | undefined) => escapeHtml(value?.trim() ? value : '미입력');
@@ -117,7 +117,7 @@ export function bookingSheetBody(draft: BookingDraft, number?: string, options: 
   ];
   if (draft.teamType) info.push(['팀 유형', draft.teamType]);
   const services = detailSections.map(({ key, label }) => serviceTable(key, label, draft[key])).join('');
-  const source = !number ? '미저장 초안' : options.dirty ? '저장하지 않은 수정본' : '저장된 예약';
+  const source = options.deleted ? '삭제된 예약의 미저장 초안' : !number ? '미저장 초안' : options.dirty ? '저장하지 않은 수정본' : '저장된 예약';
   const created = options.record?.history?.find(entry => entry.action === 'create');
   const createdAt = options.record?.createdAt || created?.changedAt;
   const author = options.record?.user?.name || created?.user?.name;

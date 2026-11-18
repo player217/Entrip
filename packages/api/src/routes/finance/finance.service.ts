@@ -105,6 +105,9 @@ export class FinanceService extends BaseService<FinanceRecord> {
       if (!record) throw new ApiError(404, '거래를 찾을 수 없습니다.');
       if (record.status !== 'PENDING')
         throw new ApiError(409, '대기 중인 거래만 수정할 수 있습니다.');
+      const { expectedUpdatedAt, status, type, occurredAt, ...fields } = input;
+      if (expectedUpdatedAt && record.updatedAt.getTime() !== Date.parse(expectedUpdatedAt))
+        throw new ApiError(412, '다른 사용자가 거래를 수정했습니다. 입력 내용을 확인한 후 취소하고 새로고침해 다시 수정해 주세요.');
       if (
         await tx.approval.count({
           where: {
@@ -122,7 +125,6 @@ export class FinanceService extends BaseService<FinanceRecord> {
         projectId: input.projectId === undefined ? record.projectId : input.projectId,
         currency: input.currency || record.currency,
       });
-      const { status, type, occurredAt, ...fields } = input;
       if (status !== undefined && status !== 'pending')
         throw new ApiError(400, '승인 및 반려는 결재 기능을 이용해 주세요.');
       return tx.financeRecord.update({
@@ -132,6 +134,7 @@ export class FinanceService extends BaseService<FinanceRecord> {
           ...(type && { type: type.toUpperCase() as FinanceType }),
           ...(occurredAt && { occurredAt: new Date(occurredAt) }),
           updatedBy: userId,
+          updatedAt: new Date(Math.max(Date.now(), record.updatedAt.getTime() + 1)),
         },
         include: { account: true },
       });

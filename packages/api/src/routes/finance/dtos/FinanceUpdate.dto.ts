@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const FinanceUpdateDto = z.object({
+  expectedUpdatedAt: z.string().datetime().optional(),
   type: z.enum(['income', 'expense']).optional(),
   category: z.string().min(1).max(50).optional(),
   amount: z.number().positive('Amount must be positive').optional(),
