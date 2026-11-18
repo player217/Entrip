@@ -5,7 +5,8 @@ import { flightAPI } from '@entrip/shared';
 
 jest.mock('@entrip/shared', () => ({
   KOREAN_AIRPORTS: [{ code: 'PUS', name: '김해' }, { code: 'ICN', name: '인천' }],
-  getAirportByCode: (code: string) => ({ name: code === 'NRT' ? '나리타' : code }),
+  getAirportByCode: (code: string) => code === 'PUS' ? { name: '김해' } : undefined,
+  getInternationalAirportByCode: (code: string) => code === 'NRT' ? { name: '나리타' } : undefined,
   flightAPI: { getSchedule: jest.fn() },
 }));
 
@@ -52,4 +53,17 @@ it('retains the previous snapshot with a warning when refresh fails', async () =
   fireEvent.click(screen.getByRole('button', { name: '새로고침' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('이전에 불러온 자료');
   expect(screen.getAllByText('BX164')).toHaveLength(1);
+  expect(screen.getByText(/자료 기준:/)).toHaveTextContent('2025');
+});
+
+it('keeps the destination disabled until routes arrive and avoids duplicating unknown airport codes', async () => {
+  getSchedule.mockResolvedValue({ ...fixture, flights: [{ ...fixture.flights[0], destination: 'XYZ' }] });
+  render(<FlightScheduleSearch />);
+  const arrival = screen.getByRole('combobox', { name: '도착 공항' });
+  expect(arrival).toBeDisabled();
+  expect(arrival).toHaveAccessibleDescription('출발 공항을 먼저 선택하세요.');
+  fireEvent.change(screen.getByLabelText('출발 공항'), { target: { value: 'PUS' } });
+  expect(await screen.findByRole('option', { name: 'XYZ' })).toBeInTheDocument();
+  expect(arrival).toBeEnabled();
+  expect(screen.queryByRole('option', { name: 'XYZ - XYZ' })).not.toBeInTheDocument();
 });

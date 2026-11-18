@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { format, isToday } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { useBookings } from '../../../hooks/useBookings'
@@ -29,6 +29,10 @@ interface NewBookingToday {
 
 export function TodayBookingsSection() {
   const { bookings: apiBookings, isLoading, isError } = useBookings()
+  const [showAllDepartures, setShowAllDepartures] = useState(false)
+  const [showAllNewBookings, setShowAllNewBookings] = useState(false)
+  const departuresId = useId()
+  const newBookingsId = useId()
 
   const todayData = useMemo(() => {
     if (!apiBookings || apiBookings.length === 0) {
@@ -116,8 +120,8 @@ export function TodayBookingsSection() {
             오늘 출발 ({todayData.departures.length}팀)
           </h4>
           {todayData.departures.length > 0 ? (
-            <div className="space-y-2">
-              {todayData.departures.slice(0, 3).map((team) => (
+            <div id={departuresId} className="space-y-2">
+              {(showAllDepartures ? todayData.departures : todayData.departures.slice(0, 3)).map((team) => (
                 <div key={team.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${
@@ -135,9 +139,11 @@ export function TodayBookingsSection() {
                 </div>
               ))}
               {todayData.departures.length > 3 && (
-                <p className="text-xs text-gray-500 text-center py-2">
-                  +{todayData.departures.length - 3}개 팀 더보기
-                </p>
+                <button type="button" aria-expanded={showAllDepartures} aria-controls={departuresId}
+                  onClick={() => setShowAllDepartures(value => !value)}
+                  className="w-full rounded py-2 text-center text-xs text-blue-700 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500">
+                  {showAllDepartures ? '오늘 출발 접기' : `+${todayData.departures.length - 3}개 팀 더보기`}
+                </button>
               )}
             </div>
           ) : (
@@ -152,8 +158,8 @@ export function TodayBookingsSection() {
             신규 예약 ({todayData.newBookings.length}건)
           </h4>
           {todayData.newBookings.length > 0 ? (
-            <div className="space-y-2">
-              {todayData.newBookings.slice(0, 3).map((booking) => (
+            <div id={newBookingsId} className="space-y-2">
+              {(showAllNewBookings ? todayData.newBookings : todayData.newBookings.slice(0, 3)).map((booking) => (
                 <div key={booking.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                   <div>
                     <p className="text-sm font-medium text-gray-900">{booking.teamName}</p>
@@ -166,9 +172,11 @@ export function TodayBookingsSection() {
                 </div>
               ))}
               {todayData.newBookings.length > 3 && (
-                <p className="text-xs text-gray-500 text-center py-2">
-                  +{todayData.newBookings.length - 3}건 더보기
-                </p>
+                <button type="button" aria-expanded={showAllNewBookings} aria-controls={newBookingsId}
+                  onClick={() => setShowAllNewBookings(value => !value)}
+                  className="w-full rounded py-2 text-center text-xs text-blue-700 hover:bg-green-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500">
+                  {showAllNewBookings ? '신규 예약 접기' : `+${todayData.newBookings.length - 3}건 더보기`}
+                </button>
               )}
             </div>
           ) : (

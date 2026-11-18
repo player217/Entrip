@@ -9,6 +9,7 @@ import {
   financeRequest,
   financeInputClass as inputClass,
   financeButtonClass as buttonClass,
+  financePaginationClass as paginationClass,
   money,
   errorMessage,
   allFinanceRows,
@@ -392,7 +393,11 @@ export default function ApprovalPageContent() {
                         ? '승인'
                         : step.action === 'reject'
                           ? '반려'
-                          : '대기'}
+                          : item.status === 'cancelled'
+                            ? '미진행 · 요청 취소'
+                            : item.status === 'rejected'
+                              ? '미진행 · 반려 종료'
+                              : '대기'}
                     </span>
                     {step.comment && <p className="mt-1 text-xs text-gray-500">{step.comment}</p>}
                     {step.actedAt && (
@@ -470,14 +475,14 @@ export default function ApprovalPageContent() {
           조회된 결재 요청이 없습니다.
         </p>
       )}
-      <div className="flex justify-end gap-3 text-sm">
-        <button disabled={page <= 1 || busy} onClick={() => setPage((p) => p - 1)}>
+      <div className="flex items-center justify-end gap-3 text-sm">
+        <button className={paginationClass} disabled={page <= 1 || busy} onClick={() => setPage((p) => p - 1)}>
           이전
         </button>
         <span>
           {page} / {pages}
         </span>
-        <button disabled={page >= pages || busy} onClick={() => setPage((p) => p + 1)}>
+        <button className={paginationClass} disabled={page >= pages || busy} onClick={() => setPage((p) => p + 1)}>
           다음
         </button>
       </div>

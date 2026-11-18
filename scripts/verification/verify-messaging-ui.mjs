@@ -47,6 +47,11 @@ try {
   await manager.page.locator('main p').getByText(first, { exact: true }).waitFor();
   const reply = `검증 회신 ${Date.now()}`;
   await manager.page.getByRole('textbox', { name: '메시지', exact: true }).fill(reply);
+  await admin.page.getByText(/입력 중…/).waitFor({ timeout: 3000 });
+  await admin.page.screenshot({ path: path.join(out, 'messaging-typing.png'), fullPage: true });
+  await manager.page.getByRole('heading', { name: '메신저', exact: true }).click();
+  await admin.page.getByText(/입력 중…/).waitFor({ state: 'hidden', timeout: 3000 });
+  check('Typing appears in the other live session and clears on input blur');
   await manager.page.getByRole('button', { name: '전송', exact: true }).click();
   await admin.page.locator('main p').getByText(reply, { exact: true }).waitFor({ timeout: 7000 });
   check('Both directions deliver real persisted messages over realtime transport');

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@entrip/ui';
-import { useAuthStore, useUserRole } from '../../lib/auth-store';
+import { useAuthStore } from '../../lib/auth-store';
 import { useWorkspaceStore } from '@entrip/shared/client';
 import { useTabRouter } from '@/hooks/useTabRouter';
 
@@ -12,7 +12,6 @@ interface UserMenuProps {
 
 export function UserMenu({ className = '' }: UserMenuProps) {
   const { user, logout } = useAuthStore();
-  const { isAdmin } = useUserRole();
   const { navigateInTab } = useTabRouter();
   const [showHelp, setShowHelp] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -130,21 +129,8 @@ export function UserMenu({ className = '' }: UserMenuProps) {
               className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
             >
               <Icon icon="ph:user" className="w-4 h-4 mr-3" />
-              프로필 설정
+              직원 정보
             </button>
-
-            {isAdmin && (
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  navigateInTab('/settings');
-                }}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-              >
-                <Icon icon="ph:gear" className="w-4 h-4 mr-3" />
-                시스템 관리
-              </button>
-            )}
 
             <button
               onClick={() => {

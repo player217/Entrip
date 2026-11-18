@@ -1,0 +1,13 @@
+{
+  "name": "settings",
+  "status": "PASS",
+  "checks": [
+    "J1 demo company/admin login and actual employee creation through UI",
+    "Name, department and role edit persisted in API",
+    "Deactivation persists and rejects subsequent authentication",
+    "Reactivation restores the existing employee"
+  ],
+  "runAt": "2026-11-17T00:27:30.908Z",
+  "pageErrorCount": 0,
+  "publicationScope": "Result summary; generated business record IDs, raw dialog payloads and environment addresses omitted."
+}

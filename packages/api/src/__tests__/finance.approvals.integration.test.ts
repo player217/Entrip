@@ -111,6 +111,26 @@ test('bank balances include approved transactions only and persist edited pendin
   });
 });
 
+test('bank account history flag matches immutable-value guards, including deleted transactions', async () => {
+  const agent = request.agent(app);
+  await agent.post('/api/v2/auth/login')
+    .send({ email: creator.email, password: 'finance-test-pass', companyCode })
+    .expect(200);
+  let response = await agent.get('/api/v2/bank-accounts').expect(200);
+  expect(response.body.data[0].hasTransactions).toBe(false);
+  expect(response.body.data[0]).not.toHaveProperty('_count');
+  const record = await financeService.createFinanceRecord(companyCode, creator.id, transactionInput());
+  response = await agent.get('/api/v2/bank-accounts').expect(200);
+  expect(response.body.data[0].hasTransactions).toBe(true);
+  await financeService.delete(record.id, companyCode);
+  response = await agent.get('/api/v2/bank-accounts').expect(200);
+  expect(response.body.data[0].hasTransactions).toBe(true);
+  await agent.put(`/api/v2/bank-accounts/${accountId}`).send({
+    accountName: 'Operations', bankName: 'Test bank', accountNumber: '123',
+    holderName: 'Travel', currency: 'USD', openingBalance: 100,
+  }).expect(409);
+});
+
 test('denies cross-company links and mismatched bank currency', async () => {
   await expect(
     financeService.createFinanceRecord('OTHER', outsider.id, transactionInput())

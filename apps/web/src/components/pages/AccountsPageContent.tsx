@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { useTabState } from '@/hooks/useTabState';
 import { useWorkspaceTabKey } from '@/components/workspace/WorkspaceTabContext';
@@ -10,6 +10,7 @@ import {
   financeRequest,
   financeInputClass as inputClass,
   financeButtonClass as buttonClass,
+  financePaginationClass as paginationClass,
   money,
   errorMessage,
   localFinanceDate,
@@ -34,6 +35,8 @@ const initialEntry = {
   description: '',
 };
 export default function AccountsPageContent() {
+  const accountValueHelpId = useId();
+  const ledgerScrollHelpId = useId();
   const user = useAuthStore((state) => state.user);
   const role = user?.role?.toUpperCase();
   const canEdit = role === 'ADMIN' || role === 'MANAGER';
@@ -51,6 +54,11 @@ export default function AccountsPageContent() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const editingAccount = accounts.find((account) => account.id === accountDraft.editingId);
+  const accountDetailsPending = Boolean(accountDraft.editingId) &&
+    typeof editingAccount?.hasTransactions !== 'boolean';
+  const accountValuesLocked = Boolean(accountDraft.editingId) &&
+    editingAccount?.hasTransactions !== false;
   const key = useWorkspaceTabKey();
   useEffect(() => {
     if (key)
@@ -171,7 +179,11 @@ export default function AccountsPageContent() {
                   className="text-sm text-blue-700 shrink-0 disabled:opacity-40"
                   onClick={() => {
                     setAccountDraft({
-                      ...account,
+                      accountName: account.accountName,
+                      bankName: account.bankName,
+                      accountNumber: account.accountNumber,
+                      holderName: account.holderName,
+                      currency: account.currency,
                       openingBalance: String(account.openingBalance),
                       editingId: account.id,
                     });
@@ -198,11 +210,18 @@ export default function AccountsPageContent() {
           className="rounded-lg border bg-white p-5"
           onSubmit={(event) => {
             event.preventDefault();
+            if (accountDetailsPending) return;
             void run(async () => {
               const { editingId, ...fields } = accountDraft;
               await financeRequest(`bank-accounts${editingId ? `/${editingId}` : ''}`, {
                 method: editingId ? 'PUT' : 'POST',
-                body: JSON.stringify({ ...fields, openingBalance: Number(fields.openingBalance) }),
+                body: JSON.stringify({
+                  ...fields,
+                  currency: accountValuesLocked && editingAccount
+                    ? editingAccount.currency : fields.currency,
+                  openingBalance: Number(accountValuesLocked && editingAccount
+                    ? editingAccount.openingBalance : fields.openingBalance),
+                }),
               });
               setShowAccount(false);
               setAccountDraft(initialAccount);
@@ -226,9 +245,12 @@ export default function AccountsPageContent() {
               <label key={field} className="text-sm">
                 {label}
                 <input
-                  className={inputClass}
+                  className={`${inputClass} read-only:cursor-default read-only:bg-gray-100 read-only:text-gray-600`}
                   required
-                  value={accountDraft[field]}
+                  readOnly={accountValuesLocked && (field === 'currency' || field === 'openingBalance')}
+                  aria-describedby={field === 'currency' || field === 'openingBalance' ? accountValueHelpId : undefined}
+                  value={accountValuesLocked && editingAccount && (field === 'currency' || field === 'openingBalance')
+                    ? String(editingAccount[field]) : accountDraft[field]}
                   type={field === 'openingBalance' ? 'number' : 'text'}
                   step="0.01"
                   maxLength={field === 'currency' ? 3 : 100}
@@ -243,11 +265,15 @@ export default function AccountsPageContent() {
               </label>
             ))}
           </div>
-          <p className="my-3 text-xs text-gray-500">
-            거래가 등록되면 기초잔액과 통화는 변경할 수 없습니다.
+          <p id={accountValueHelpId} className="my-3 text-xs text-gray-500">
+            {accountDetailsPending
+              ? '계좌 정보를 확인하고 있습니다. 통화와 기초잔액은 확인 후 편집할 수 있습니다.'
+              : accountValuesLocked
+                ? '거래 이력이 있어 통화와 기초잔액은 읽기 전용입니다. 계좌 이름과 은행 정보는 수정할 수 있습니다.'
+                : '거래가 등록되면 기초잔액과 통화는 변경할 수 없습니다.'}
           </p>
           <div className="flex gap-2">
-            <button className={buttonClass} disabled={busy}>
+            <button className={buttonClass} disabled={busy || accountDetailsPending}>
               계좌 저장
             </button>
             <button
@@ -415,12 +441,15 @@ export default function AccountsPageContent() {
             </select>
           </label>
         </div>
-        <div className="overflow-auto">
+        <p id={ledgerScrollHelpId} className="px-3 pb-2 text-xs text-gray-500">
+          표를 좌우로 스크롤해 거래 정보를 확인하세요. 항목 열은 고정됩니다.
+        </p>
+        <div className="overflow-auto" role="region" aria-label="입출금 내역 표" aria-describedby={ledgerScrollHelpId} tabIndex={0}>
           <table className="w-full text-sm whitespace-nowrap">
             <thead className="bg-gray-50 text-gray-500">
               <tr>
-                {['거래일', '계좌', '항목', '입출금', '금액', '상태', '작업'].map((text) => (
-                  <th key={text} className="p-3 text-left font-medium">
+                {['항목', '계좌', '거래일', '입출금', '금액', '상태', '작업'].map((text, index) => (
+                  <th key={text} scope="col" className={`p-3 text-left font-medium ${index === 0 ? 'sticky left-0 z-10 bg-gray-50 border-r' : ''}`}>
                     {text}
                   </th>
                 ))}
@@ -429,12 +458,12 @@ export default function AccountsPageContent() {
             <tbody>
               {records.map((record) => (
                 <tr key={record.id} className="border-t">
-                  <td className="p-3">{record.occurredAt.slice(0, 10)}</td>
-                  <td className="p-3">{record.account?.accountName || '미지정'}</td>
-                  <td className="p-3">
+                  <th scope="row" className="sticky left-0 z-10 min-w-[9rem] max-w-[11rem] whitespace-normal break-words border-r bg-white p-3 text-left font-normal [overflow-wrap:anywhere]">
                     {record.category}
                     <p className="text-xs text-gray-400">{record.description}</p>
-                  </td>
+                  </th>
+                  <td className="p-3">{record.account?.accountName || '미지정'}</td>
+                  <td className="p-3">{record.occurredAt.slice(0, 10)}</td>
                   <td className="p-3">{record.type === 'INCOME' ? '입금' : '출금'}</td>
                   <td className="p-3">{money(record.amount, record.currency)}</td>
                   <td className="p-3">
@@ -501,13 +530,13 @@ export default function AccountsPageContent() {
         </div>
         {!records.length && <p className="p-6 text-sm text-gray-500">조회된 거래가 없습니다.</p>}
         <div className="flex justify-end items-center gap-3 p-3 text-sm">
-          <button disabled={page <= 1 || busy} onClick={() => setPage((p) => p - 1)}>
+          <button className={paginationClass} disabled={page <= 1 || busy} onClick={() => setPage((p) => p - 1)}>
             이전
           </button>
           <span>
             {page} / {pages}
           </span>
-          <button disabled={page >= pages || busy} onClick={() => setPage((p) => p + 1)}>
+          <button className={paginationClass} disabled={page >= pages || busy} onClick={() => setPage((p) => p + 1)}>
             다음
           </button>
         </div>

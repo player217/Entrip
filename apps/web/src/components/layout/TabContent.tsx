@@ -11,6 +11,7 @@ const pages: Record<string, React.ComponentType> = {
   '/dashboard': dynamic(() => import('../pages/DashboardPageContent'), { ssr: false }),
   '/calendar-monthly': dynamic(() => import('../../../app/(main)/calendar-monthly/page'), { ssr: false }),
   '/calendar-weekly': dynamic(() => import('../../../app/(main)/calendar-weekly/page'), { ssr: false }),
+  '/calendar-week': dynamic(() => import('../../../app/(main)/calendar-weekly/page'), { ssr: false }),
   '/list-monthly': dynamic(() => import('../../../app/(main)/list-monthly/page'), { ssr: false }),
   '/list-weekly': dynamic(() => import('../../../app/(main)/list-weekly/page'), { ssr: false }),
   '/approval': dynamic(() => import('../../../app/(main)/approval/page'), { ssr: false }),

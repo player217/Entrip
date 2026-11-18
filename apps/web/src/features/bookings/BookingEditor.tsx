@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { bookingPrintHtml, bookingTypes, detailSections, statuses, type BookingDraft, type Currency, type DetailItem, type DetailKey, type EditorSession } from './booking-model';
+import { bookingPrintHtml, bookingHistoryChanges, bookingHistoryFields, bookingTypes, detailSections, statuses, type BookingDraft, type Currency, type DetailItem, type DetailKey, type EditorSession } from './booking-model';
 
 const inputClass = 'block w-full min-w-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
 const currencies: Currency[] = ['KRW', 'USD', 'EUR', 'JPY', 'CNY'];
@@ -28,7 +28,31 @@ export function BookingEditor({ session, onChange, onClose, onSave, onReload, on
     <form className="flex min-h-0 flex-1 flex-col" onSubmit={event => { event.preventDefault(); onSave(); }}>
       <div className="min-h-0 flex-1 overflow-auto">
         {error && <p role="alert" className="m-4 rounded bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-        {showHistory && <div className="m-4 rounded border border-slate-200 p-3"><h3 className="mb-2 font-medium">저장된 변경 이력</h3>{session.record?.history?.length ? <ul className="space-y-2 text-sm">{session.record.history.map(entry => <li key={entry.id}><strong>{entry.action === 'create' ? '생성' : '수정'}</strong> · {new Date(entry.changedAt).toLocaleString('ko-KR')} · {entry.user?.name ?? '사용자'}<span className="ml-2 text-slate-500">{entry.changedFields.join(', ')}</span></li>)}</ul> : <p className="text-sm text-slate-500">기록된 변경 이력이 없습니다.</p>}</div>}
+        {showHistory && <div className="m-4 rounded border border-slate-200 p-3">
+          <h3 className="mb-2 font-medium">저장된 변경 이력</h3>
+          {session.record?.history?.length ? <ul className="space-y-3 text-sm">{session.record.history.map(entry => <li key={entry.id} className="border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+            <p className="break-words"><strong>{entry.action === 'create' ? '생성' : entry.action === 'delete' ? '삭제' : '수정'}</strong> · {new Date(entry.changedAt).toLocaleString('ko-KR')} · {entry.user?.name ?? '사용자'}</p>
+            {entry.action === 'create' ? <p className="mt-1 text-slate-500">예약을 처음 등록했습니다.</p> : <>
+              <p className="mt-1 text-slate-600">{bookingHistoryFields(entry.changedFields).join(' · ')}</p>
+              <dl className="mt-2 space-y-2 text-xs text-slate-600">{bookingHistoryChanges(entry).filter(change => change.hasValues).map(change =>
+                detailSections.some(section => section.label === change.label) ? <div key={change.label}>
+                  <dt className="sr-only">{change.label}</dt>
+                  <dd><details className="rounded border border-slate-200 bg-slate-50 p-2">
+                    <summary className="cursor-pointer rounded py-1 font-medium text-blue-700">{change.label} 변경 전후 항목 보기</summary>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                      {([{ label: '변경 전', value: change.before }, { label: '변경 후', value: change.after }]).map(side => <div key={side.label} className="min-w-0 rounded border border-slate-200 bg-white p-2">
+                        <p className="mb-1 font-semibold text-slate-800">{side.label}</p>
+                        <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{side.value}</p>
+                      </div>)}
+                    </div>
+                  </details></dd>
+                </div> : <div key={change.label} className="grid grid-cols-[70px_minmax(0,1fr)] gap-2">
+                  <dt>{change.label}</dt><dd className="min-w-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{change.before} → {change.after}</dd>
+                </div>
+              )}</dl>
+            </>}
+          </li>)}</ul> : <p className="text-sm text-slate-500">기록된 변경 이력이 없습니다.</p>}
+        </div>}
         <div className="grid min-w-0 gap-6 p-4 lg:grid-cols-[minmax(280px,0.9fr)_minmax(0,1.4fr)]">
           <div className="min-w-0 space-y-5">
             <section><h3 className="mb-3 border-b pb-2 font-semibold text-blue-800">기본 정보</h3><div className="grid grid-cols-2 gap-3">

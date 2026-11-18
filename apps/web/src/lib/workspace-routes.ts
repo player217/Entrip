@@ -3,6 +3,7 @@ export const workspaceRoutes: Record<string, { label: string; icon: string }> = 
   '/dashboard': { label: '대시보드', icon: 'ph:layout-bold' },
   '/calendar-monthly': { label: '월별 캘린더', icon: 'ph:calendar-blank-bold' },
   '/calendar-weekly': { label: '주별 캘린더', icon: 'ph:calendar-bold' },
+  '/calendar-week': { label: '주별 캘린더', icon: 'ph:calendar-bold' },
   '/list-monthly': { label: '월별 리스트', icon: 'ph:list-bold' },
   '/list-weekly': { label: '주별 리스트', icon: 'ph:list-bold' },
   '/stats': { label: '운영현황', icon: 'ph:chart-line-bold' },

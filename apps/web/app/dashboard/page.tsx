@@ -1,5 +1,5 @@
-import DashboardPageContent from '@/components/pages/DashboardPageContent'
+import { redirect } from 'next/navigation'
 
 export default function DashboardPage() {
-  return <DashboardPageContent />
+  redirect('/')
 }

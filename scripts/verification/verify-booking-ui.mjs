@@ -105,6 +105,19 @@ try {
   assert.ok(box && box.x >= -1 && box.x + box.width <= 391, JSON.stringify(box));
   await screenshot('booking-mobile');
   report.checks.push('390px editor fits viewport; repeated detail price edits persist');
+  await editor.getByRole('button', { name: '변경 이력', exact: true }).click();
+  const hotelHistory = editor.getByText('호텔 변경 전후 항목 보기', { exact: true }).first();
+  await hotelHistory.click();
+  const changes = hotelHistory.locator('..');
+  assert.ok((await changes.innerText()).includes('12,000'));
+  assert.ok((await changes.innerText()).includes('14,000'));
+  assert.ok((await changes.innerText()).includes('도야 호텔'));
+  await changes.scrollIntoViewIfNeeded();
+  await screenshot('booking-history-mobile');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await changes.scrollIntoViewIfNeeded();
+  await screenshot('booking-history-desktop');
+  report.checks.push('Detailed history displays actual hotel name, currency, quantity and 12,000 to 14,000 price change on mobile and desktop');
   await editor.getByRole('button', { name: '닫기', exact: true }).click();
   await page.setViewportSize({ width: 1440, height: 1000 });
   for (const [route, title] of [['/list-monthly', '월간 목록'], ['/list-weekly', '주간 목록'], ['/calendar-week', '주간 캘린더']]) {

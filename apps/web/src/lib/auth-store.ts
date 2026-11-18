@@ -33,6 +33,14 @@ function notifyOtherTabs() {
 const emptySession = { isAuthenticated: false, user: null, token: null, isLoading: false, error: null };
 let sessionGeneration = 0;
 
+function loginErrorMessage(status: number) {
+  if (status === 400 || status === 401) return '아이디 또는 비밀번호가 올바르지 않습니다. 선택한 회사도 확인해 주세요.';
+  if (status === 403) return '로그인할 수 없는 계정입니다. 관리자에게 문의해 주세요.';
+  if (status === 429) return '로그인 시도가 많습니다. 잠시 후 다시 시도해 주세요.';
+  if (status >= 500) return '로그인 서버에 일시적으로 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+  return '로그인에 실패했습니다. 입력 내용을 확인하고 다시 시도해 주세요.';
+}
+
 export const useAuthStore = create<AuthStore>()(
   persist((set, get) => ({
     ...emptySession,
@@ -53,7 +61,7 @@ export const useAuthStore = create<AuthStore>()(
           notifyOtherTabs();
           return true;
         }
-        set({ isLoading: false, error: data.message || '로그인에 실패했습니다.' });
+        set({ isLoading: false, error: loginErrorMessage(response.status) });
         return false;
       } catch {
         if (generation === sessionGeneration) set({ isLoading: false, error: '서버 연결에 실패했습니다.' });

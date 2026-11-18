@@ -39,4 +39,16 @@ describe('cookie session restoration', () => {
     expect(useAuthStore.getState().user?.companyCode).toBe('entrip');
     expect(mutate).toHaveBeenCalled();
   });
+  it.each([
+    [401, '아이디 또는 비밀번호가 올바르지 않습니다. 선택한 회사도 확인해 주세요.'],
+    [403, '로그인할 수 없는 계정입니다. 관리자에게 문의해 주세요.'],
+    [429, '로그인 시도가 많습니다. 잠시 후 다시 시도해 주세요.'],
+    [503, '로그인 서버에 일시적으로 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.'],
+  ])('shows a Korean action message for login HTTP %s', async (status, message) => {
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: false, status, json: async () => ({ success: false, message: 'Invalid email or password' }) });
+    expect(await useAuthStore.getState().login({ companyCode: 'j1', username: 'wrong@j1.com', password: 'invalid' })).toBe(false);
+    expect(useAuthStore.getState().error).toBe(message);
+    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+    expect(useAuthStore.getState().isLoading).toBe(false);
+  });
 });

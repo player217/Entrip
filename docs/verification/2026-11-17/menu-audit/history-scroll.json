@@ -1,0 +1,13 @@
+{
+  "fixture": "55 local synthetic messages inserted into disposable PostgreSQL for pagination setup after API rate limiter correctly returned 429",
+  "before": {
+    "scrollTop": 0,
+    "clientHeight": 547,
+    "scrollHeight": 4212
+  },
+  "after": {
+    "scrollTop": 6740,
+    "clientHeight": 547,
+    "scrollHeight": 7300
+  }
+}

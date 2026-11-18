@@ -13,6 +13,8 @@ export const financeInputClass =
   'mt-1 w-full min-w-0 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none';
 export const financeButtonClass =
   'rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50';
+export const financePaginationClass =
+  'rounded border border-gray-300 bg-white px-3 py-1.5 text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-400 disabled:opacity-60';
 export function money(value: string | number, currency: string) {
   return `${Number(value).toLocaleString('ko-KR', { maximumFractionDigits: 2 })} ${currency}`;
 }
@@ -28,6 +30,7 @@ export interface BankAccount {
   currency: string;
   openingBalance: string;
   balance: string;
+  hasTransactions: boolean;
 }
 export interface FinanceRecord {
   id: string;

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { format, addDays } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { useBookings } from '../../../hooks/useBookings'
@@ -33,6 +33,10 @@ interface UpcomingTeam {
 
 export function ActiveTeamsSection() {
   const { bookings: apiBookings, isLoading, isError } = useBookings()
+  const [showAllTraveling, setShowAllTraveling] = useState(false)
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false)
+  const travelingId = useId()
+  const upcomingId = useId()
 
   const teamsData = useMemo(() => {
     if (!apiBookings || apiBookings.length === 0) {
@@ -104,8 +108,8 @@ export function ActiveTeamsSection() {
     })
 
     return {
-      travelingTeams: travelingTeams.slice(0, 6), // 최대 6개
-      upcomingTeams: upcomingTeams.slice(0, 4)    // 최대 4개
+      travelingTeams,
+      upcomingTeams
     }
   }, [apiBookings])
 
@@ -176,8 +180,8 @@ export function ActiveTeamsSection() {
             여행 중인 팀 ({teamsData.travelingTeams.length}팀)
           </h4>
           {teamsData.travelingTeams.length > 0 ? (
-            <div className="grid gap-3">
-              {teamsData.travelingTeams.map((team) => (
+            <div id={travelingId} className="grid gap-3">
+              {(showAllTraveling ? teamsData.travelingTeams : teamsData.travelingTeams.slice(0, 6)).map((team) => (
                 <div key={team.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
@@ -214,6 +218,13 @@ export function ActiveTeamsSection() {
                   </div>
                 </div>
               ))}
+              {teamsData.travelingTeams.length > 6 && (
+                <button type="button" aria-expanded={showAllTraveling} aria-controls={travelingId}
+                  onClick={() => setShowAllTraveling(value => !value)}
+                  className="w-full rounded py-2 text-center text-xs text-blue-700 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500">
+                  {showAllTraveling ? '여행 중인 팀 접기' : `+${teamsData.travelingTeams.length - 6}개 팀 더보기`}
+                </button>
+              )}
             </div>
           ) : (
             <p className="text-sm text-gray-500 py-4">현재 여행 중인 팀이 없습니다.</p>
@@ -227,8 +238,8 @@ export function ActiveTeamsSection() {
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
               출발 예정 ({teamsData.upcomingTeams.length}팀)
             </h4>
-            <div className="space-y-2">
-              {teamsData.upcomingTeams.map((team) => (
+            <div id={upcomingId} className="space-y-2">
+              {(showAllUpcoming ? teamsData.upcomingTeams : teamsData.upcomingTeams.slice(0, 4)).map((team) => (
                 <div key={team.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${
@@ -247,6 +258,13 @@ export function ActiveTeamsSection() {
                   </div>
                 </div>
               ))}
+              {teamsData.upcomingTeams.length > 4 && (
+                <button type="button" aria-expanded={showAllUpcoming} aria-controls={upcomingId}
+                  onClick={() => setShowAllUpcoming(value => !value)}
+                  className="w-full rounded py-2 text-center text-xs text-blue-700 hover:bg-green-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500">
+                  {showAllUpcoming ? '출발 예정 접기' : `+${teamsData.upcomingTeams.length - 4}개 팀 더보기`}
+                </button>
+              )}
             </div>
           </div>
         )}

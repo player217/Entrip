@@ -1,0 +1,243 @@
+{
+  "date": "2026-11-17",
+  "build": {
+    "command": "pnpm build",
+    "status": "PASS",
+    "verifiedArtifacts": [
+      "web",
+      "API",
+      "UI JavaScript",
+      "TypeScript declarations",
+      "styles"
+    ]
+  },
+  "client": {
+    "numPassedTestSuites": 42,
+    "numFailedTestSuites": 0,
+    "numTotalTestSuites": 42,
+    "numPassedTests": 377,
+    "numFailedTests": 0,
+    "numPendingTests": 0,
+    "numTodoTests": 0,
+    "numTotalTests": 377,
+    "success": true,
+    "startTime": 1794875152566
+  },
+  "api": {
+    "numPassedTestSuites": 17,
+    "numFailedTestSuites": 0,
+    "numTotalTestSuites": 17,
+    "numPassedTests": 86,
+    "numFailedTests": 0,
+    "numPendingTests": 0,
+    "numTodoTests": 0,
+    "numTotalTests": 86,
+    "success": true,
+    "startTime": 1794874970261
+  },
+  "totalTests": 463,
+  "browserFlows": {
+    "workspace-report.json": "PASS",
+    "settings-report.json": "PASS",
+    "messaging-report.json": "PASS",
+    "booking-ui-verification.json": "PASS",
+    "finance-report.json": "PASS"
+  },
+  "visualFixGroups": {
+    "passed": 13,
+    "failed": 0,
+    "pageErrors": 0,
+    "report": "visual-fixes-report.json"
+  },
+  "menuScreenshots": 43,
+  "functionalScreenshots": 28,
+  "regressionScreenshots": 16,
+  "sourceFiles": [
+    {
+      "path": ".gitignore",
+      "gitBlobSha": "1eb4d7549944d9bc076431d01c2000f5ecd0eb11"
+    },
+    {
+      "path": "apps/web/__tests__/auth-session.test.ts",
+      "gitBlobSha": "8e18652c2f2f40ff8a6a5df12b69efc8a89585e7"
+    },
+    {
+      "path": "apps/web/__tests__/booking-editor-accessibility.test.tsx",
+      "gitBlobSha": "7e9f3fde9d4736f9093652f9ec8710bcaeb9250a"
+    },
+    {
+      "path": "apps/web/__tests__/booking-editor-model.test.ts",
+      "gitBlobSha": "f848a24e24db9b32e3388edb8b5339ac53b5c265"
+    },
+    {
+      "path": "apps/web/__tests__/booking-workspace-visual-behavior.test.tsx",
+      "gitBlobSha": "7f18c5fc085610afffb514806416b85d3e30ef96"
+    },
+    {
+      "path": "apps/web/__tests__/dashboard-expansion.test.tsx",
+      "gitBlobSha": "47f7dded3150e361d1cf4e328c2695a413d89c4d"
+    },
+    {
+      "path": "apps/web/__tests__/finance-page-behavior.test.tsx",
+      "gitBlobSha": "8785fdd2ea0afb50b1ef8f0d0ab8e2d3bef77c0d"
+    },
+    {
+      "path": "apps/web/__tests__/flight-schedule.test.tsx",
+      "gitBlobSha": "fcbe656faae4aac993b8f4f6875db1ebcb07a61f"
+    },
+    {
+      "path": "apps/web/__tests__/messenger-history-store.test.ts",
+      "gitBlobSha": "7c776d284a3abdccc226dc7c1a152e965f1f4fc7"
+    },
+    {
+      "path": "apps/web/__tests__/messenger-visual-behavior.test.tsx",
+      "gitBlobSha": "c34aa3c65a536e5077222057fd2dc21fceb1dc51"
+    },
+    {
+      "path": "apps/web/__tests__/middleware-diagnostics.test.ts",
+      "gitBlobSha": "74dea31f0f5eb40a037cc6116ab64f0ae41762d8"
+    },
+    {
+      "path": "apps/web/__tests__/workspace-tabs.test.tsx",
+      "gitBlobSha": "049a5b389b78bc94384aa90cd6b8b10eda7ad275"
+    },
+    {
+      "path": "apps/web/app/(main)/stats/page.tsx",
+      "gitBlobSha": "39ef672fd16a1bfd7d155bc1c9a6ee58d48a5cc6"
+    },
+    {
+      "path": "apps/web/app/dashboard/page.tsx",
+      "gitBlobSha": "0d6e4df6db4a894dd686c0dcf9a0adce6de2c27d"
+    },
+    {
+      "path": "apps/web/app/icon-test/IconTestContent.tsx",
+      "gitBlobSha": "02e69f07e1424a5fd924bfde0466274980c76d0f"
+    },
+    {
+      "path": "apps/web/app/icon-test/page.tsx",
+      "gitBlobSha": "1db5f6aed17478153c97d24b478fe7137c5a709a"
+    },
+    {
+      "path": "apps/web/app/reservations/page.tsx",
+      "gitBlobSha": "97d30b3c66e5f2d1aa99b5067fca6ae43ed09fd2"
+    },
+    {
+      "path": "apps/web/middleware.ts",
+      "gitBlobSha": "cfc3569568e11d8cefe038d68b5152032a74d0ff"
+    },
+    {
+      "path": "apps/web/src/components/FlightScheduleSearch.tsx",
+      "gitBlobSha": "c55f11218ff6c71519aaa1f528826fd111a2e385"
+    },
+    {
+      "path": "apps/web/src/components/dashboard/sections/ActiveTeamsSection.tsx",
+      "gitBlobSha": "198db73c0ce591d392d2a07e2e670f950cbbaf8b"
+    },
+    {
+      "path": "apps/web/src/components/dashboard/sections/TodayBookingsSection.tsx",
+      "gitBlobSha": "de38b7c46d597db8fdd40ab65e92bd37d4252524"
+    },
+    {
+      "path": "apps/web/src/components/finance/api.ts",
+      "gitBlobSha": "f9ccc73234111195b3da057dd80916d552c297ca"
+    },
+    {
+      "path": "apps/web/src/components/layout/TabContent.tsx",
+      "gitBlobSha": "77214b59c8fbe2b051769e4f28de40eaafdc4a61"
+    },
+    {
+      "path": "apps/web/src/components/layout/UserMenu.tsx",
+      "gitBlobSha": "43a6af68fa43d005a4018809577035235606d1ac"
+    },
+    {
+      "path": "apps/web/src/components/messenger/MessengerWorkspace.tsx",
+      "gitBlobSha": "075c7f78a6bc1d7d8777360dba9ec5900acbb352"
+    },
+    {
+      "path": "apps/web/src/components/pages/AccountsPageContent.tsx",
+      "gitBlobSha": "07406cecf7fd8ff9632b84b9b5d9f66d57bc6053"
+    },
+    {
+      "path": "apps/web/src/components/pages/ApprovalPageContent.tsx",
+      "gitBlobSha": "7ec517e6afa8595671107457898c9e339ccd4ebc"
+    },
+    {
+      "path": "apps/web/src/components/pages/DashboardPageContent.tsx",
+      "gitBlobSha": "80c2d7a6e6feb04114a4a8b34b033b3f3f476150"
+    },
+    {
+      "path": "apps/web/src/components/pages/SettingsPageContent.tsx",
+      "gitBlobSha": "116c76edc54413a0e8466e9026d10f56a5ce3ef7"
+    },
+    {
+      "path": "apps/web/src/components/workspace/WorkspaceTabContext.tsx",
+      "gitBlobSha": "5b7b1b194d897d5f878881416f015174c46ee522"
+    },
+    {
+      "path": "apps/web/src/components/workspace/WorkspaceTabs.tsx",
+      "gitBlobSha": "677bdfa5d9758cb14e9984916d4c75be5eaa97ed"
+    },
+    {
+      "path": "apps/web/src/features/bookings/BookingEditor.tsx",
+      "gitBlobSha": "e6cafbe30383b509c188572de1615a4cce296954"
+    },
+    {
+      "path": "apps/web/src/features/bookings/BookingWorkspace.tsx",
+      "gitBlobSha": "9064d53ccd3617be7fdc1275d34ec14cdf9cb961"
+    },
+    {
+      "path": "apps/web/src/features/bookings/booking-model.ts",
+      "gitBlobSha": "d5c0ff8e931c8696d8dae5dc3899e6682422db27"
+    },
+    {
+      "path": "apps/web/src/lib/auth-store.ts",
+      "gitBlobSha": "e3e6546afbbc86c708fbba1b0d79cffec847614e"
+    },
+    {
+      "path": "apps/web/src/lib/messenger-store.ts",
+      "gitBlobSha": "b1a6a6cf892f1f6da60e0bb7ccc2ae08996af907"
+    },
+    {
+      "path": "apps/web/src/lib/workspace-routes.ts",
+      "gitBlobSha": "78d5942726a6e33e8b4547edbb71fee90663101a"
+    },
+    {
+      "path": "packages/api/src/__tests__/finance.approvals.integration.test.ts",
+      "gitBlobSha": "4a0fb5f47d0842bc16c740f1686c46aa45a8167d"
+    },
+    {
+      "path": "packages/api/src/routes/bank-accounts/bank-accounts.route.ts",
+      "gitBlobSha": "36331f0047851db42cc1eb9af6e03dde7c822a65"
+    },
+    {
+      "path": "packages/ui/__tests__/ChartCard.test.tsx",
+      "gitBlobSha": "fbb4f50706146151107e045c5d264629fcfc8bd2"
+    },
+    {
+      "path": "packages/ui/src/components/compounds/ChartCard.tsx",
+      "gitBlobSha": "cba0dd8bafad611c084c4bd8a5e6ecba29e9a533"
+    },
+    {
+      "path": "scripts/verification/verify-booking-ui.mjs",
+      "gitBlobSha": "0bcc0bc82d7af35b8e15ba49db94e5bd97202a07"
+    },
+    {
+      "path": "scripts/verification/verify-messaging-ui.mjs",
+      "gitBlobSha": "c638bd14059033146e28e5758d18362d39a6f9b0"
+    },
+    {
+      "path": "scripts/verification/verify-visual-fixes-ui.mjs",
+      "gitBlobSha": "24fa16bd707066bcc73ec816230a37d9d49a29fa"
+    },
+    {
+      "path": "scripts/verification/verify-menu-audit-ui.mjs",
+      "gitBlobSha": "ab8dd15a1d3736d2635c942fab16eff536d6e7f9"
+    }
+  ],
+  "limitations": [
+    "Mail OAuth/inbox/send/attachments, Flow execution, OCR/document integration remain unimplemented or unconnected.",
+    "Flight presentation used the explicitly stale 2025-07-29 PUS snapshot; live flight/exchange availability is unverified.",
+    "Previously reported global lint:ci 53 errors/239 warnings unresolved; 85% coverage and Docker/Compose/TLS deployment not verified."
+  ],
+  "databaseIsolation": "API tests and browser fixtures used separate disposable databases."
+}

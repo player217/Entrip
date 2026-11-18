@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { ChartCard } from '@entrip/ui'
 import { useBookings } from '../../hooks/useBookings'
-import { buildDashboardStats } from '../../lib/bookingAnalytics'
+import { buildDashboardStats, money } from '../../lib/bookingAnalytics'
 import { TodayBookingsSection } from '../dashboard/sections/TodayBookingsSection'
 import { RealTimeAlertsSection } from '../dashboard/sections/RealTimeAlertsSection'
 import { ActiveTeamsSection } from '../dashboard/sections/ActiveTeamsSection'
@@ -92,8 +92,8 @@ export default function DashboardPageContent() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-gray-500">최근 4개월 예약 금액 (KRW)</h3>
-              <p className="text-2xl font-semibold text-gray-900 mt-2">
-                {dashboardStats.monthlyRevenue.reduce((sum, item) => sum + item.value, 0).toLocaleString()}원
+              <p className="text-xl xl:text-2xl font-semibold text-gray-900 tabular-nums whitespace-nowrap mt-2">
+                {money(dashboardStats.monthlyRevenue.reduce((sum, item) => sum + item.value, 0))}
               </p>
             </div>
             <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
@@ -119,12 +119,17 @@ export default function DashboardPageContent() {
         <ChartCard
           title="월별 예약 금액 (KRW)"
           data={dashboardStats.monthlyRevenue}
+          valueLabel="예약 금액"
+          valueFormatter={money}
           height={300}
           className=""
         />
         <ChartCard
           title="예약 유형별 현황"
           data={dashboardStats.typeStats}
+          valueLabel="예약 건수"
+          valueFormatter={(value: number) => `${value.toLocaleString('ko-KR')}건`}
+          integerValues
           height={300}
           color="var(--color-info)"
           className=""

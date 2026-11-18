@@ -6,15 +6,15 @@ export interface ChatMessage { id: string; conversationId: string; senderId: str
 export interface ChatConversation { id: string; type: string; name?: string | null; participants: { userId: string; role: string; user: MessengerUser; canInvite?: boolean }[]; lastMessage?: ChatMessage | null; unreadCount: number; lastActivity: string }
 interface MessengerState {
   socket: Socket | null; isConnected: boolean; conversations: ChatConversation[]; activeConversationId: string | null;
-  messages: Record<string, ChatMessage[]>; typingUsers: Record<string, string[]>; onlineUsers: Set<string>;
-  currentUser: MessengerUser | null; directory: MessengerUser[]; isLoading: boolean; error: string | null;
+  messages: Record<string, ChatMessage[]>; hasOlderMessages: Record<string, boolean>; olderMessageCursors: Record<string, string>; historyMessageIds: Record<string, string[]>; loadingOlderMessages: Record<string, boolean>; typingUsers: Record<string, string[]>; onlineUsers: Set<string>;
+  currentUser: MessengerUser | null; directory: MessengerUser[]; isDirectoryLoading: boolean; isLoading: boolean; error: string | null;
   initialize: (user: MessengerUser) => void; connect: (token?: string) => void; disconnect: () => void;
   loadConversations: () => Promise<void>; loadDirectory: () => Promise<void>; selectConversation: (id: string) => Promise<void>;
   sendMessage: (content: string, type?: string, attachments?: unknown[]) => Promise<void>;
   editMessage: (id: string, content: string) => Promise<void>; deleteMessage: (id: string) => Promise<void>;
   toggleReaction: (id: string, emoji: string) => Promise<void>; markAsRead: (id: string) => Promise<void>;
   createConversation: (ids: string[], type?: string, name?: string) => Promise<void>; invite: (ids: string[]) => Promise<void>;
-  setTyping: (typing: boolean) => void; updatePresence: (status: string) => Promise<void>; loadMoreMessages: (cursor?: string) => Promise<void>;
+  setTyping: (typing: boolean, conversationId?: string) => void; updatePresence: (status: string) => Promise<void>; loadMoreMessages: (cursor?: string) => Promise<void>;
 }
 
 export async function messengerRequest<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
@@ -27,9 +27,35 @@ const errorText = (error: unknown) => error instanceof Error ? error.message : '
 const merge = (a: ChatMessage[], b: ChatMessage[]) => [...new Map([...a, ...b].map(message => [message.id, message])).values()].sort((x, y) => x.createdAt.localeCompare(y.createdAt) || x.id.localeCompare(y.id));
 let session = 0;
 let refreshTimer: ReturnType<typeof setInterval> | undefined;
+const typingTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
+const MESSAGE_PAGE_SIZE = 50;
+
+// Only contiguous REST pages prove that history has no holes. Socket events and
+// send/edit responses can add isolated cached messages after an offline gap.
+const historyPageState = (state: MessengerState, id: string, messages: ChatMessage[], before?: string): Partial<MessengerState> => {
+  const verified = state.historyMessageIds[id] || [];
+  const pageIds = messages.map(message => message.id);
+  if (before) {
+    // A newer latest-page fetch may have moved the frontier while this request
+    // was in flight. Cache its rows, but do not overwrite that newer frontier.
+    if (state.olderMessageCursors[id] && state.olderMessageCursors[id] !== before) return {};
+    return {
+      historyMessageIds: { ...state.historyMessageIds, [id]: [...new Set([...verified, ...pageIds])] },
+      hasOlderMessages: { ...state.hasOlderMessages, [id]: messages.length === MESSAGE_PAGE_SIZE },
+      olderMessageCursors: { ...state.olderMessageCursors, [id]: pageIds[0] || before },
+    };
+  }
+  const verifiedIds = new Set(verified);
+  const continuesHistory = pageIds.some(messageId => verifiedIds.has(messageId));
+  return {
+    historyMessageIds: { ...state.historyMessageIds, [id]: continuesHistory ? [...new Set([...verified, ...pageIds])] : pageIds },
+    hasOlderMessages: { ...state.hasOlderMessages, [id]: messages.length === MESSAGE_PAGE_SIZE && (!continuesHistory || state.hasOlderMessages[id] !== false) },
+    olderMessageCursors: { ...state.olderMessageCursors, ...(pageIds[0] ? { [id]: continuesHistory ? (state.olderMessageCursors[id] || pageIds[0]) : pageIds[0] } : {}) },
+  };
+};
 
 export const useMessengerStore = create<MessengerState>((set, get) => ({
-  socket: null, isConnected: false, conversations: [], activeConversationId: null, messages: {}, typingUsers: {}, onlineUsers: new Set(), currentUser: null, directory: [], isLoading: false, error: null,
+  socket: null, isConnected: false, conversations: [], activeConversationId: null, messages: {}, hasOlderMessages: {}, olderMessageCursors: {}, historyMessageIds: {}, loadingOlderMessages: {}, typingUsers: {}, onlineUsers: new Set(), currentUser: null, directory: [], isDirectoryLoading: false, isLoading: false, error: null,
   initialize: user => {
     if (get().currentUser?.id === user.id && get().currentUser?.companyCode === user.companyCode && get().socket) return;
     get().disconnect();
@@ -55,22 +81,31 @@ export const useMessengerStore = create<MessengerState>((set, get) => ({
     socket.on('conversation:updated', () => { if (ticket === session) void get().loadConversations(); });
     socket.on('typing:status', ({ conversationId, userId, isTyping }: { conversationId: string; userId: string; isTyping: boolean }) => {
       if (ticket !== session || userId === get().currentUser?.id) return;
+      const key = `${conversationId}:${userId}`;
+      clearTimeout(typingTimeouts.get(key)); typingTimeouts.delete(key);
       set(state => ({ typingUsers: { ...state.typingUsers, [conversationId]: isTyping ? [...new Set([...(state.typingUsers[conversationId] || []), userId])] : (state.typingUsers[conversationId] || []).filter(id => id !== userId) } }));
+      // A closed browser may never send typing:stop. Expire only the visual hint.
+      if (isTyping) typingTimeouts.set(key, setTimeout(() => {
+        typingTimeouts.delete(key);
+        if (ticket === session) set(state => ({ typingUsers: { ...state.typingUsers, [conversationId]: (state.typingUsers[conversationId] || []).filter(id => id !== userId) } }));
+      }, 4000));
     });
     void get().loadConversations(); void get().loadDirectory();
     refreshTimer = setInterval(() => { if (ticket !== session) return; void get().loadConversations(); const id = get().activeConversationId; if (id) void get().loadMoreMessages(); }, 15000);
   },
   disconnect: () => {
     session++; clearInterval(refreshTimer); get().socket?.disconnect();
-    set({ socket: null, isConnected: false, currentUser: null, conversations: [], messages: {}, directory: [], activeConversationId: null, error: null, isLoading: false, typingUsers: {}, onlineUsers: new Set() });
+    typingTimeouts.forEach(timer => clearTimeout(timer)); typingTimeouts.clear();
+    set({ socket: null, isConnected: false, currentUser: null, conversations: [], messages: {}, hasOlderMessages: {}, olderMessageCursors: {}, historyMessageIds: {}, loadingOlderMessages: {}, directory: [], isDirectoryLoading: false, activeConversationId: null, error: null, isLoading: false, typingUsers: {}, onlineUsers: new Set() });
   },
   loadDirectory: async () => {
-    const ticket = session;
+    const ticket = session; set({ isDirectoryLoading: true });
     try {
       let page = 1; let pages = 1; const users: MessengerUser[] = [];
       do { const result = await messengerRequest<{ data: MessengerUser[]; totalPages: number }>(`users?isActive=true&limit=100&page=${page}`); users.push(...result.data); pages = result.totalPages; page++; } while (page <= pages);
       if (ticket === session) set({ directory: users });
     } catch (error) { if (ticket === session) set({ error: errorText(error) }); }
+    finally { if (ticket === session) set({ isDirectoryLoading: false }); }
   },
   loadConversations: async () => {
     const ticket = session;
@@ -80,15 +115,22 @@ export const useMessengerStore = create<MessengerState>((set, get) => ({
   selectConversation: async id => {
     const ticket = session;
     const previous = get().activeConversationId;
-    if (previous) get().socket?.emit('conversation:leave', previous);
+    if (previous) { get().socket?.emit('typing:stop', previous); get().socket?.emit('conversation:leave', previous); }
     set({ activeConversationId: id || null, error: null, isLoading: Boolean(id) });
     if (!id) return;
     try {
       const messages = await messengerRequest<ChatMessage[]>(`messages/conversations/${encodeURIComponent(id)}/messages`);
       if (ticket !== session) return;
-      set(state => ({ messages: { ...state.messages, [id]: merge(messages, state.messages[id] || []) }, isLoading: false }));
-      get().socket?.emit('conversation:join', id); await get().markAsRead(id);
-    } catch (error) { if (ticket === session) set({ error: errorText(error), isLoading: false }); }
+      set(state => {
+        const cached = state.messages[id] || [];
+        return {
+          messages: { ...state.messages, [id]: merge(cached, messages) },
+          ...historyPageState(state, id, messages),
+          ...(state.activeConversationId === id ? { isLoading: false } : {}),
+        };
+      });
+      if (get().activeConversationId === id) { get().socket?.emit('conversation:join', id); await get().markAsRead(id); }
+    } catch (error) { if (ticket === session && get().activeConversationId === id) set({ error: errorText(error), isLoading: false }); }
   },
   sendMessage: async content => {
     const id = get().activeConversationId, ticket = session;
@@ -127,12 +169,24 @@ export const useMessengerStore = create<MessengerState>((set, get) => ({
     await messengerRequest(`messages/conversations/${encodeURIComponent(id)}/participants`, 'POST', { participantIds });
     if (ticket === session) await get().loadConversations();
   },
-  setTyping: typing => { const id = get().activeConversationId; if (id) get().socket?.emit(typing ? 'typing:start' : 'typing:stop', id); },
+  setTyping: (typing, conversationId) => { const id = conversationId || get().activeConversationId; if (id) get().socket?.emit(typing ? 'typing:start' : 'typing:stop', id); },
   updatePresence: async () => {},
   loadMoreMessages: async cursor => {
     const id = get().activeConversationId, ticket = session;
-    if (!id) return;
-    try { const messages = await messengerRequest<ChatMessage[]>(`messages/conversations/${encodeURIComponent(id)}/messages${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`); if (ticket === session) set(state => ({ messages: { ...state.messages, [id]: merge(state.messages[id] || [], messages) } })); }
-    catch (error) { if (ticket === session) set({ error: errorText(error) }); }
+    if (!id || (cursor && (get().loadingOlderMessages[id] || get().hasOlderMessages[id] === false))) return;
+    const before = cursor ? get().olderMessageCursors[id] || cursor : undefined;
+    if (cursor) set(state => ({ loadingOlderMessages: { ...state.loadingOlderMessages, [id]: true } }));
+    try {
+      const messages = await messengerRequest<ChatMessage[]>(`messages/conversations/${encodeURIComponent(id)}/messages${before ? `?cursor=${encodeURIComponent(before)}` : ''}`);
+      if (ticket === session) set(state => {
+        const cached = state.messages[id] || [];
+        return {
+          messages: { ...state.messages, [id]: merge(cached, messages) },
+          ...historyPageState(state, id, messages, before),
+          error: null,
+        };
+      });
+    } catch (error) { if (ticket === session) set({ error: errorText(error) }); }
+    finally { if (cursor && ticket === session) set(state => ({ loadingOlderMessages: { ...state.loadingOlderMessages, [id]: false } })); }
   },
 }));

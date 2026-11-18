@@ -1,9 +1,14 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { KOREAN_AIRPORTS, getAirportByCode, flightAPI, type ScheduleResponse } from '@entrip/shared';
+import { KOREAN_AIRPORTS, getAirportByCode, getInternationalAirportByCode, flightAPI, type ScheduleResponse } from '@entrip/shared';
 
 const weekdays = [['mon', '월'], ['tue', '화'], ['wed', '수'], ['thu', '목'], ['fri', '금'], ['sat', '토'], ['sun', '일']] as const;
+const selectClassName = 'block mt-2 w-full p-2 border border-gray-300 rounded bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed';
+const airportLabel = (code: string) => {
+  const airport = getAirportByCode(code) || getInternationalAirportByCode(code);
+  return airport ? `${code} - ${airport.name}` : code;
+};
 
 export function FlightScheduleSearch() {
   const [departure, setDeparture] = useState('');
@@ -41,16 +46,17 @@ export function FlightScheduleSearch() {
     <p className="text-sm text-gray-500 mb-4">출발·도착 공항을 선택하면 항공사별 요일 시간표를 확인할 수 있습니다. 시간은 각 공항 현지 시각입니다.</p>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       <label className="text-sm font-medium">출발 공항
-        <select aria-label="출발 공항" className="block mt-2 w-full p-2 border rounded" value={departure} onChange={e => { setDeparture(e.target.value); setArrival(''); setSchedule(null); setError(null); setLoading(false); }}>
+        <select aria-label="출발 공항" className={selectClassName} value={departure} onChange={e => { setDeparture(e.target.value); setArrival(''); setSchedule(null); setError(null); setLoading(false); }}>
           <option value="">출발 공항을 선택하세요</option>
           {KOREAN_AIRPORTS.map(a => <option key={a.code} value={a.code}>{a.code} - {a.name}</option>)}
         </select>
       </label>
       <label className="text-sm font-medium">도착 공항
-        <select aria-label="도착 공항" className="block mt-2 w-full p-2 border rounded" value={arrival} onChange={e => setArrival(e.target.value)} disabled={!departure || !destinations.length}>
+        <select aria-label="도착 공항" aria-describedby="arrival-airport-help" className={selectClassName} value={arrival} onChange={e => setArrival(e.target.value)} disabled={!departure || !destinations.length}>
           <option value="">{loading ? '불러오는 중…' : '도착 공항을 선택하세요'}</option>
-          {destinations.map(code => <option key={code} value={code}>{code} - {getAirportByCode(code)?.name || code}</option>)}
+          {destinations.map(code => <option key={code} value={code}>{airportLabel(code)}</option>)}
         </select>
+        <span id="arrival-airport-help" className="block mt-2 text-xs font-normal text-gray-500">{!departure ? '출발 공항을 먼저 선택하세요.' : loading ? '선택한 출발 공항의 운항 노선을 확인하고 있습니다.' : !destinations.length ? '운항 노선을 불러온 뒤 선택할 수 있습니다.' : '제공된 운항 노선에서 도착 공항을 선택하세요.'}</span>
       </label>
     </div>
     {error && <p role="alert" className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-red-700">{error}{schedule && ' 아래에는 이전에 불러온 자료가 표시됩니다.'}</p>}
@@ -58,11 +64,12 @@ export function FlightScheduleSearch() {
     {schedule && <p className={`mb-4 text-sm ${stale ? 'text-amber-700' : 'text-gray-600'}`}>자료 기준: {new Date(schedule.crawledAt).toLocaleString('ko-KR')} · {schedule.source || '연결된 항공편 서버'}{stale && ' · 오래된 자료입니다. 현재 운항은 항공사에서 확인하세요.'}</p>}
     {arrival && flights.length > 0 && <>
       <h2 className="font-semibold mb-3">{departure} → {arrival} · {flights.length}개 항공편</h2>
-      <div className="overflow-x-auto rounded border border-gray-200">
+      <p id="flight-scroll-help" className="mb-2 text-xs text-gray-500">좌우로 스크롤해 월~일 시간표를 확인하세요. 항공사 이름은 고정됩니다.</p>
+      <div role="region" aria-label="항공사별 주간 운항 시간표" aria-describedby="flight-scroll-help" tabIndex={0} className="overflow-x-auto rounded border border-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
         <table className="w-full min-w-[850px] text-sm bg-white">
-          <thead className="bg-blue-50"><tr><th className="p-3 border-b text-left">항공사</th>{weekdays.map(([key, day]) => <th key={key} className="p-3 border-b">{day}</th>)}</tr></thead>
+          <thead className="bg-blue-50"><tr><th scope="col" className="sticky left-0 z-20 bg-blue-50 p-3 border-b border-r text-left min-w-[100px]">항공사</th>{weekdays.map(([key, day]) => <th scope="col" key={key} className="p-3 border-b">{day}</th>)}</tr></thead>
           <tbody>{airlines.map(airline => <tr key={airline}>
-            <th className="p-3 border-b text-left align-top">{airline}</th>
+            <th scope="row" className="sticky left-0 z-10 bg-white p-3 border-b border-r text-left align-top min-w-[100px]">{airline}</th>
             {weekdays.map(([key]) => <td key={key} className="p-2 border-b align-top">{flights.filter(f => f.airline === airline && f.days?.[key]).map((f, i) => <div key={`${f.flightNo}-${f.departureTime}-${i}`} className="mb-2 rounded bg-gray-50 p-2"><p className="font-medium">{f.departureTime} → {f.arrivalTime || '미제공'}</p><p className="text-xs text-gray-500">{f.flightNo}</p></div>)}</td>)}
           </tr>)}</tbody>
         </table>

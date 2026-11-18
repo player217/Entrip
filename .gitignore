@@ -103,7 +103,7 @@ nul
 
 # Local scratch workspaces
 work/
-workspace/
+/workspace/
 
 # One-off local SQL scratch file
 tmp_update.sql

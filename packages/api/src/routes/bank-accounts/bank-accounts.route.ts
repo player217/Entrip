@@ -25,6 +25,7 @@ router.get('/', async (req: AuthRequest, res, next) => {
     const accounts = await prisma.bankAccount.findMany({
       where: { companyCode, deletedAt: null },
       orderBy: { accountName: 'asc' },
+      include: { _count: { select: { records: true } } },
     });
     const totals = await prisma.financeRecord.groupBy({
       by: ['accountId', 'type'],
@@ -38,8 +39,10 @@ router.get('/', async (req: AuthRequest, res, next) => {
     });
     res.json({
       success: true,
-      data: accounts.map((account) => ({
+      data: accounts.map(({ _count, ...account }) => ({
         ...account,
+        // Include all history, as the update/delete guards do, even after a soft delete.
+        hasTransactions: _count.records > 0,
         balance: totals
           .filter((t) => t.accountId === account.id)
           .reduce(
