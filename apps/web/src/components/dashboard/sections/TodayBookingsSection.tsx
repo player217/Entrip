@@ -138,6 +138,7 @@ export function TodayBookingsSection() {
                   </div>
                 </div>
               ))}
+              {!showAllDepartures && todayData.departures.length > 3 && <p className="entrip-print-only dashboard-preview-count">전체 {todayData.departures.length}건 중 화면에 표시된 3건</p>}
               {todayData.departures.length > 3 && (
                 <button type="button" aria-expanded={showAllDepartures} aria-controls={departuresId}
                   onClick={() => setShowAllDepartures(value => !value)}
@@ -171,6 +172,7 @@ export function TodayBookingsSection() {
                   </div>
                 </div>
               ))}
+              {!showAllNewBookings && todayData.newBookings.length > 3 && <p className="entrip-print-only dashboard-preview-count">전체 {todayData.newBookings.length}건 중 화면에 표시된 3건</p>}
               {todayData.newBookings.length > 3 && (
                 <button type="button" aria-expanded={showAllNewBookings} aria-controls={newBookingsId}
                   onClick={() => setShowAllNewBookings(value => !value)}

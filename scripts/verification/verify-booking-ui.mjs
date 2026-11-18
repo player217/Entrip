@@ -118,7 +118,7 @@ try {
   await changes.scrollIntoViewIfNeeded();
   await screenshot('booking-history-desktop');
   report.checks.push('Detailed history displays actual hotel name, currency, quantity and 12,000 to 14,000 price change on mobile and desktop');
-  await editor.getByRole('button', { name: '닫기', exact: true }).click();
+  await editor.getByRole('button', { name: '취소', exact: true }).click();
   await page.setViewportSize({ width: 1440, height: 1000 });
   for (const [route, title] of [['/list-monthly', '월간 목록'], ['/list-weekly', '주간 목록'], ['/calendar-week', '주간 캘린더']]) {
     await page.goto(route);

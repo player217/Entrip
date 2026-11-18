@@ -68,3 +68,37 @@ test('history preserves every added or removed detail row and clearly represents
   expect(removed?.before).toBe(added?.after);
   expect(removed?.after).toBe('등록 내역 없음');
 });
+
+test('opens old supplier objects and keeps unknown metadata intact when a row is edited', () => {
+  const legacy = { ...record, flightInfo: { airline: '원본항공', flightNumber: 'OR125', departureTime: '09:05', fareRule: { refund: '조건부' } } };
+  const draft = makeDraft(legacy, '', '');
+  expect(draft.flightInfo[0]).toMatchObject({ name: 'OR125', fields: { airline: '원본항공', flightNo: 'OR125', departureTime: '09:05' }, unpriced: true });
+  const row = { ...draft.flightInfo[0]!, fields: { ...draft.flightInfo[0]!.fields, arrivalTime: '14:25' } };
+  const change = bookingPayload({ record: legacy, baseline: JSON.stringify(draft), draft: { ...draft, flightInfo: [row] } });
+  expect(Object.keys(change)).toEqual(['flightInfo']);
+  const reopened = makeDraft({ ...legacy, flightInfo: change.flightInfo }, '', '');
+  expect(reopened.flightInfo[0]?.fields).toMatchObject({ airline: '원본항공', flightNo: 'OR125', departureTime: '09:05', arrivalTime: '14:25' });
+  expect(JSON.parse(reopened.flightInfo[0]!.legacyExtra!)).toEqual({ fareRule: { refund: '조건부' } });
+});
+
+test('preserves extra data attached to an existing generic row when a new sibling is added', () => {
+  const legacy = { ...record, hotelInfo: [{ ...(record.hotelInfo as object[])[0], supplierReference: '원본 참조', fields: { roomType: 'TWIN', confirmationCode: 'ABCD' } }] };
+  const draft = makeDraft(legacy, '', '');
+  const old = draft.hotelInfo[0]!;
+  const payload = bookingPayload({ record: legacy, baseline: JSON.stringify(draft), draft: { ...draft, hotelInfo: [old, { ...old, id: 'new' }] } });
+  const reopened = makeDraft({ ...legacy, hotelInfo: payload.hotelInfo }, '', '');
+  expect(reopened.hotelInfo).toHaveLength(2);
+  expect(JSON.parse(reopened.hotelInfo[0]!.legacyExtra!)).toEqual({ supplierReference: '원본 참조', confirmationCode: 'ABCD' });
+});
+
+test('restores both nested outbound and inbound flight legs with exact airport and times', () => {
+  const draft = makeDraft({ ...record, flightInfo: {
+    outbound: { flightNo: 'ZZ1', departure: { city: '부산', airport: 'PUS', time: '09:35' }, arrival: { airport: 'CTS', time: '12:10' } },
+    inbound: { flightNumber: 'ZZ2', departTime: '14:00', arriveTime: '16:50' },
+    bookingRef: '확인번호-10'
+  } }, '', '');
+  expect(draft.flightInfo).toHaveLength(2);
+  expect(draft.flightInfo[0]?.fields).toMatchObject({ flightNo: 'ZZ1', from: '부산 · PUS', to: 'CTS', departureTime: '09:35', arrivalTime: '12:10' });
+  expect(draft.flightInfo[0]?.legacyExtra).toContain('확인번호-10');
+  expect(draft.flightInfo[1]?.fields).toMatchObject({ flightNo: 'ZZ2', departureTime: '14:00', arrivalTime: '16:50' });
+});

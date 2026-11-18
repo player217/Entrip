@@ -35,5 +35,5 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   if (isLoading || unauthorized) return <div className="min-h-screen flex items-center justify-center">인증 확인 중...</div>;
   if (!user) return <div className="min-h-screen flex flex-col gap-4 items-center justify-center"><p>서버 연결을 확인할 수 없습니다.</p><button onClick={() => void mutate()} className="rounded bg-blue-600 px-4 py-2 text-white">다시 시도</button></div>;
-  return <ToastProvider><div className="font-sans"><AppFrame user={user}>{children}</AppFrame><MessengerContainer /></div><LogViewer /></ToastProvider>;
+  return <ToastProvider><div className="font-sans"><AppFrame user={user}>{children}</AppFrame><MessengerContainer /></div><div className="entrip-no-print"><LogViewer /></div></ToastProvider>;
 }

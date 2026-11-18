@@ -7,6 +7,7 @@ import { useAuthStore } from '@/lib/auth-store';
 import { useTabState } from '@/hooks/useTabState';
 import { useWorkspaceTabKey } from '@/components/workspace/WorkspaceTabContext';
 import { BookingEditor } from './BookingEditor';
+import BookingWorkspacePrint from './BookingWorkspacePrint';
 import { bookingPayload, bookingRequest, bookingTypes, dateKey, localDate, makeDraft, statuses, statusStyles, type BookingRecord, type EditorSession } from './booking-model';
 
 export type BookingView = 'month' | 'week' | 'month-list' | 'week-list';
@@ -125,7 +126,8 @@ export function BookingWorkspace({ view }: { view: BookingView }) {
   const selectedDayBookings = filtered.filter(booking => dateKey(booking.startDate) <= selectedDay && dateKey(booking.endDate) >= selectedDay);
   const emptyMessage = search.trim() || status ? '검색 조건에 맞는 예약이 없습니다.' : '해당 기간에 예약이 없습니다.';
   const statusBadge = (value: string) => <span className={`inline-block shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium ${statusStyles[value] ?? statusStyles.PENDING}`}>{statuses[value] ?? value}</span>;
-  return <div className="relative flex h-full min-h-[580px] min-w-0 flex-col rounded-xl border border-slate-200 bg-white" data-testid={`booking-${view}`}>
+  const passengers = filtered.filter(booking => booking.status !== 'CANCELLED').reduce((sum, booking) => sum + booking.totalPax, 0);
+  return <div className="booking-workspace relative flex h-full min-h-[580px] min-w-0 flex-col rounded-xl border border-slate-200 bg-white" data-printable-bookings data-testid={`booking-${view}`}>
     <header className="space-y-3 border-b border-slate-200 p-3 sm:p-4">
       <div className="flex flex-wrap items-center gap-2"><h1 className="mr-auto text-xl font-semibold text-slate-900">{labels[view]}</h1><button type="button" className="rounded border px-3 py-2 text-sm" onClick={() => void mutate()}>새로고침</button><button type="button" className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white" onClick={() => openNew(selectedDay)}>+ 예약 등록</button></div>
       <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -175,7 +177,8 @@ export function BookingWorkspace({ view }: { view: BookingView }) {
         })}</div>
       </div>
     </div>}
-    <footer className="flex flex-wrap gap-x-5 gap-y-1 border-t bg-slate-50 px-4 py-3 text-xs text-slate-600">{isLoading || loadError ? <span>{loadError ? '조회 실패 · 예약 건수와 합계를 확인할 수 없습니다.' : '예약 건수와 합계를 불러오는 중...'}</span> : <><span>예약 {filtered.length}건 · {filtered.filter(booking => booking.status !== 'CANCELLED').reduce((sum, booking) => sum + booking.totalPax, 0)}명</span>{Object.entries(totals).map(([currency, amount]) => <span key={currency}>판매 {currency} {amount.toLocaleString()}</span>)}<span className="ml-auto">금액·인원은 취소 예약 제외</span></>}</footer>
+    <footer className="flex flex-wrap gap-x-5 gap-y-1 border-t bg-slate-50 px-4 py-3 text-xs text-slate-600">{isLoading || loadError ? <span>{loadError ? '조회 실패 · 예약 건수와 합계를 확인할 수 없습니다.' : '예약 건수와 합계를 불러오는 중...'}</span> : <><span>예약 {filtered.length}건 · {passengers}명</span>{Object.entries(totals).map(([currency, amount]) => <span key={currency}>판매 {currency} {amount.toLocaleString()}</span>)}<span className="ml-auto">금액·인원은 취소 예약 제외</span></>}</footer>
     {editor && <BookingEditor session={editor} onChange={draft => setEditor({ ...editor, draft })} onClose={close} onSave={() => void save()} onDelete={() => void remove()} onReload={() => { if (editor.record && (!dirty || window.confirm('작성 중인 내용을 버리고 최신 예약을 불러올까요?'))) void loadDetail(editor.record.id); }} busy={busy} error={error} />}
+    <BookingWorkspacePrint title={labels[view]} period={period} selectedDay={selectedDay} calendarDays={listView ? undefined : calendarDays} search={search} status={status} records={filtered} totals={totals} passengers={passengers} loading={isLoading} loadError={Boolean(loadError)} editor={editor} />
   </div>;
 }

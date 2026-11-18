@@ -31,7 +31,7 @@ export function TabContentManager({ children }: { children?: React.ReactNode }) 
     window.addEventListener('beforeunload', beforeUnload);
     return () => window.removeEventListener('beforeunload', beforeUnload);
   }, []);
-  return <div className="relative h-full min-w-0">
+  return <div className="entrip-panes relative h-full min-w-0">
     {tabs.map(tab => <TabContent key={tab.key} tabKey={tab.key} route={tab.route} visible={tab.key === activeTabKey} fallback={children} />)}
   </div>;
 }

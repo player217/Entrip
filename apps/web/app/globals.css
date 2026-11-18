@@ -1,5 +1,7 @@
 @import '@entrip/design-tokens/build/variables.css';
 @import '../src/styles/calendar.css';
+@import '../src/styles/workspace-print.css';
+@import '../src/styles/operations-print.css';
 
 @tailwind base;
 @tailwind components;

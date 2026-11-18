@@ -213,12 +213,7 @@
   
   /* Hide non-printable elements */
   .no-print,
-  button,
   .calendar-add-btn,
-  header,
-  nav,
-  aside,
-  .sidebar,
   .event-tooltip {
     display: none !important;
   }
@@ -288,9 +283,5 @@
     color: #00d !important;
   }
   
-  /* Page setup */
-  @page {
-    size: A4 landscape;
-    margin: 10mm;
-  }
+
 }

@@ -32,8 +32,9 @@ test('a failed request never becomes an empty result or a definitive zero total,
 test('empty search is distinguished from an empty period and clearing it restores rows', () => {
   render(<BookingWorkspace view="month-list" />);
   fireEvent.change(screen.getByLabelText('예약 검색'), { target: { value: '없는 고객' } });
-  expect(screen.getByText('검색 조건에 맞는 예약이 없습니다.')).toBeInTheDocument();
-  expect(screen.queryByText('해당 기간에 예약이 없습니다.')).not.toBeInTheDocument();
+  const list = within(screen.getByRole('region', { name: '예약 목록' }));
+  expect(list.getByText('검색 조건에 맞는 예약이 없습니다.')).toBeInTheDocument();
+  expect(list.queryByText('해당 기간에 예약이 없습니다.')).not.toBeInTheDocument();
   fireEvent.change(screen.getByLabelText('예약 검색'), { target: { value: '' } });
   expect(screen.getByRole('button', { name: booking.teamName })).toBeInTheDocument();
 });

@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
+import { FinanceDraftPrint } from '@/components/finance/FinanceDraftPrint';
 import { useAuthStore } from '@/lib/auth-store';
 import { useTabState } from '@/hooks/useTabState';
 import { useWorkspaceTabKey } from '@/components/workspace/WorkspaceTabContext';
@@ -59,6 +60,9 @@ export default function ApprovalPageContent() {
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
+  const [loadedQuery, setLoadedQuery] = useState('');
+  const queryKey = JSON.stringify([user?.companyCode, user?.id, page, status]);
+  const queryReady = queryKey === loadedQuery;
   const [total, setTotal] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -84,6 +88,7 @@ export default function ApprovalPageContent() {
         useAuthStore.getState().user?.companyCode !== user?.companyCode
       )
         return;
+      setLoadedQuery(queryKey);
       setItems(approvals.data);
       setPages(Math.max(1, approvals.pagination.pages));
       setTotal(approvals.pagination.total);
@@ -95,7 +100,7 @@ export default function ApprovalPageContent() {
       );
       setFinance(ledger);
     },
-    [page, status, user?.id, user?.companyCode]
+    [page, status, queryKey, user?.id, user?.companyCode]
   );
   useEffect(() => {
     const controller = new AbortController();
@@ -120,13 +125,13 @@ export default function ApprovalPageContent() {
   }
   const selectedFinance = finance.find((record) => record.id === draft.targetId);
   return (
-    <section className="space-y-5 min-w-0 p-2 sm:p-4">
+    <section className="operations-report approval-report space-y-5 min-w-0 p-2 sm:p-4" data-print-draft={showForm}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">결재 관리</h1>
           <p className="mt-1 text-sm text-gray-500">지정한 결재자가 순서대로 검토합니다.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="entrip-no-print flex gap-2">
           <button
             className="rounded border px-3 py-2 text-sm"
             disabled={busy}
@@ -153,6 +158,14 @@ export default function ApprovalPageContent() {
         <p role="status" className="text-sm text-green-700">
           {notice}
         </p>
+      )}
+      {showForm && (
+        <FinanceDraftPrint title="새 결재 요청" fields={[
+          ['제목', draft.title], ['결재 유형', draft.targetType === 'finance' ? '입출금 거래 결재' : '일반 결재'],
+          ...(draft.targetType === 'finance' ? [['결재할 거래', selectedFinance && `${selectedFinance.category} · ${money(selectedFinance.amount, selectedFinance.currency)} · ${selectedFinance.occurredAt.slice(0, 10)}`] as [string, string | undefined]] : []),
+          ['요청 내용', draft.content],
+          ...draft.approvers.map((id, index): [string, string | undefined] => [`${index + 1}단계 결재자`, people.find(person => person.id === id)?.name]),
+        ]} />
       )}
       {showForm && (
         <form
@@ -332,7 +345,10 @@ export default function ApprovalPageContent() {
           </div>
         </form>
       )}
-      <div className="flex flex-wrap gap-2">
+      <p className="entrip-print-only operations-print-scope">조회 상태 · {statusText[status as keyof typeof statusText] || '전체'}
+        {queryReady && ` · 전체 ${total}건 · 조회 페이지 ${page} / ${pages} · 이 페이지 ${items.length}건`}
+      </p>
+      <div className="entrip-no-print flex flex-wrap gap-2">
         {([['', '전체'], ...Object.entries(statusText)] as [string, string][]).map(
           ([value, text]) => (
             <button
@@ -350,7 +366,7 @@ export default function ApprovalPageContent() {
         <span className="p-2 text-sm text-gray-500">{total}건</span>
       </div>
       <div className="space-y-3">
-        {items.map((item) => {
+        {queryReady && items.map((item) => {
           const current = item.steps[item.currentStep];
           const canAct =
             item.status === 'pending' &&
@@ -361,7 +377,7 @@ export default function ApprovalPageContent() {
             !item.steps.some((step) => step.action) &&
             (item.requesterId === user?.id || role === 'ADMIN');
           return (
-            <article key={item.id} className="rounded-lg border bg-white p-4 sm:p-5">
+            <article key={item.id} className="approval-item rounded-lg border bg-white p-4 sm:p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <span
@@ -409,7 +425,7 @@ export default function ApprovalPageContent() {
                 ))}
               </ol>
               {canAct && (
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="entrip-no-print mt-4 flex flex-wrap gap-2">
                   <label className="min-w-0 flex-1 text-sm">
                     결재 의견
                     <input
@@ -470,12 +486,13 @@ export default function ApprovalPageContent() {
           );
         })}
       </div>
-      {!items.length && !error && (
+      {!queryReady && !error && <p role="status">결재 요청을 조회하는 중…</p>}
+      {queryReady && !items.length && !error && (
         <p className="rounded-lg border bg-white p-8 text-center text-sm text-gray-500">
           조회된 결재 요청이 없습니다.
         </p>
       )}
-      <div className="flex items-center justify-end gap-3 text-sm">
+      <div className="entrip-no-print flex items-center justify-end gap-3 text-sm">
         <button className={paginationClass} disabled={page <= 1 || busy} onClick={() => setPage((p) => p - 1)}>
           이전
         </button>

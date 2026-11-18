@@ -1,5 +1,6 @@
 'use client';
 import { FormEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { MessengerPrint } from './MessengerPrint';
 import { ChatConversation, ChatMessage, useMessengerStore } from '@/lib/messenger-store';
 
 const emptyThread: ChatMessage[] = [];
@@ -92,7 +93,12 @@ export function MessengerWorkspace() {
     stopTyping();
     await act(async () => { await sendMessage(content); setDrafts(d => ({ ...d, [id]: '' })); });
   };
-  return <section className="flex h-full min-h-0 flex-col overflow-hidden bg-white" aria-label="업무 메신저">
+  return <>
+    <MessengerPrint mode={mode} conversation={conversation} thread={thread}
+      hasOlder={conversation && hasOlderMessages[conversation.id]}
+      loading={mode === 'conversations' ? isLoading : isDirectoryLoading}
+      error={error || ''} search={search} conversations={visibleConversations} employees={visibleEmployees} title={title} />
+    <section className="entrip-no-print flex h-full min-h-0 flex-col overflow-hidden bg-white" aria-label="업무 메신저">
     <header className="flex items-center justify-between border-b px-4 py-3"><h1 className="font-semibold text-gray-900">메신저</h1><span className="text-xs text-gray-500">{isConnected ? '실시간 연결됨' : '재연결 중 · 15초마다 갱신'}</span></header>
     {(error || actionError) && <div role="alert" className="border-b bg-red-50 px-4 py-2 text-sm text-red-700">{actionError || error}</div>}
     <div className="flex min-h-0 flex-1">
@@ -117,5 +123,5 @@ export function MessengerWorkspace() {
         <form className="flex items-end gap-2 border-t p-3" onSubmit={submit}><textarea aria-label="메시지" value={content} maxLength={10000} placeholder="메시지 입력 · Enter 전송 / Shift+Enter 줄바꿈" rows={2} className="min-w-0 flex-1 resize-none rounded border p-2 text-sm" onChange={e => changeDraft(e.target.value)} onBlur={stopTyping} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void submit(e); } }} /><button disabled={busy || !content.trim()} className="rounded bg-blue-600 px-4 py-2 text-sm text-white disabled:opacity-50">{busy ? '전송 중' : '전송'}</button></form>
       </main> : <div className="hidden flex-1 items-center justify-center p-6 text-sm text-gray-500 md:flex">대화를 선택하거나 조직도에서 새 대화를 시작하세요.</div>}
     </div>
-  </section>;
+  </section></>;
 }

@@ -3,6 +3,7 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { useWorkspaceStore } from '@entrip/shared/client';
 import { Icon } from '@entrip/ui';
+import { Printer } from 'lucide-react';
 import { useTabRouter } from '@/hooks/useTabRouter';
 
 export function WorkspaceTabs() {
@@ -43,7 +44,7 @@ export function WorkspaceTabs() {
       if (next) window.history.replaceState(window.history.state, '', next.route);
     }
   };
-  return <div className="flex h-10 min-w-0 shrink-0 items-end bg-[#e9f2f8] px-1" aria-label="작업 탭 영역">
+  return <div className="entrip-no-print flex h-10 min-w-0 shrink-0 items-end bg-[#e9f2f8] px-1" aria-label="작업 탭 영역">
     <div ref={tabListRef} className="flex min-w-0 flex-1 overflow-x-auto" role="tablist" aria-label="작업 탭">
       {tabs.map((tab, index) => <div key={tab.key} ref={tab.key === activeTabKey ? activeTabRef : undefined} className={`group flex h-9 min-w-[130px] max-w-[220px] flex-1 items-center gap-1 rounded-t-lg border px-2 ${tab.key === activeTabKey ? 'border-gray-200 border-b-white bg-white text-gray-900' : 'border-transparent text-gray-600 hover:bg-white/60'}`}
         draggable onDragStart={event => { setDragging(tab.key); event.dataTransfer.setData('text/plain', tab.key); event.dataTransfer.effectAllowed = 'move'; }}
@@ -67,5 +68,9 @@ export function WorkspaceTabs() {
     </div>
     {tabs.length >= 10 && <span id={limitId} className="mb-2 ml-2 shrink-0 text-xs text-gray-600">최대 10개<span className="sr-only">입니다. 새 작업을 열려면 기존 탭을 닫아 주세요.</span></span>}
     <button onClick={() => openInNewTab()} disabled={tabs.length >= 10} aria-label="새 작업 탭" aria-describedby={tabs.length >= 10 ? limitId : undefined} title={tabs.length >= 10 ? '최대 10개 작업 탭' : '새 작업 탭'} className="mb-1 ml-1 shrink-0 rounded p-2 text-gray-600 hover:bg-white disabled:opacity-40"><Icon icon="ph:plus" className="h-4 w-4" /></button>
+    <button type="button" data-testid="page-print" aria-label="현재 페이지 인쇄" title="현재 페이지 인쇄"
+      onClick={() => window.print()} className="mb-1 ml-1 flex shrink-0 items-center gap-1 rounded border-l border-slate-300 px-2 py-1.5 text-xs font-medium text-slate-700 hover:bg-white">
+      <Printer aria-hidden="true" size={16} /><span className="hidden sm:inline">인쇄</span>
+    </button>
   </div>;
 }

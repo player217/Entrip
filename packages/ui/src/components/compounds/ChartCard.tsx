@@ -40,6 +40,7 @@ export const ChartCard = ({
 }: ChartCardProps) => {
   const horizontal = orientation === 'horizontal';
   const scrollable = maxHeight !== undefined && height > maxHeight;
+  const peak = data.reduce((max, item) => Math.max(max, Number(item[dataKey]) || 0), 0);
   const formatValue = (value: number) => {
     if (value >= 1000000) {
       return `${(value / 1000000).toFixed(1)}M`;
@@ -51,17 +52,17 @@ export const ChartCard = ({
   };
 
   return (
-    <Card variant="elevated" className={className}>
+    <Card variant="elevated" className={`operations-chart ${className || ''}`}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        {scrollable && <p className="mb-2 text-xs text-gray-500">전체 {data.length}개 항목 · 아래로 스크롤해 모두 확인하세요.</p>}
+        {scrollable && <p className="entrip-no-print mb-2 text-xs text-gray-500">전체 {data.length}개 항목 · 아래로 스크롤해 모두 확인하세요.</p>}
         <div
           role="region"
           aria-label={title}
           tabIndex={scrollable ? 0 : undefined}
-          className="min-w-0 overflow-y-auto rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+          className="chart-plot min-w-0 overflow-y-auto rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
           style={{ maxHeight }}
         >
         <ResponsiveContainer width="100%" height={height}>
@@ -109,10 +110,19 @@ export const ChartCard = ({
           </BarChart>
         </ResponsiveContainer>
         </div>
-        <table className="sr-only">
+        <table className="chart-print-data sr-only">
           <caption>{title} 데이터</caption>
           <thead><tr><th scope="col">항목</th><th scope="col">{valueLabel}</th></tr></thead>
-          <tbody>{data.map((item, index) => <tr key={index}><th scope="row">{item[xAxisKey]}</th><td>{valueFormatter(Number(item[dataKey]))}</td></tr>)}</tbody>
+          <tbody>{data.map((item, index) => {
+            const value = Number(item[dataKey]);
+            return <tr key={index}>
+              <th scope="row">{item[xAxisKey]}</th>
+              <td>
+                <span className="chart-print-bar" aria-hidden="true" style={{ width: `${peak > 0 ? Math.max(0, value) / peak * 100 : 0}%` }} />
+                <span>{valueFormatter(value)}</span>
+              </td>
+            </tr>;
+          })}</tbody>
         </table>
       </CardContent>
     </Card>

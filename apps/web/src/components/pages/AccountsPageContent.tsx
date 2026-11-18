@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useId, useState } from 'react';
+import { FinanceDraftPrint } from '@/components/finance/FinanceDraftPrint';
 import { useAuthStore } from '@/lib/auth-store';
 import { useTabState } from '@/hooks/useTabState';
 import { useWorkspaceTabKey } from '@/components/workspace/WorkspaceTabContext';
@@ -51,6 +52,9 @@ export default function AccountsPageContent() {
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [filter, setFilter] = useState('');
+  const [loadedQuery, setLoadedQuery] = useState('');
+  const queryKey = JSON.stringify([user?.companyCode, user?.id, page, filter]);
+  const queryReady = queryKey === loadedQuery;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -81,11 +85,12 @@ export default function AccountsPageContent() {
         useAuthStore.getState().user?.companyCode !== user?.companyCode
       )
         return;
+      setLoadedQuery(queryKey);
       setAccounts(bankData.data);
       setRecords(financeData.data);
       setPages(Math.max(1, financeData.pagination.pages));
     },
-    [page, filter, user?.id, user?.companyCode]
+    [page, filter, queryKey, user?.id, user?.companyCode]
   );
   useEffect(() => {
     const controller = new AbortController();
@@ -108,8 +113,11 @@ export default function AccountsPageContent() {
       setBusy(false);
     }
   }
+  const draftCurrency = accountValuesLocked && editingAccount ? editingAccount.currency : accountDraft.currency;
+  const draftBalance = accountValuesLocked && editingAccount ? String(editingAccount.openingBalance) : accountDraft.openingBalance;
+  const entryAccount = accounts.find((account) => account.id === entryDraft.accountId);
   return (
-    <section className="space-y-5 min-w-0 p-2 sm:p-4">
+    <section className="operations-report accounts-report space-y-5 min-w-0 p-2 sm:p-4" data-print-draft={showAccount || showEntry}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">계좌 관리</h1>
@@ -117,7 +125,7 @@ export default function AccountsPageContent() {
             통화별 계좌 잔액 · 승인된 거래만 잔액에 반영됩니다.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="entrip-no-print flex gap-2">
           <button
             className="border rounded px-3 py-2 text-sm"
             disabled={busy}
@@ -168,7 +176,27 @@ export default function AccountsPageContent() {
           {notice}
         </p>
       )}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {showAccount && (
+        <FinanceDraftPrint title={accountDraft.editingId ? '계좌 수정' : '새 계좌'} fields={[
+          ['계좌 이름', accountDraft.accountName], ['은행', accountDraft.bankName],
+          ['계좌 번호', accountDraft.accountNumber], ['예금주', accountDraft.holderName],
+          ['통화', draftCurrency], ['기초잔액', draftBalance ? money(draftBalance, draftCurrency) : undefined],
+        ]} />
+      )}
+      {showEntry && (
+        <FinanceDraftPrint title={entryDraft.editingId ? '대기 거래 수정' : '새 거래'} fields={[
+          ['계좌', entryAccount?.accountName], ['입출금 구분', entryDraft.type === 'income' ? '입금' : '출금'],
+          ['항목', entryDraft.category], ['금액', entryDraft.amount && entryAccount ? money(entryDraft.amount, entryAccount.currency) : entryDraft.amount],
+          ['거래일', entryDraft.occurredAt], ['적요', entryDraft.description],
+        ]} />
+      )}
+      {accounts.length > 0 && (
+        <div className="entrip-print-only account-print-head">
+          <h2>전체 계좌 잔액</h2>
+          <div><span>계좌 이름</span><span>은행 · 계좌 번호</span><span>예금주</span><span>현재 잔액</span></div>
+        </div>
+      )}
+      <div className="account-cards grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {accounts.map((account) => (
           <article key={account.id} className="min-w-0 rounded-lg border bg-white p-4">
             <div className="flex justify-between gap-2">
@@ -202,7 +230,7 @@ export default function AccountsPageContent() {
           </article>
         ))}
       </div>
-      {!accounts.length && !error && (
+      {queryReady && !accounts.length && !error && (
         <p className="rounded-lg border bg-white p-6 text-gray-500">등록된 계좌가 없습니다.</p>
       )}
       {showAccount && (
@@ -418,10 +446,10 @@ export default function AccountsPageContent() {
           </div>
         </form>
       )}
-      <div className="rounded-lg border bg-white overflow-hidden">
+      <div className="account-ledger rounded-lg border bg-white overflow-hidden">
         <div className="p-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-semibold">입출금 내역</h2>
-          <label className="text-sm">
+          <label className="entrip-no-print text-sm">
             계좌 필터
             <select
               aria-label="계좌 필터"
@@ -441,22 +469,26 @@ export default function AccountsPageContent() {
             </select>
           </label>
         </div>
-        <p id={ledgerScrollHelpId} className="px-3 pb-2 text-xs text-gray-500">
+        <p className="entrip-print-only operations-print-scope">
+          입출금 조회 계좌 · {filter ? accounts.find((account) => account.id === filter)?.accountName || '선택한 계좌' : '전체 계좌'}
+          {queryReady && ` · 조회 페이지 ${page} / ${pages} · 이 페이지 ${records.length}건`}
+        </p>
+        <p id={ledgerScrollHelpId} className="entrip-no-print px-3 pb-2 text-xs text-gray-500">
           표를 좌우로 스크롤해 거래 정보를 확인하세요. 항목 열은 고정됩니다.
         </p>
         <div className="overflow-auto" role="region" aria-label="입출금 내역 표" aria-describedby={ledgerScrollHelpId} tabIndex={0}>
-          <table className="w-full text-sm whitespace-nowrap">
+          <table className="operations-data-table w-full text-sm whitespace-nowrap">
             <thead className="bg-gray-50 text-gray-500">
               <tr>
                 {['항목', '계좌', '거래일', '입출금', '금액', '상태', '작업'].map((text, index) => (
-                  <th key={text} scope="col" className={`p-3 text-left font-medium ${index === 0 ? 'sticky left-0 z-10 bg-gray-50 border-r' : ''}`}>
+                  <th key={text} scope="col" className={`p-3 text-left font-medium ${text === '작업' ? 'entrip-no-print' : ''} ${index === 0 ? 'sticky left-0 z-10 bg-gray-50 border-r' : ''}`}>
                     {text}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {records.map((record) => (
+              {queryReady && records.map((record) => (
                 <tr key={record.id} className="border-t">
                   <th scope="row" className="sticky left-0 z-10 min-w-[9rem] max-w-[11rem] whitespace-normal break-words border-r bg-white p-3 text-left font-normal [overflow-wrap:anywhere]">
                     {record.category}
@@ -469,7 +501,7 @@ export default function AccountsPageContent() {
                   <td className="p-3">
                     {{ PENDING: '대기', APPROVED: '승인', REJECTED: '반려' }[record.status]}
                   </td>
-                  <td className="p-3">
+                  <td className="entrip-no-print p-3">
                     <div className="flex gap-3">
                       {record.status === 'PENDING' && canEdit && (
                         <button
@@ -528,8 +560,9 @@ export default function AccountsPageContent() {
             </tbody>
           </table>
         </div>
-        {!records.length && <p className="p-6 text-sm text-gray-500">조회된 거래가 없습니다.</p>}
-        <div className="flex justify-end items-center gap-3 p-3 text-sm">
+        {!queryReady && !error && <p role="status" className="p-6 text-sm text-gray-500">거래를 조회하는 중…</p>}
+        {queryReady && !records.length && <p className="p-6 text-sm text-gray-500">조회된 거래가 없습니다.</p>}
+        <div className="entrip-no-print flex justify-end items-center gap-3 p-3 text-sm">
           <button className={paginationClass} disabled={page <= 1 || busy} onClick={() => setPage((p) => p - 1)}>
             이전
           </button>

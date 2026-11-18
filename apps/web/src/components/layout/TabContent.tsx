@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useWorkspaceStore } from '@entrip/shared/client';
 import { WorkspaceTabContext } from '@/components/workspace/WorkspaceTabContext';
+import { workspaceRouteInfo } from '@/lib/workspace-routes';
 import { useTabRouter } from '@/hooks/useTabRouter';
 
 const pages: Record<string, React.ComponentType> = {
@@ -29,8 +30,9 @@ function EmptyWorkspace() {
   const { navigateInTab } = useTabRouter();
   return <div className="mx-auto flex max-w-xl flex-col items-center gap-5 py-16 text-center">
     <h1 className="text-2xl font-semibold text-gray-800">새 작업</h1>
-    <p className="text-sm text-gray-500">사이드바에서 메뉴를 선택하세요. 다른 탭의 작업은 그대로 유지됩니다.</p>
-    <div className="flex flex-wrap justify-center gap-3">
+    <p className="entrip-no-print text-sm text-gray-500">사이드바에서 메뉴를 선택하세요. 다른 탭의 작업은 그대로 유지됩니다.</p>
+    <p className="entrip-print-only">선택한 업무가 없습니다.</p>
+    <div className="entrip-no-print flex flex-wrap justify-center gap-3">
       <button className="rounded-lg border px-4 py-3 hover:bg-blue-50" onClick={() => navigateInTab('/calendar-monthly')}>예약관리</button>
       <button className="rounded-lg border px-4 py-3 hover:bg-blue-50" onClick={() => navigateInTab('/accounts')}>계좌관리</button>
       <button className="rounded-lg border px-4 py-3 hover:bg-blue-50" onClick={() => navigateInTab('/approval')}>결재</button>
@@ -58,9 +60,10 @@ export function TabContent({ tabKey, route, visible, fallback }: TabContentProps
   const path = route.split('?')[0] ?? route;
   const Component = pages[path];
   return <div ref={containerRef} role="tabpanel" id={`pane-${tabKey}`} aria-labelledby={`tab-${tabKey}`} hidden={!visible}
-    className="h-full min-w-0 overflow-auto p-3 sm:p-6" style={{ display: visible ? 'block' : 'none' }} data-tab-key={tabKey}
+    data-print-route={path} className="entrip-workspace-pane h-full min-w-0 overflow-auto p-3 sm:p-6" style={{ display: visible ? 'block' : 'none' }} data-tab-key={tabKey}
     onScroll={event => useWorkspaceStore.getState().updateTabState(tabKey, { scrollPosition: event.currentTarget.scrollTop })}>
     {(loaded || visible) && <WorkspaceTabContext.Provider value={{ tabKey, active: visible }}>
+      <div className="entrip-report-brand entrip-print-only"><strong>ENTRIP</strong><span>{workspaceRouteInfo(path).label}</span></div>
       {Component ? <Component key={route} /> : path === '/workspace' ? <EmptyWorkspace /> : visible ? fallback : null}
     </WorkspaceTabContext.Provider>}
   </div>;

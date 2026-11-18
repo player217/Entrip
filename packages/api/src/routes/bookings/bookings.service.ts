@@ -44,12 +44,20 @@ export class BookingsService extends BaseService<Booking> {
   }
 
   async detail(id: string, companyCode: string) {
-    const booking = await this.findById(id, companyCode);
-    const history = await prisma.bookingHistory.findMany({
-      where: { bookingId: id, companyCode }, orderBy: { changedAt: 'desc' }, take: 100,
-      include: { user: { select: { name: true } } },
+    const active = { companyCode, deletedAt: null };
+    const booking = await prisma.booking.findFirst({
+      where: { id, ...active },
+      include: {
+        user: { select: { name: true } },
+        flights: { where: active, orderBy: [{ departureTime: 'asc' }, { id: 'asc' }] },
+        hotels: { where: active, orderBy: [{ checkInDate: 'asc' }, { id: 'asc' }] },
+        vehicles: { where: active, orderBy: [{ pickupTime: 'asc' }, { id: 'asc' }] },
+        settlements: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
+        history: { where: { companyCode }, orderBy: { changedAt: 'desc' }, take: 100, include: { user: { select: { name: true } } } },
+      },
     });
-    return { ...booking, history };
+    if (!booking) throw new ApiError(404, 'Booking not found');
+    return booking;
   }
 
   /**

@@ -10,6 +10,20 @@ const airportLabel = (code: string) => {
   return airport ? `${code} - ${airport.name}` : code;
 };
 
+type Flight = ScheduleResponse['flights'][number];
+
+// Bound the height of a printed airline row so the seven weekday cells stay together at a page break.
+const flightsPerPrintedCell = 4;
+
+function FlightTimes({ flights }: { flights: Flight[] }) {
+  return <>{flights.map((flight, i) => (
+    <div key={`${flight.flightNo}-${flight.departureTime}-${i}`} className="flight-slot mb-2 rounded bg-gray-50 p-2">
+      <p className="font-medium">{flight.departureTime} → {flight.arrivalTime || '미제공'}</p>
+      <p className="text-xs text-gray-500">{flight.flightNo}</p>
+    </div>
+  ))}</>;
+}
+
 export function FlightScheduleSearch() {
   const [departure, setDeparture] = useState('');
   const [arrival, setArrival] = useState('');
@@ -35,16 +49,31 @@ export function FlightScheduleSearch() {
 
   const destinations = useMemo(() => [...new Set((schedule?.flights || []).map(f => f.destination?.trim()).filter(code => /^[A-Z]{3}$/.test(code)))].sort(), [schedule]);
   const flights = useMemo(() => (schedule?.flights || []).filter(f => f.destination?.trim() === arrival).sort((a, b) => a.departureTime.localeCompare(b.departureTime)), [schedule, arrival]);
-  const airlines = [...new Set(flights.map(f => f.airline))];
+  const timetables = useMemo(() => {
+    const byAirline = new Map<string, Flight[]>();
+    flights.forEach(flight => {
+      const rows = byAirline.get(flight.airline);
+      if (rows) rows.push(flight);
+      else byAirline.set(flight.airline, [flight]);
+    });
+    return Array.from(byAirline, ([airline, rows]) => {
+      const days = weekdays.map(([key]) => rows.filter(flight => flight.days?.[key]));
+      const segments = Math.max(1, ...days.map(day => Math.ceil(day.length / flightsPerPrintedCell)));
+      const incompleteDays = rows.some(flight => !flight.days || !Object.keys(flight.days).length);
+      return { airline, days, segments, incompleteDays };
+    });
+  }, [flights]);
+  const unassigned = flights.filter(flight => !weekdays.some(([key]) => flight.days?.[key]));
   const stale = schedule && (schedule.stale || !Number.isFinite(Date.parse(schedule.crawledAt)) || Date.now() - Date.parse(schedule.crawledAt) > 86400000);
 
-  return <div className="p-3 md:p-6 min-w-0">
+  return <div className="operations-report flight-report p-3 md:p-6 min-w-0">
     <div className="flex flex-wrap justify-between gap-3 mb-4">
       <h1 className="text-2xl font-bold">항공편 스케줄 조회</h1>
       <button type="button" className="rounded border px-3 py-2 text-sm disabled:opacity-50" disabled={!departure || loading} onClick={() => setRevision(v => v + 1)}>새로고침</button>
     </div>
     <p className="text-sm text-gray-500 mb-4">출발·도착 공항을 선택하면 항공사별 요일 시간표를 확인할 수 있습니다. 시간은 각 공항 현지 시각입니다.</p>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <p className="entrip-print-only operations-print-scope">출발 공항 · {departure ? airportLabel(departure) : '미선택'} / 도착 공항 · {arrival ? airportLabel(arrival) : '미선택'}</p>
+    <div className="entrip-no-print grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       <label className="text-sm font-medium">출발 공항
         <select aria-label="출발 공항" className={selectClassName} value={departure} onChange={e => { setDeparture(e.target.value); setArrival(''); setSchedule(null); setError(null); setLoading(false); }}>
           <option value="">출발 공항을 선택하세요</option>
@@ -61,20 +90,47 @@ export function FlightScheduleSearch() {
     </div>
     {error && <p role="alert" className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-red-700">{error}{schedule && ' 아래에는 이전에 불러온 자료가 표시됩니다.'}</p>}
     {loading && <p role="status" className="py-4 text-blue-600">스케줄을 불러오는 중…</p>}
-    {schedule && <p className={`mb-4 text-sm ${stale ? 'text-amber-700' : 'text-gray-600'}`}>자료 기준: {new Date(schedule.crawledAt).toLocaleString('ko-KR')} · {schedule.source || '연결된 항공편 서버'}{stale && ' · 오래된 자료입니다. 현재 운항은 항공사에서 확인하세요.'}</p>}
+    {schedule && <p className={`mb-4 text-sm ${stale ? 'text-amber-700' : 'text-gray-600'}`}>자료 기준: {Number.isFinite(Date.parse(schedule.crawledAt)) ? new Date(schedule.crawledAt).toLocaleString('ko-KR') : '기준 시각 미제공'} · {schedule.source || '연결된 항공편 서버'}{stale && ' · 오래된 자료입니다. 현재 운항은 항공사에서 확인하세요.'}</p>}
     {arrival && flights.length > 0 && <>
       <h2 className="font-semibold mb-3">{departure} → {arrival} · {flights.length}개 항공편</h2>
-      <p id="flight-scroll-help" className="mb-2 text-xs text-gray-500">좌우로 스크롤해 월~일 시간표를 확인하세요. 항공사 이름은 고정됩니다.</p>
-      <div role="region" aria-label="항공사별 주간 운항 시간표" aria-describedby="flight-scroll-help" tabIndex={0} className="overflow-x-auto rounded border border-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
+      <p id="flight-scroll-help" className="entrip-no-print mb-2 text-xs text-gray-500">좌우로 스크롤해 월~일 시간표를 확인하세요. 항공사 이름은 고정됩니다.</p>
+      <div role="region" aria-label="항공사별 주간 운항 시간표" aria-describedby="flight-scroll-help" tabIndex={0} className="entrip-no-print overflow-x-auto rounded border border-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
         <table className="w-full min-w-[850px] text-sm bg-white">
           <thead className="bg-blue-50"><tr><th scope="col" className="sticky left-0 z-20 bg-blue-50 p-3 border-b border-r text-left min-w-[100px]">항공사</th>{weekdays.map(([key, day]) => <th scope="col" key={key} className="p-3 border-b">{day}</th>)}</tr></thead>
-          <tbody>{airlines.map(airline => <tr key={airline}>
+          <tbody>{timetables.map(({ airline, days }) => <tr key={airline}>
             <th scope="row" className="sticky left-0 z-10 bg-white p-3 border-b border-r text-left align-top min-w-[100px]">{airline}</th>
-            {weekdays.map(([key]) => <td key={key} className="p-2 border-b align-top">{flights.filter(f => f.airline === airline && f.days?.[key]).map((f, i) => <div key={`${f.flightNo}-${f.departureTime}-${i}`} className="mb-2 rounded bg-gray-50 p-2"><p className="font-medium">{f.departureTime} → {f.arrivalTime || '미제공'}</p><p className="text-xs text-gray-500">{f.flightNo}</p></div>)}</td>)}
+            {days.map((rows, i) => <td key={weekdays[i]![0]} className="p-2 border-b align-top"><FlightTimes flights={rows}/></td>)}
           </tr>)}</tbody>
         </table>
       </div>
-      {flights.some(f => !f.days) && <p className="text-sm text-amber-700 mt-3">요일 정보가 없는 항공편은 요일 칸에 표시하지 않습니다.</p>}
+      <div className="entrip-print-only">
+        <table aria-label="항공편 인쇄 시간표" className="operations-data-table flight-print-table">
+          <thead><tr><th scope="col">항공사</th>{weekdays.map(([key, day]) => <th key={key} scope="col">{day}</th>)}</tr></thead>
+          <tbody>
+            {timetables.flatMap(({ airline, days, segments, incompleteDays }) => Array.from({ length: segments }, (_, segment) => {
+              const first = segment * flightsPerPrintedCell;
+              return <tr key={`${airline}-${segment}`}>
+                <th scope="row">
+                  {airline}
+                  {segments > 1 && <small>{segment + 1} / {segments}</small>}
+                </th>
+                {days.map((day, i) => {
+                  const rows = day.slice(first, first + flightsPerPrintedCell);
+                  return <td key={weekdays[i]![0]}>
+                    {rows.length ? <FlightTimes flights={rows}/> : day.length ? '—' : incompleteDays ? '요일 미제공' : '운항 없음'}
+                  </td>;
+                })}
+              </tr>;
+            }))}
+          </tbody>
+        </table>
+      </div>
+      {unassigned.length > 0 && <section className="mt-3 text-sm text-amber-700">
+        <h3 className="font-medium">요일표에 배정되지 않은 항공편</h3>
+        <ul>{unassigned.map((flight, i) => <li key={`${flight.flightNo}-${i}`}>
+          {flight.airline} · {flight.flightNo} · {flight.departureTime} → {flight.arrivalTime || '미제공'} · {flight.days && Object.keys(flight.days).length ? '편성 요일 없음' : '요일 미제공'}
+        </li>)}</ul>
+      </section>}
     </>}
     {!loading && !error && schedule && !destinations.length && <p className="py-6 text-gray-500">제공된 자료에 운항 노선이 없습니다.</p>}
     {!loading && !error && arrival && !flights.length && <p className="py-6 text-gray-500">선택한 노선의 스케줄이 없습니다.</p>}

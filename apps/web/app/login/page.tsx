@@ -32,12 +32,13 @@ export default function LoginPage() {
       else setError(useAuthStore.getState().error || '로그인에 실패했습니다.');
     } finally { setBusy(false); }
   }
-  return <main className="min-h-screen flex flex-col lg:flex-row bg-blue-50">
-    <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white lg:flex-1 flex flex-col justify-center items-center p-8 lg:p-16">
+  return <main className="entrip-login min-h-screen flex flex-col lg:flex-row bg-blue-50">
+    <div className="entrip-print-only"><div className="entrip-report-brand"><strong>ENTRIP</strong></div><h1>로그인</h1><p>로그인이 필요한 화면입니다.</p></div>
+    <section className="entrip-no-print bg-gradient-to-br from-blue-600 to-blue-800 text-white lg:flex-1 flex flex-col justify-center items-center p-8 lg:p-16">
       <h1 className="text-4xl lg:text-6xl font-bold tracking-wider">ENTRIP</h1>
       <p className="mt-4 text-blue-100">여행 업무를 한곳에서</p>
     </section>
-    <section className="flex-1 flex items-center justify-center p-4 sm:p-8">
+    <section className="entrip-no-print flex-1 flex items-center justify-center p-4 sm:p-8">
       <div className="w-full max-w-md bg-white rounded-xl shadow-xl p-6 sm:p-8">
         <h2 className="text-3xl font-bold text-blue-900">로그인</h2>
         <p className="mt-2 mb-6 text-sm text-gray-600">{lanLogin ? '회사 계정으로 로그인하세요.' : '회사와 역할을 선택한 후 로그인하세요.'}</p>

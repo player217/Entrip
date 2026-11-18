@@ -1,0 +1,22 @@
+.booking-editor-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  container-type: inline-size;
+  background: rgb(224 233 245 / 82%);
+}
+.booking-editor-panel { width: 100%; height: 100%; background: white; }
+.booking-editor-columns { display: grid; gap: 1rem; padding: 1rem; align-items: start; }
+.booking-editor-services { display: grid; gap: .75rem; }
+.booking-editor-service-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem .65rem; }
+@container (min-width: 760px) {
+  .booking-editor-panel { max-width: 96rem; height: auto; aspect-ratio: 16 / 9; max-height: 100%; min-height: min(27rem, 100%); }
+  .booking-editor-columns { grid-template-columns: minmax(15rem, .85fr) minmax(0, 1.45fr); gap: 1.4rem; padding: 1rem 1.25rem; }
+  .booking-editor-service-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@container (max-width: 450px) {
+  .booking-editor-columns { padding: .65rem; }
+}

@@ -27,7 +27,7 @@ export default function DashboardPageContent() {
     : 0
 
   return (
-    <div>
+    <div className="operations-report dashboard-report">
       <div className="flex items-center justify-between mt-2 mb-6">
         <h1 className="text-2xl font-semibold text-gray-900">대시보드</h1>
         <div className="flex items-center gap-2">
@@ -43,7 +43,7 @@ export default function DashboardPageContent() {
 
       <p className="mb-4 text-sm text-gray-500">취소 예약은 제외합니다. 금액은 원화 예약만 합산하며, 외화 {dashboardStats.excludedCurrencyCount}건은 합산하지 않습니다. 예약 금액은 실제 입금액과 다릅니다.</p>
       {/* 요약 KPI 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="operations-kpis grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
@@ -55,7 +55,7 @@ export default function DashboardPageContent() {
                 </p>
               )}
             </div>
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <div className="entrip-no-print w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
               📅
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function DashboardPageContent() {
               <h3 className="text-sm font-medium text-gray-500">확정 예약</h3>
               <p className="text-2xl font-semibold text-gray-900 mt-2">{dashboardStats.confirmedBookings}건</p>
             </div>
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+            <div className="entrip-no-print w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
               ✅
             </div>
           </div>
@@ -82,7 +82,7 @@ export default function DashboardPageContent() {
                 <p className="text-sm text-yellow-600 mt-1">처리 필요</p>
               )}
             </div>
-            <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+            <div className="entrip-no-print w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
               ⏳
             </div>
           </div>
@@ -96,7 +96,7 @@ export default function DashboardPageContent() {
                 {money(dashboardStats.monthlyRevenue.reduce((sum, item) => sum + item.value, 0))}
               </p>
             </div>
-            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+            <div className="entrip-no-print w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
               💰
             </div>
           </div>
@@ -104,7 +104,7 @@ export default function DashboardPageContent() {
       </div>
 
       {/* 실시간 정보 섹션 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="dashboard-sections grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <TodayBookingsSection />
         <RealTimeAlertsSection />
       </div>
@@ -115,7 +115,7 @@ export default function DashboardPageContent() {
       </div>
 
       {/* 차트 및 분석 영역 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="operations-charts grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard
           title="월별 예약 금액 (KRW)"
           data={dashboardStats.monthlyRevenue}

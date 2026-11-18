@@ -40,3 +40,20 @@ test('detail history expands to readable before and after values, including same
   fireEvent.click(summary);
   expect(detail).not.toHaveAttribute('open');
 });
+
+test('an untouched service price is missing and an explicitly entered zero is a quoted amount', () => {
+  const draft = makeDraft(undefined, '2026-12-11', '담당자');
+  const onChange = jest.fn();
+  const props = { onChange, onClose: jest.fn(), onSave: jest.fn(), onReload: jest.fn(), onDelete: jest.fn(), busy: false, error: '' };
+  const baseline = JSON.stringify(draft);
+  const { rerender } = render(<BookingEditor session={{ draft, baseline }} {...props} />);
+  fireEvent.click(screen.getByRole('button', { name: '+ 호텔 추가' }));
+  const added = onChange.mock.calls[0][0];
+  expect(added.hotelInfo[0].unpriced).toBe(true);
+  rerender(<BookingEditor session={{ draft: added, baseline }} {...props} />);
+  expect(screen.getByLabelText('호텔명')).toBeRequired();
+  expect(screen.getByLabelText('호텔 단가')).toHaveValue(null);
+  expect(screen.getByText('단가 미입력', { exact: true })).toBeVisible();
+  fireEvent.change(screen.getByLabelText('호텔 단가'), { target: { value: '0' } });
+  expect(onChange.mock.calls[1][0].hotelInfo[0]).toMatchObject({ unitPrice: 0, unpriced: false });
+});

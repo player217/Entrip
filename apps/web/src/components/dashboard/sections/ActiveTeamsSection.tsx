@@ -218,6 +218,7 @@ export function ActiveTeamsSection() {
                   </div>
                 </div>
               ))}
+              {!showAllTraveling && teamsData.travelingTeams.length > 6 && <p className="entrip-print-only dashboard-preview-count">전체 {teamsData.travelingTeams.length}건 중 화면에 표시된 6건</p>}
               {teamsData.travelingTeams.length > 6 && (
                 <button type="button" aria-expanded={showAllTraveling} aria-controls={travelingId}
                   onClick={() => setShowAllTraveling(value => !value)}
@@ -258,6 +259,7 @@ export function ActiveTeamsSection() {
                   </div>
                 </div>
               ))}
+              {!showAllUpcoming && teamsData.upcomingTeams.length > 4 && <p className="entrip-print-only dashboard-preview-count">전체 {teamsData.upcomingTeams.length}건 중 화면에 표시된 4건</p>}
               {teamsData.upcomingTeams.length > 4 && (
                 <button type="button" aria-expanded={showAllUpcoming} aria-controls={upcomingId}
                   onClick={() => setShowAllUpcoming(value => !value)}
