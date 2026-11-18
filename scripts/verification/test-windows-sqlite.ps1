@@ -44,7 +44,7 @@ function Run-Launcher([string[]]$Arguments, [bool]$Success) {
     $message = & $bat @Arguments 2>&1
     $code = $LASTEXITCODE
     if (($code -eq 0) -ne $Success) { throw "Unexpected batch exit $code for $($Arguments[0]): $message" }
-    Get-Content -LiteralPath $log
+    Get-Content -LiteralPath $log -Encoding UTF8
 }
 
 function Assert-Order([string[]]$Trace, [string[]]$Expected) {
@@ -52,7 +52,10 @@ function Assert-Order([string[]]$Trace, [string[]]$Expected) {
         $fields = @($_ -split "\t")
         $index = [array]::IndexOf($fields,'-f')
         if ($index -ge 0) {
-            if ($fields[$index+1] -ne (Join-Path $fixture 'compose.lan.yml')) { throw 'Project path was split by cmd.exe.' }
+            $expectedPath = Join-Path $fixture 'compose.lan.yml'
+            if ($fields[$index+1] -ne $expectedPath) {
+                throw "Compose path differs. Expected '$expectedPath', received '$($fields[$index+1])'. Arguments: $($fields -join ' | ')"
+            }
             $fields[($index+2)..($fields.Count-1)] -join ' '
         }
     })
