@@ -1,0 +1,117 @@
+x-db-url: &db-url "postgresql://entrip:${POSTGRES_PASSWORD:?Missing local database password}@postgres:5432/entrip"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: entrip
+      POSTGRES_USER: entrip
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Missing local database password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "entrip", "-d", "entrip"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+
+  initialize:
+    image: entrip-lan-app:local
+    build:
+      context: .
+      dockerfile: deploy/lan/Dockerfile
+    command: ["node", "deploy/lan/initialize.cjs"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: *db-url
+      ENTRIP_ADMIN_EMAIL: ${ENTRIP_ADMIN_EMAIL:?Missing local admin email}
+      ENTRIP_ADMIN_PASSWORD: ${ENTRIP_ADMIN_PASSWORD:?Missing local admin password}
+      ENTRIP_COMPANY_CODE: ${ENTRIP_COMPANY_CODE:-entrip}
+    restart: "no"
+
+  gateway:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - "${ENTRIP_LAN_PORT:-3000}:80"
+    volumes:
+      - ./deploy/lan/gateway.conf:/etc/nginx/conf.d/default.conf:ro
+    # API and Next share this network namespace. Nginx reaches them over loopback;
+    # only port 80 in this namespace has a host port mapping.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health && wget -q -O /dev/null http://127.0.0.1/login"]
+      interval: 10s
+      timeout: 7s
+      retries: 20
+      start_period: 90s
+
+  api:
+    image: entrip-lan-app:local
+    pull_policy: never
+    init: true
+    restart: unless-stopped
+    network_mode: service:gateway
+    command: ["node", "packages/api/dist/index.js"]
+    depends_on:
+      gateway:
+        condition: service_started
+      initialize:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: production
+      PORT: 4002
+      DATABASE_URL: *db-url
+      JWT_SECRET: ${JWT_SECRET:?Missing signing secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Missing refresh signing secret}
+      CLIENT_URL: http://${ENTRIP_LAN_HOST:?Missing primary LAN IP}:${ENTRIP_LAN_PORT:-3000}
+      ENTRIP_LAN_HTTP: "true"
+      ENTRIP_LAN_ORIGINS: ${ENTRIP_LAN_ORIGINS:?Missing LAN origins}
+      IP_WHITELIST: "127.0.0.1,::1"
+      CRAWLER_API_URL: http://crawler:8001
+      FX_FREE_URL: http://fx-free:4010
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4002/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  web:
+    image: entrip-lan-app:local
+    pull_policy: never
+    init: true
+    restart: unless-stopped
+    network_mode: service:gateway
+    command: ["node", "node_modules/next/dist/bin/next", "start", "apps/web", "--hostname", "127.0.0.1", "--port", "3000"]
+    depends_on:
+      gateway:
+        condition: service_started
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      ENTRIP_LAN_HTTP: "true"
+      ENTRIP_LAN_ORIGINS: ${ENTRIP_LAN_ORIGINS:?Missing LAN origins}
+      INTERNAL_API_V2_URL: http://127.0.0.1:4002
+      API_V2_URL: http://127.0.0.1:4002
+      INTERNAL_FX_FREE_URL: http://fx-free:4010
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  crawler:
+    build:
+      context: ./apps/api-legacy/src/crawler
+      dockerfile: Dockerfile.simple
+    restart: unless-stopped
+
+  fx-free:
+    build: ./apps/fx-free
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

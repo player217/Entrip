@@ -13,7 +13,7 @@ export function BookingEditor({ session, onChange, onClose, onSave, onReload, on
   const draft = session.draft;
   const field = <K extends keyof BookingDraft>(name: K, value: BookingDraft[K]) => onChange({ ...draft, [name]: value });
   const editItem = (key: DetailKey, id: string, change: Partial<DetailItem>) => field(key, draft[key].map(item => item.id === id ? { ...item, ...change } : item));
-  const add = (key: DetailKey) => field(key, [...draft[key], { id: crypto.randomUUID(), name: '', description: '', date: draft.startDate, quantity: 1, unitPrice: 0, currency: draft.currency }]);
+  const add = (key: DetailKey) => field(key, [...draft[key], { id: Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join(''), name: '', description: '', date: draft.startDate, quantity: 1, unitPrice: 0, currency: draft.currency }]);
   const print = () => {
     const popup = window.open('', '_blank', 'width=900,height=800');
     if (popup) { popup.document.write(bookingPrintHtml(draft, session.record?.bookingNumber)); popup.document.close(); popup.focus(); }

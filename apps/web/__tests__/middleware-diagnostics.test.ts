@@ -32,3 +32,20 @@ test('normal production pages retain their login redirect', () => {
   expect(response.status).toBe(307);
   expect(response.headers.get('location')).toBe('http://localhost:3000/login?from=%2Fcalendar-monthly');
 });
+
+test('LAN login redirect uses the published address and port, not the internal Next address', () => {
+  const oldMode = process.env.NEXT_PUBLIC_ENTRIP_LAN;
+  const oldOrigins = process.env.ENTRIP_LAN_ORIGINS;
+  try {
+    process.env.NEXT_PUBLIC_ENTRIP_LAN = 'true';
+    process.env.ENTRIP_LAN_ORIGINS = 'http://127.0.0.1:4100,http://192.168.50.10:4100';
+    const visit = (host: string) => middleware(new NextRequest('http://127.0.0.1:3000/calendar-monthly', { headers: { host } }));
+    expect(visit('192.168.50.10:4100').headers.get('location')).toBe('http://192.168.50.10:4100/login?from=%2Fcalendar-monthly');
+    expect(visit('unknown.example').status).toBe(400);
+  } finally {
+    if (oldMode === undefined) delete process.env.NEXT_PUBLIC_ENTRIP_LAN;
+    else process.env.NEXT_PUBLIC_ENTRIP_LAN = oldMode;
+    if (oldOrigins === undefined) delete process.env.ENTRIP_LAN_ORIGINS;
+    else process.env.ENTRIP_LAN_ORIGINS = oldOrigins;
+  }
+});

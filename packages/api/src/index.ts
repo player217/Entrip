@@ -47,6 +47,8 @@ validateConfig();
 
 // Create Express app
 export const app: Application = express();
+const { browser } = appConfig;
+if (browser.lanHttp) app.set('trust proxy', 'loopback');
 
 // Global middlewares
 app.use(loggingMiddleware);
@@ -70,7 +72,7 @@ app.use(helmet({
         : ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Development only
       scriptSrcAttr: ["'none'"],
       styleSrc: ["'self'", "https:", "'unsafe-inline'"],
-      upgradeInsecureRequests: appConfig.server.isProduction ? [] : null,
+      upgradeInsecureRequests: appConfig.server.isProduction && !browser.lanHttp ? [] : null,
     },
   },
 
@@ -92,7 +94,7 @@ app.use(helmet({
   referrerPolicy: { policy: ["no-referrer", "strict-origin-when-cross-origin"] },
 
   // HTTP Strict Transport Security - Forces HTTPS
-  hsts: appConfig.server.isProduction
+  hsts: appConfig.server.isProduction && !browser.lanHttp
     ? {
         maxAge: 31536000, // 1 year
         includeSubDomains: true,
@@ -125,41 +127,19 @@ app.use(helmet({
   })
 }));
 // Enhanced CORS Configuration with Security Validation
-const getAllowedOrigins = (): string[] => {
-  const origins = [appConfig.cors.clientUrl];
-
-  // Add environment-specific origins
-  if (appConfig.server.isDevelopment) {
-    origins.push('http://localhost:3000', 'http://127.0.0.1:3000');
-  } else if (appConfig.server.isProduction) {
-    // Add production domains here
-    // origins.push('https://your-production-domain.com');
+// Browser writes in LAN mode require an explicit launcher-approved origin.
+app.use((req, res, next) => {
+  if (browser.lanHttp && !['GET', 'HEAD', 'OPTIONS'].includes(req.method) &&
+      !browser.permitsOrigin(req.get('origin'))) {
+    return res.status(403).json({ message: '허용된 서버 주소에서 접속해 주세요.' });
   }
-
-  return origins;
-};
+  return next();
+});
 
 app.use(cors({
   origin: (origin, callback) => {
-    const allowedOrigins = getAllowedOrigins();
-
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin && appConfig.server.isDevelopment) {
-      return callback(null, true);
-    }
-
-    // Check if origin is allowed
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      logger.warn('CORS blocked request from unauthorized origin', {
-        origin,
-        allowedOrigins,
-        userAgent: 'Unknown',
-        timestamp: new Date().toISOString(),
-      });
-      callback(new Error('Not allowed by CORS policy'));
-    }
+    if (!origin || browser.permitsOrigin(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS policy'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -225,7 +205,7 @@ if (!appConfig.server.isTest) {
   const io = initializeWebSocket(server);
   app.set('io', io); // Store io instance in app for routes to use
 
-  server.listen(PORT, () => {
+  server.listen(browser.lanHttp ? { port: PORT, host: '127.0.0.1' } : { port: PORT }, () => {
     logger.info('🚀 API v2 Server started successfully', {
       port: PORT,
       environment: appConfig.server.nodeEnv,

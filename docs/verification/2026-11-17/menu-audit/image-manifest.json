@@ -341,8 +341,7 @@
     "webpSha256": "e28a5fbe8d3cca7953a2e4bf361f66c9f43d11ec72812e86be0fa49498539e62",
     "width": 1440,
     "height": 1000,
-    "losslessPixelMatch": true,
-    "publicStatus": "NOT_PUBLISHED_PENDING_EXPLICIT_APPROVAL"
+    "losslessPixelMatch": true
   },
   {
     "file": "41-booking-detail-항공.webp",
@@ -902,8 +901,7 @@
     "webpSha256": "331754af6dae4cba1d4c12c2319f97f57362d686fcb10c88e3443aef258f35db",
     "width": 800,
     "height": 1000,
-    "losslessPixelMatch": true,
-    "publicStatus": "NOT_PUBLISHED_PENDING_EXPLICIT_APPROVAL"
+    "losslessPixelMatch": true
   },
   {
     "file": "responsive-800-approval.webp",

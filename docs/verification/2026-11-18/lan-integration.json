@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "transport": "Browser HTTP LAN origin mapped to loopback",
+  "checks": [
+    "Provisioned administrator creates employee through settings; independent employee signs in on the same LAN origin",
+    "Both browser sessions see the stored reservation; cookie-only reload preserves employee access",
+    "Browser WebSockets connect through the LAN gateway; administrator and employee exchange messages before the polling interval"
+  ],
+  "pageErrors": [],
+  "bookingCleanupStatus": 204,
+  "employeeCleanupStatus": 204,
+  "bootstrap": "6 migrations deployed to a new disposable PostgreSQL database; repeated bootstrap with a different password preserved the original administrator and exactly one user.",
+  "server": "Production compiled API and Next web app, nginx 1.26.3 using deploy/lan/gateway.conf, only the gateway port changed from 80 to 3300 for testing.",
+  "browser": "Two independent Chromium 139 contexts; host resolver mapped the test URL 192.168.50.18 to 127.0.0.1. Browser reported insecure HTTP context and successfully decoded both header logo images.",
+  "outOfScope": [
+    "Actual Windows run.bat launch",
+    "Docker Desktop compose startup",
+    "Physical LAN routing, firewall traversal and two different client devices"
+  ]
+}

@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { browserAccessPolicy } from './browser-access';
 import { z } from 'zod';
 
 // Load environment variables
@@ -64,6 +65,7 @@ try {
 
 // Export typed configuration
 export const appConfig = {
+  browser: browserAccessPolicy(config.nodeEnv, config.clientUrl, process.env.ENTRIP_LAN_HTTP === 'true', process.env.ENTRIP_LAN_ORIGINS),
   server: {
     port: config.port,
     nodeEnv: config.nodeEnv,

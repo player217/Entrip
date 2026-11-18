@@ -10,12 +10,14 @@ const companies = [
 ];
 const roles = [{ key: 'admin', label: '관리자' }, { key: 'manager', label: '매니저' }, { key: 'user', label: '직원' }];
 
+const lanLogin = process.env.NEXT_PUBLIC_ENTRIP_LAN === 'true';
+
 export default function LoginPage() {
   const login = useAuthStore(state => state.login);
-  const [companyCode, setCompanyCode] = useState('j1');
+  const [companyCode, setCompanyCode] = useState(lanLogin ? 'entrip' : 'j1');
   const [role, setRole] = useState('admin');
-  const [username, setUsername] = useState('admin@j1.com');
-  const [password, setPassword] = useState('pass1234');
+  const [username, setUsername] = useState(lanLogin ? '' : 'admin@j1.com');
+  const [password, setPassword] = useState(lanLogin ? '' : 'pass1234');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   function selectDemo(company: string, selectedRole: string) {
@@ -38,9 +40,11 @@ export default function LoginPage() {
     <section className="flex-1 flex items-center justify-center p-4 sm:p-8">
       <div className="w-full max-w-md bg-white rounded-xl shadow-xl p-6 sm:p-8">
         <h2 className="text-3xl font-bold text-blue-900">로그인</h2>
-        <p className="mt-2 mb-6 text-sm text-gray-600">회사와 역할을 선택한 후 로그인하세요.</p>
+        <p className="mt-2 mb-6 text-sm text-gray-600">{lanLogin ? '회사 계정으로 로그인하세요.' : '회사와 역할을 선택한 후 로그인하세요.'}</p>
         <form onSubmit={submit} className="space-y-5">
-          <fieldset disabled={busy} className="rounded-lg bg-blue-50 p-4 space-y-3">
+          {lanLogin ? <label className="block text-sm font-semibold text-blue-900">회사 코드
+            <input name="companyCode" autoComplete="organization" value={companyCode} onChange={event => setCompanyCode(event.target.value)} required disabled={busy} className="mt-2 w-full rounded-lg border border-blue-200 px-3 py-3" />
+          </label> : <fieldset disabled={busy} className="rounded-lg bg-blue-50 p-4 space-y-3">
             <legend className="text-sm font-semibold text-blue-900">데모 계정 선택</legend>
             <label className="block text-sm font-medium">회사
               <select aria-label="회사 선택" value={companyCode} onChange={event => selectDemo(event.target.value, role)} className="mt-1 w-full rounded border border-blue-200 bg-white p-2">
@@ -53,7 +57,7 @@ export default function LoginPage() {
               </select>
             </label>
             <p className="text-xs text-gray-500">초기 데모 계정 비밀번호: pass1234</p>
-          </fieldset>
+          </fieldset>}
           <label className="block text-sm font-semibold text-blue-900">아이디 (이메일)
             <input name="username" autoComplete="username" type="email" value={username} onChange={event => setUsername(event.target.value)} required disabled={busy} className="mt-2 w-full rounded-lg border border-blue-200 px-3 py-3" />
           </label>

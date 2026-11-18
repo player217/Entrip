@@ -1,5 +1,6 @@
 const path = require('path');
 const websocketOrigins = [];
+const lanHttp = process.env.NEXT_PUBLIC_ENTRIP_LAN === 'true';
 if (process.env.NEXT_PUBLIC_WS_URL) {
   const url = new URL(process.env.NEXT_PUBLIC_WS_URL);
   if (!['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol)) throw new Error('Invalid NEXT_PUBLIC_WS_URL protocol');
@@ -106,7 +107,7 @@ const nextConfig = {
           },
           
           // HSTS - Force HTTPS in production
-          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          ...(!lanHttp ? [{ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' }] : []),
           
           // Prevent MIME type sniffing
           { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -132,7 +133,7 @@ const nextConfig = {
       {
         source: '/api/:path*',
         headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
+          ...(!lanHttp ? [{ key: 'Access-Control-Allow-Credentials', value: 'true' },
           // D2.2: Restrict to specific origins instead of wildcard
           { key: 'Access-Control-Allow-Origin', value: process.env.NODE_ENV === 'production' 
               ? 'https://your-production-domain.com'  // Replace with actual production domain
@@ -140,7 +141,7 @@ const nextConfig = {
           },
           { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT,OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Accept, Accept-Version, Authorization, Content-Length, Content-MD5, Content-Type, Date, X-Requested-With, X-Request-ID' },
-          { key: 'Access-Control-Max-Age', value: '86400' }, // 24 hours preflight cache
+          { key: 'Access-Control-Max-Age', value: '86400' }] : []),
           
           // Additional security headers for API
           { key: 'X-API-Version', value: process.env.NEXT_PUBLIC_APP_VERSION || '0.0.0' },

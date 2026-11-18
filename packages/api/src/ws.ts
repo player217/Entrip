@@ -2,6 +2,7 @@ import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { authService, AuthTokenPayload } from './routes/auth/auth.service';
 import { logger } from './lib/logger';
+import { appConfig } from './config';
 import prisma from './lib/prisma';
 import { messageService } from './services/message.service';
 
@@ -9,7 +10,15 @@ let io: Server;
 
 export const initializeWebSocket = (server: HttpServer): Server => {
   io = new Server(server, {
-    cors: { origin: (process.env.CLIENT_URL || 'http://localhost:3000').split(','), credentials: true },
+    cors: { origin: appConfig.browser.origins, credentials: true },
+    // WebSocket upgrades do not use browser CORS checks. Same-origin polling
+    // GETs may have no Origin, but browser WebSocket handshakes supply one.
+    allowRequest: (req, callback) => {
+      const origin = req.headers.origin;
+      const websocket = req.headers.upgrade?.toLowerCase() === 'websocket';
+      const allowed = origin ? appConfig.browser.permitsOrigin(origin) : !appConfig.browser.lanHttp || !websocket;
+      callback(null, allowed);
+    },
     path: '/socket.io/',
   });
   io.use(async (socket, next) => {

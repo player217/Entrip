@@ -2,7 +2,7 @@
 
 2026-11-17 · 기준 앱 aa2232c · [종합 점검 보고서](../../../ENTRIP_VISUAL_AUDIT_20261117.md)
 
-PNG 원본에서 무손실 WebP로 변환했고 124개 모두 픽셀 일치를 검증했다. 공개판은 122장이며 2장은 별도 공개 승인 대기로 제외했다. fixture 표시는 실제 외부 서비스의 정상 응답을 의미하지 않는다.
+PNG 원본에서 무손실 WebP로 변환했고 124개 모두 픽셀 일치를 검증했다. fixture 표시는 실제 외부 서비스의 정상 응답을 의미하지 않는다.
 
 | 화면 | 크기 | 구분 |
 |---|---|---|
@@ -48,7 +48,7 @@ PNG 원본에서 무손실 WebP로 변환했고 124개 모두 픽셀 일치를 �
 | [39-booking-previous-empty](39-booking-previous-empty.webp) | 1440×1000 | 실제 앱/테스트 DB |
 | [40-booking-required](40-booking-required.webp) | 1440×1000 | 실제 앱/테스트 DB |
 | [41-booking-detail-기타](41-booking-detail-기타.webp) | 1440×1000 | 실제 앱/테스트 DB |
-| 41-booking-detail-차량 — 공개 승인 대기 | 1440×1000 | 실제 앱/테스트 DB |
+| [41-booking-detail-차량](41-booking-detail-차량.webp) | 1440×1000 | 실제 앱/테스트 DB |
 | [41-booking-detail-항공](41-booking-detail-항공.webp) | 1440×1000 | 실제 앱/테스트 DB |
 | [41-booking-detail-호텔](41-booking-detail-호텔.webp) | 1440×1000 | 실제 앱/테스트 DB |
 | [42-booking-history](42-booking-history.webp) | 1440×1000 | 실제 앱/테스트 DB |
@@ -118,7 +118,7 @@ PNG 원본에서 무손실 WebP로 변환했고 124개 모두 픽셀 일치를 �
 | [responsive-390-stats](responsive-390-stats.webp) | 390×844 | 실제 앱/테스트 DB |
 | [responsive-390-week-calendar](responsive-390-week-calendar.webp) | 390×844 | 실제 앱/테스트 DB |
 | [responsive-390-week-list](responsive-390-week-list.webp) | 390×844 | 실제 앱/테스트 DB |
-| responsive-800-accounts — 공개 승인 대기 | 800×1000 | 실제 앱/테스트 DB |
+| [responsive-800-accounts](responsive-800-accounts.webp) | 800×1000 | 실제 앱/테스트 DB |
 | [responsive-800-approval](responsive-800-approval.webp) | 800×1000 | 실제 앱/테스트 DB |
 | [responsive-800-dashboard](responsive-800-dashboard.webp) | 800×1000 | 실제 앱/테스트 DB |
 | [responsive-800-flights](responsive-800-flights.webp) | 800×1000 | 실제 앱/테스트 DB |

@@ -107,3 +107,4 @@ work/
 
 # One-off local SQL scratch file
 tmp_update.sql
+/.entrip-lan/

@@ -94,4 +94,4 @@ BASE_URL=http://127.0.0.1:3000 node scripts/verification/verify-menu-audit-ui.mj
 공개판에는 판독 보고서·캡처·수치/해시 검증 자료를 게시한다. 원시 관측 본문, 계정·거래별 JSON, ARIA 덤프와 환경 로그는 제외한다.
 
 
-최초 캡처 124장 중 2장은 개별 공개 승인 대기로 제외했다: `41-booking-detail-차량.webp`, `responsive-800-accounts.webp`. 나머지 최초 캡처 122장과 수정 후 캡처 87장은 공개 자료 대상이다.
+최초 점검 캡처 124장과 수정 후 캡처 87장을 공개했다.
